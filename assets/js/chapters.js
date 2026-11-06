@@ -24,7 +24,7 @@
         { num: '09', slug: '09-non-compliance', title: 'Non-compliance and LATE', short: 'Who actually takes it', deck: 'Encouragement, take-up, and the local average treatment effect.', status: 'live' },
         { num: '10', slug: '10-matching', title: 'Matching', short: 'Find the twin', deck: 'Compare like with like, then measure the bias that survives the match.', status: 'live' },
         { num: '11', slug: '11-propensity-score', title: 'Propensity score', short: 'The probability of treatment', deck: 'Collapse many confounders into one balancing score.', status: 'live' },
-        { num: '12', slug: '12-doubly-robust', title: 'Doubly robust estimation', short: 'Two chances to be right', deck: 'Combine an outcome model and a treatment model; get it right if either is.', status: 'planned' },
+        { num: '12', slug: '12-doubly-robust', title: 'Doubly robust estimation', short: 'Two chances to be right', deck: 'Combine an outcome model and a treatment model; get it right if either is.', status: 'live' },
         { num: '13', slug: '13-difference-in-differences', title: 'Difference-in-differences', short: 'Parallel worlds', deck: 'Use a comparison group to difference out the trend.', status: 'planned' },
         { num: '14', slug: '14-panel-fixed-effects', title: 'Panel data and fixed effects', short: 'Each unit as its own control', deck: 'Within-unit variation, time dummies, and the assumptions that remain.', status: 'planned' },
         { num: '15', slug: '15-synthetic-control', title: 'Synthetic control', short: 'Build a counterfactual', deck: 'Weight a donor pool into the comparison you wish you had.', status: 'planned' },

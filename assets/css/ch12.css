@@ -1,0 +1,237 @@
+/* ============================================================
+   Chapter 12 — doubly robust figure, robustness grid, intervals.
+   ============================================================ */
+
+.dr-model {
+  font-family: var(--serif);
+  font-size: 17px;
+  fill: var(--ink);
+}
+
+.dr-model-sub {
+  font-family: var(--mono);
+  font-size: 8px;
+  fill: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.dr-node {
+  font-family: var(--serif);
+  font-size: 28px;
+  fill: var(--ink);
+}
+
+.dr-node-sub {
+  font-family: var(--mono);
+  font-size: 8px;
+  fill: var(--ink-3);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.dr-side {
+  font-family: var(--hand);
+  font-size: 14px;
+  fill: var(--ink-3);
+}
+
+/* ---------------------------------------------------------- grid */
+.dr-grid {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) minmax(0, 1fr);
+  gap: 6px;
+  padding: 10px 8px;
+}
+
+.dr-corner {
+  border: 0;
+}
+
+.dr-col,
+.dr-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-3);
+  font-size: 8px;
+  text-align: center;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.dr-row {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.dr-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 86px;
+  padding: 8px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease), background 0.15s var(--ease);
+}
+
+.dr-cell:hover {
+  border-color: var(--ink-2);
+  background: var(--paper-2);
+}
+
+.dr-cell.is-selected {
+  border-color: var(--red);
+  background: var(--red-soft);
+}
+
+.dr-cell--empty {
+  background: var(--paper-2);
+  color: var(--ink-3);
+}
+
+.dr-value {
+  font-family: var(--serif);
+  font-size: 1.75rem;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.dr-cell.is-selected .dr-value {
+  color: var(--red);
+}
+
+.dr-tag {
+  margin-top: 6px;
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--ink-2);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.ch12-ci-label {
+  margin-top: 8px;
+}
+
+.ch12-ci {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink-2);
+}
+
+/* ---------------------------------------------------------- intervals */
+.dr-intervals {
+  margin: 18px 0;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  padding: 10px;
+}
+
+.dr-intervals svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.dr-tick {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-3);
+}
+
+.dr-axis-title {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  fill: var(--ink-2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.dr-row-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  fill: var(--ink-3);
+}
+
+.dr-row-value {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-2);
+}
+
+.dr-row-line {
+  stroke: var(--blue);
+  stroke-width: 1.2;
+}
+
+.dr-row-dot {
+  fill: var(--paper);
+  stroke: var(--blue);
+  stroke-width: 1.5;
+}
+
+.dr-row.is-current .dr-row-label,
+.dr-row.is-current .dr-row-value {
+  fill: var(--red);
+}
+
+.dr-row.is-current .dr-row-line {
+  stroke: var(--red);
+  stroke-width: 1.8;
+}
+
+.dr-row.is-current .dr-row-dot {
+  fill: var(--red);
+  stroke: var(--ink);
+}
+
+.lab--no-swipe .lab-head::after {
+  content: none;
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .lab-body {
+    grid-template-columns: 1fr;
+  }
+
+  .dr-grid {
+    grid-template-columns: 78px minmax(0, 1fr) minmax(0, 1fr);
+    gap: 4px;
+    padding: 6px 2px;
+  }
+
+  .dr-cell {
+    min-height: 76px;
+    padding: 5px;
+  }
+
+  .dr-value {
+    font-size: 1.4rem;
+  }
+
+  .dr-tag {
+    font-size: 7px;
+  }
+
+  .dr-intervals {
+    overflow: visible;
+  }
+
+  .dr-intervals svg {
+    width: 100%;
+    max-width: none;
+  }
+
+  .dr-tick,
+  .dr-axis-title,
+  .dr-row-label,
+  .dr-row-value {
+    font-size: 16px;
+  }
+}

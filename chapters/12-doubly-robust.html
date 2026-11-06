@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Doubly robust estimation &mdash; Causal Field Notes</title>
+  <meta name="description" content="Chapter 12: doubly robust estimation — two models, two chances, one estimate. A robustness grid lab on the learning-mindset data.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/ch12.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the chapter</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Chapter 12</p>
+      <h1 class="hero-title">Two chances<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">one correct model is enough &darr;</p>
+      <p class="hero-deck">Doubly robust estimation combines the propensity model and the outcome model.</p>
+      <p class="hero-sub">The propensity score reweights the sample; the outcome model predicts each unit under treatment and control. If either model is right, the estimate stays close. If both are wrong, nothing saves it.</p>
+      <div class="hero-meta mono">
+        <span>10,391 students</span><span>2 models</span><span>1 grid</span><span>~15 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#robustness-grid">Open the robustness grid <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/12-Doubly-Robust-Estimation.html" target="_blank" rel="noreferrer">Read the source chapter</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="A propensity model and an outcome model both feed a doubly robust estimate; one correct model is enough.">
+        <g class="hero-paper">
+          <path d="M30 30h400v238H30z" fill="#fbf8f1" stroke="#ddd6c9"/>
+        </g>
+        <defs>
+          <marker id="dr-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0 0L10 5L0 10z" fill="#2b2723"/>
+          </marker>
+        </defs>
+        <g class="dr-figure">
+          <rect x="48" y="58" width="140" height="58" rx="2" fill="#f6f3ec" stroke="#2f5d8a"/>
+          <text x="118" y="82" text-anchor="middle" class="dr-model">propensity</text>
+          <text x="118" y="101" text-anchor="middle" class="dr-model-sub">e(X) model</text>
+          <rect x="48" y="170" width="140" height="58" rx="2" fill="#f6f3ec" stroke="#a8283a"/>
+          <text x="118" y="194" text-anchor="middle" class="dr-model">outcome</text>
+          <text x="118" y="213" text-anchor="middle" class="dr-model-sub">mu0 / mu1 model</text>
+          <circle cx="300" cy="143" r="54" fill="#e4ecf3" stroke="#2b2723"/>
+          <text x="300" y="136" text-anchor="middle" class="dr-node">DR</text>
+          <text x="300" y="158" text-anchor="middle" class="dr-node-sub">estimate</text>
+          <path d="M190 88 C 236 96, 244 118, 256 128" fill="none" stroke="#2b2723" stroke-width="1.4" marker-end="url(#dr-arrow)"/>
+          <path d="M190 198 C 236 190, 244 168, 256 158" fill="none" stroke="#2b2723" stroke-width="1.4" marker-end="url(#dr-arrow)"/>
+          <path d="M358 130 C 390 114, 398 96, 408 92" fill="none" stroke="#2f5d8a" stroke-width="1.2" stroke-dasharray="4 4"/>
+          <path d="M358 156 C 390 172, 398 190, 408 194" fill="none" stroke="#a8283a" stroke-width="1.2" stroke-dasharray="4 4"/>
+          <text x="366" y="70" class="dr-side">if one is wrong,</text>
+          <text x="366" y="90" class="dr-side">the other can rescue</text>
+        </g>
+        <g class="hand">
+          <text x="42" y="262" fill="#2f5d8a" font-size="19">at least one model has to be right</text>
+          <path d="M338 270c14 4 26 3 38-2" fill="none" stroke="#2f5d8a" stroke-width="1"/>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">A propensity model and an outcome model both feed a doubly robust estimate. One correct model can rescue the estimate.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Both correct</span>
+        <span class="hero-stat-value">0.3882</span>
+        <span class="hero-stat-note">the doubly robust estimate</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Wrong PS</span>
+        <span class="hero-stat-value">0.3797</span>
+        <span class="hero-stat-note">the outcome model carries it</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Wrong outcome</span>
+        <span class="hero-stat-value">0.3981</span>
+        <span class="hero-stat-note">the propensity model carries it</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 EGGS -->
+  <section class="chapter-section sheet" id="eggs" data-section="eggs">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">two baskets</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Don't put all your eggs in one basket</p>
+          <h2 class="section-title">Two models,<br>two chances.</h2>
+          <p class="section-deck">The propensity model and the outcome model make different assumptions. Doubly robust estimation puts them together so that either one can rescue the estimate.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">IPTW relies on the propensity model. Regression adjustment relies on the outcome model. Doubly robust estimation uses both. If the propensity score is right, the weighting part is consistent; if the outcome model is right, the prediction part is consistent. If either is right, the combination is consistent.</p>
+          <p>That is a genuine insurance policy, not a free lunch: the guarantee is only as good as the statement &ldquo;at least one of my two models is approximately right.&rdquo; If both are wrong, the estimate can be biased like any other.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Doubly robust estimator formula">
+          <span class="formula-label mono">the estimator</span>
+          <span class="formula-body"><span class="math-var">&psi;</span> = <span class="frac"><span class="num">1</span><span class="den">n</span></span> &Sigma; [ <span class="math-var">m</span><sub>1</sub>(<span class="math-var">X</span>) + <span class="frac"><span class="num"><span class="math-var">T</span>(<span class="math-var">Y</span> &minus; <span class="math-var">m</span><sub>1</sub>(<span class="math-var">X</span>))</span><span class="den"><span class="math-var">e</span>(<span class="math-var">X</span>)</span></span> &minus; <span class="math-var">m</span><sub>0</sub>(<span class="math-var">X</span>) &minus; <span class="frac"><span class="num">(1&minus;<span class="math-var">T</span>)(<span class="math-var">Y</span> &minus; <span class="math-var">m</span><sub>0</sub>(<span class="math-var">X</span>))</span><span class="den">1 &minus; <span class="math-var">e</span>(<span class="math-var">X</span>)</span></span> ]</span>
+        </div>
+
+        <div class="prose">
+          <p>The first term predicts the treated outcome and corrects the prediction with the weighted residual. The second does the same for the control. The residuals vanish when the outcome model is right; the weighting ratio corrects when it is not.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The insurance policy</p>
+          <p><strong>Propensity right:</strong> the weighted residuals correct the outcome model. <strong>Outcome right:</strong> the residuals are zero, so the prediction stands. <strong>Both wrong:</strong> no guarantee.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the intuition</p>
+          <p>Each observation gets a predicted outcome and a weight. If the prediction is off, the weight corrects it; if the weight is off, the prediction carries it.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the fine print</p>
+          <p>Doubly robust is not doubly certain. It is one estimate with two assumptions and one escape clause.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 GRID -->
+  <section class="chapter-section sheet" id="robustness-grid" data-section="robustness-grid">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">the grid</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">The robustness grid</p>
+          <h2 class="section-title">What if<br>one is wrong?</h2>
+          <p class="section-deck">The book replaces one model at a time with a deliberately bad one. Click a cell and read the estimate.</p>
+        </header>
+
+        <div class="prose">
+          <p>The &ldquo;wrong&rdquo; models are random draws, not a specific misspecification. They are a stress test: if the estimate stays near 0.39 when one model is nonsense, the other model is doing its job.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-dr" aria-labelledby="lab-dr-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-dr-title">The robustness grid</h3>
+            </div>
+            <p class="lab-status mono" id="ch12-status">both models correct</p>
+          </div>
+          <div class="lab-body">
+            <div class="dr-grid" role="group" aria-label="Choose which model is correct">
+              <div class="dr-corner"></div>
+              <div class="dr-col mono">outcome correct</div>
+              <div class="dr-col mono">outcome wrong</div>
+              <div class="dr-row mono">propensity correct</div>
+              <button type="button" class="dr-cell is-selected" data-cell="both" aria-pressed="true">
+                <span class="dr-value">0.388</span>
+                <span class="dr-tag">both right</span>
+              </button>
+              <button type="button" class="dr-cell" data-cell="wrongOutcome" aria-pressed="false">
+                <span class="dr-value">0.398</span>
+                <span class="dr-tag">outcome wrong</span>
+              </button>
+              <div class="dr-row mono">propensity wrong</div>
+              <button type="button" class="dr-cell" data-cell="wrongPs" aria-pressed="false">
+                <span class="dr-value">0.380</span>
+                <span class="dr-tag">propensity wrong</span>
+              </button>
+              <button type="button" class="dr-cell dr-cell--empty" data-cell="bothWrong" aria-pressed="false">
+                <span class="dr-value">?</span>
+                <span class="dr-tag">both wrong</span>
+              </button>
+            </div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="ch12-label">Both models correct</p>
+              <p class="readout-value" id="ch12-coef">0.3882</p>
+              <p class="readout-sub">ATE, achievement points</p>
+              <p class="side-label mono ch12-ci-label">95% CI</p>
+              <p class="ch12-ci" id="ch12-ci">(0.3536, 0.4198)</p>
+              <dl class="mini-stats">
+                <div><dt>students</dt><dd>10,391</dd></div>
+                <div><dt>IPTW</dt><dd>0.3885</dd></div>
+                <div><dt>status</dt><dd id="ch12-status-short">insured</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch12-note">both models are approximately right.</p>
+            </aside>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The estimate barely moves when one model is replaced by noise. It moves only when neither model is credible.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">try all four</p>
+          <p>Both right, PS wrong, outcome wrong, both wrong. The first three cluster near 0.39; the last has no guarantee.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the catch</p>
+          <p>The wrong models are random. A real misspecification could be worse than random noise.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 CI -->
+  <section class="chapter-section sheet" id="intervals" data-section="intervals">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">intervals</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Bootstrap uncertainty</p>
+          <h2 class="section-title">The intervals<br>are wide.</h2>
+          <p class="section-deck">The point estimates are close, but the intervals run from about 0.34 to 0.43. The insurance policy buys robustness, not precision.</p>
+        </header>
+
+        <div class="prose">
+          <p>The book’s 1,000-sample bootstrap gives a doubly robust ATE of <strong>0.3882</strong> and a 95% interval of <strong>(0.3536, 0.4198)</strong>. Replacing the propensity model with random scores gives <strong>0.3797</strong> and an interval of (0.3381, 0.4336). Replacing the outcome model with random predictions gives <strong>0.3981</strong> and (0.3386, 0.4332).</p>
+          <p>The intervals overlap heavily. The estimates are close and all near the IPTW estimate of 0.3885 from Chapter 11; this precision does not distinguish them.</p>
+        </div>
+
+        <div class="dr-intervals" id="ch12-intervals" aria-hidden="true"></div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The comparison</p>
+          <p>DR: 0.3882. IPTW: 0.3885. PS regression: 0.3930. PS matching: 0.3890. Four methods, one story; the naive difference was 0.4723.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the width</p>
+          <p>The interval is about 0.066 wide. A 0.39 effect is meaningful, but the data cannot pin it down to two decimals.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the mistake</p>
+          <p>Do not read the closeness of the point estimates as proof that both models are right. It is evidence that the estimate is stable under these perturbations.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 LIMITS -->
+  <section class="chapter-section sheet" id="limits" data-section="limits">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">the limits</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">No free lunch</p>
+          <h2 class="section-title">Both wrong<br>is still wrong.</h2>
+          <p class="section-deck">The escape clause requires at least one credible model. Overlap, unmeasured confounding, and finite samples still matter.</p>
+        </header>
+
+        <div class="prose">
+          <p>Doubly robust estimation does not fix positivity. If some treated units have propensity scores where no controls exist, both the weighting and the outcome predictions rely on extrapolation. It does not fix unmeasured confounding either: both models are built from the same observed covariates.</p>
+          <p>The &ldquo;wrong&rdquo; models in the book are random on purpose. A real analyst&rsquo;s misspecification is rarely random; it can be systematically wrong in the direction that matters. The grid is a stress test, not a guarantee.</p>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">Two ways to lose the guarantee</p>
+          <p><strong>Both models wrong:</strong> no consistency. <strong>No overlap:</strong> no counterfactual to predict or weight toward, even with a perfect model.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The honest sentence</p>
+          <p>&ldquo;The doubly robust estimate is 0.388, with a 95% interval of (0.354, 0.420), under the assumption that either the propensity model or the outcome model is approximately right and that the groups overlap.&rdquo;</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the diagnostic</p>
+          <p>Check overlap and balance first. Doubly robust is not a substitute for a credible design; it is a second line of defence.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the sentence to avoid</p>
+          <p>&ldquo;Doubly robust means I only need one model to be right, so I can be careless with both.&rdquo; The guarantee is only as good as the model you actually got right.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>Two models, two chances.</strong> DR combines a propensity model and an outcome model; consistency survives if either one is right.</li>
+          <li><strong>The residuals do the work.</strong> If the outcome model is wrong, the weighted residuals correct it; if it is right, the residuals are zero.</li>
+          <li><strong>Robustness is not precision.</strong> The DR interval is still about 0.066 wide; the insurance policy does not buy more data.</li>
+          <li><strong>Both wrong is still wrong.</strong> DR does not fix positivity, unmeasured confounding, or a systematically bad model.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The free lunch that isn't</p>
+          <p>The doubly robust guarantee is conditional on at least one model being approximately right. That is a real assumption, not a technicality.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Say which model you trust and why. &ldquo;Doubly robust&rdquo; is not a substitute for that sentence.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> What makes an estimator doubly robust?</summary>
+            <p>It combines a model for treatment (the propensity score) with a model for the outcome. It is consistent if either model is correctly specified, not only if both are.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> Which model is doing the work when the propensity model is wrong?</summary>
+            <p>The outcome model. Its predictions m1(X) and m0(X) carry the estimate, while the weighted residuals correct for the bad weights.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> Why are the DR intervals still wide?</summary>
+            <p>Robustness to model misspecification is not the same as precision. The estimate still depends on 10,391 observations and the variation in the outcome.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> What happens if both models are wrong?</summary>
+            <p>The doubly robust guarantee disappears. The estimate can be biased, just like a single-model estimator with a misspecified model.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next chapter</p>
+          <h3>Fixed effects and panel data</h3>
+          <p>When the same units are observed repeatedly, within-unit comparisons can remove stable confounders. The next chapter moves to panel designs.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Name the two models, name the one you trust, and report the interval. The grid is a stress test, not a proof.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/iv12.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: '12',
+    slug: '12-doubly-robust',
+    title: 'Doubly robust estimation',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/12-Doubly-Robust-Estimation.html',
+    sections: [
+      { id: 'eggs', num: '01', label: 'Two baskets' },
+      { id: 'robustness-grid', num: '02', label: 'The grid' },
+      { id: 'intervals', num: '03', label: 'Intervals' },
+      { id: 'limits', num: '04', label: 'The limits' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/ch12.js"></script>
+</body>
+</html>
