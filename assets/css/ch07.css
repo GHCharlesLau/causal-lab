@@ -1,0 +1,226 @@
+/* ============================================================
+   Chapter 07 — control taxonomy, variance bars, coefficient rows.
+   ============================================================ */
+
+.control-kicker {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  fill: var(--ink-3);
+}
+
+.control-verdict {
+  font-family: var(--serif);
+  font-size: 24px;
+  letter-spacing: -0.02em;
+}
+
+.control-verdict--yes {
+  fill: var(--blue);
+}
+
+.control-verdict--no {
+  fill: var(--red);
+}
+
+.control-detail {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-2);
+}
+
+/* ---------------------------------------------------------- variance bars */
+.variance-bars {
+  margin: 18px 0;
+  border-top: 1px solid var(--rule-strong);
+  border-bottom: 1px solid var(--rule-strong);
+  padding: 12px 0;
+}
+
+.variance-row {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr) 64px;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 0;
+}
+
+.variance-label {
+  color: var(--ink-2);
+  font-size: 9px;
+}
+
+.variance-track {
+  height: 16px;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+}
+
+.variance-fill {
+  display: block;
+  height: 100%;
+  background: var(--red);
+  opacity: 0.75;
+}
+
+.variance-fill--blue {
+  background: var(--blue);
+}
+
+.variance-value {
+  text-align: right;
+  color: var(--ink);
+  font-size: 9px;
+}
+
+/* ---------------------------------------------------------- coefficient charts */
+.ch07-chart {
+  min-height: 280px;
+}
+
+.ch07-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ch07-tick {
+  font-family: var(--mono);
+  font-size: 11px;
+  fill: var(--ink-3);
+}
+
+.ch07-axis-title {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ch07-row-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  fill: var(--ink-3);
+}
+
+.ch07-row-value {
+  font-family: var(--mono);
+  font-size: 10px;
+  fill: var(--ink-2);
+}
+
+.ch07-row-line {
+  stroke: var(--blue);
+  stroke-width: 1.2;
+}
+
+.ch07-row-dot {
+  fill: var(--paper);
+  stroke: var(--blue);
+  stroke-width: 1.5;
+}
+
+.ch07-row.is-current .ch07-row-label,
+.ch07-row.is-current .ch07-row-value {
+  fill: var(--red);
+}
+
+.ch07-row.is-current .ch07-row-line {
+  stroke: var(--red);
+  stroke-width: 1.8;
+}
+
+.ch07-row.is-current .ch07-row-dot {
+  fill: var(--red);
+  stroke: var(--ink);
+}
+
+.ch07-se-label {
+  margin-top: 8px;
+}
+
+.ch07-se {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 1.1rem;
+  color: var(--ink);
+}
+
+.ch07-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ch07-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.ch07-preset {
+  padding: 7px 11px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.ch07-preset:hover {
+  border-color: var(--ink-2);
+  color: var(--ink);
+}
+
+.ch07-preset.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.ch07-preset:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.lab--no-swipe .lab-head::after {
+  content: none;
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .variance-row {
+    grid-template-columns: 1fr 64px;
+    gap: 6px 10px;
+  }
+
+  .variance-label {
+    grid-column: 1 / -1;
+  }
+
+  .ch07-chart {
+    overflow: visible;
+    min-height: 210px;
+  }
+
+  .ch07-chart svg {
+    width: 100%;
+    max-width: none;
+  }
+
+  .ch07-tick,
+  .ch07-axis-title,
+  .ch07-row-label,
+  .ch07-row-value {
+    font-size: 17px;
+  }
+
+  .ch07-preset {
+    flex: 1 1 100%;
+    text-align: left;
+  }
+}

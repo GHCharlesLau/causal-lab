@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Beyond confounders &mdash; Causal Field Notes</title>
+  <meta name="description" content="Chapter 07: good controls, treatment-only controls, mediators, colliders, and the Bad COP — with two control labs.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/ch07.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the chapter</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Chapter 07</p>
+      <h1 class="hero-title hero-title--long">Good controls. Bad controls<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">not every control helps &darr;</p>
+      <p class="hero-deck">A variable on the right-hand side is not automatically a virtue.</p>
+      <p class="hero-sub">Controls that predict the outcome can sharpen an estimate. Controls that predict only the treatment can blur it. Controls that sit after the treatment can erase the effect. The graph tells you which is which.</p>
+      <div class="hero-meta mono">
+        <span>5,000 customers</span><span>80 patients</span><span>2 labs</span><span>~20 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#email-lab">Open the control diet <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/07-Beyond-Confounders.html" target="_blank" rel="noreferrer">Read the source chapter</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="A two by two grid of controls: confounders and outcome predictors are useful; treatment-only predictors and mediators are harmful.">
+        <g class="control-grid">
+          <rect x="34" y="38" width="184" height="96" fill="#fbf8f1" stroke="#bdb4a5"/>
+          <rect x="242" y="38" width="184" height="96" fill="#fbf8f1" stroke="#bdb4a5"/>
+          <rect x="34" y="154" width="184" height="96" fill="#fbf8f1" stroke="#bdb4a5"/>
+          <rect x="242" y="154" width="184" height="96" fill="#fbf8f1" stroke="#bdb4a5"/>
+          <text x="48" y="62" class="control-kicker">confounder</text>
+          <text x="48" y="90" class="control-verdict control-verdict--yes">include</text>
+          <text x="48" y="114" class="control-detail">causes T and Y</text>
+          <text x="256" y="62" class="control-kicker">outcome predictor</text>
+          <text x="256" y="90" class="control-verdict control-verdict--yes">include</text>
+          <text x="256" y="114" class="control-detail">causes Y, not T</text>
+          <text x="48" y="178" class="control-kicker">treatment predictor</text>
+          <text x="48" y="206" class="control-verdict control-verdict--no">exclude</text>
+          <text x="48" y="230" class="control-detail">causes T, not Y</text>
+          <text x="256" y="178" class="control-kicker">mediator / collider</text>
+          <text x="256" y="206" class="control-verdict control-verdict--no">exclude</text>
+          <text x="256" y="230" class="control-detail">caused by T</text>
+        </g>
+        <g class="hand">
+          <text x="40" y="282" fill="#2f5d8a" font-size="20">the graph decides, not the kitchen sink</text>
+          <path d="M350 290c14 4 26 3 38-2" fill="none" stroke="#2f5d8a" stroke-width="1"/>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">Four kinds of controls: confounders and outcome predictors should be included; treatment-only predictors and mediators or colliders should be excluded.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Email coefficient</span>
+        <span class="hero-stat-value">&minus;0.62 &rarr; +4.43</span>
+        <span class="hero-stat-note">good controls reveal the effect</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Hospital SE</span>
+        <span class="hero-stat-value">2.27 &rarr; 3.49</span>
+        <span class="hero-stat-note">a treatment-only control blurs it</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Bad controls</span>
+        <span class="hero-stat-value">4 kinds</span>
+        <span class="hero-stat-note">one decision rule</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 CONTROLS -->
+  <section class="chapter-section sheet" id="controls" data-section="controls">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">the control diet</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Good controls</p>
+          <h2 class="section-title">Predict the outcome,<br>not just the treatment.</h2>
+          <p class="section-deck">A good control explains variance in the outcome. It makes the signal easier to see, even when it is not a confounder.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">In the collections experiment, email was randomised. The naive effect on payments is <strong>&minus;0.62 reais</strong>, with a standard error of <strong>2.94</strong>: indistinguishable from zero. The outcome is noisy because credit limits and risk scores vary enormously.</p>
+          <p>Add those two pre-treatment predictors and the email coefficient becomes <strong>+4.43</strong> with a standard error of <strong>2.13</strong>. The estimate is now statistically distinguishable from zero. Nothing about the randomisation changed; the residual variance did.</p>
+        </div>
+
+        <div class="variance-bars" aria-label="Payments variance falls from 10807 to 5652 after controlling for credit limit and risk score">
+          <div class="variance-row">
+            <span class="variance-label mono">raw payments</span>
+            <span class="variance-track"><span class="variance-fill" style="width:100%"></span></span>
+            <span class="variance-value mono">10,808</span>
+          </div>
+          <div class="variance-row">
+            <span class="variance-label mono">after credit &amp; risk</span>
+            <span class="variance-track"><span class="variance-fill variance-fill--blue" style="width:52.3%"></span></span>
+            <span class="variance-value mono">5,652</span>
+          </div>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Variance of the treatment coefficient depends on residual variance and treatment variance">
+          <span class="formula-label mono">the precision budget</span>
+          <span class="formula-body">Var(<span class="math-var">&beta;&#770;</span>) = <span class="frac"><span class="num"><span class="math-var">&sigma;</span><sup>2</sup></span><span class="den">&Sigma;(<span class="math-var">T<sub>i</sub></span> &minus; <span class="math-var">T&#772;</span>)<sup>2</sup></span></span></span>
+        </div>
+
+        <div class="prose">
+          <p>A good control lowers the numerator by shrinking the residual variance. But a control that predicts only the treatment lowers the denominator: it makes the treatment look less variable, so the same effect is harder to estimate. That is the hospital lesson.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The decision rule</p>
+          <p>Include confounders and strong outcome predictors. Exclude variables that predict only the treatment, and exclude variables caused by the treatment.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the surprise</p>
+          <p>The naive email effect is negative, but not because email hurts payments. It is because the outcome is so noisy that the estimate is uninformative.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the limit</p>
+          <p>Good controls improve precision. They do not fix confounding; that is a separate job for the graph.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 EMAIL LAB -->
+  <section class="chapter-section sheet" id="email-lab" data-section="email-lab">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">email bench</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Same experiment, different controls</p>
+          <h2 class="section-title">Good controls<br>versus bad controls.</h2>
+          <p class="section-deck">Three models on the same 5,000 customers. The only difference is what is held fixed.</p>
+        </header>
+
+        <div class="prose">
+          <p>Credit limit and risk score are pre-treatment predictors of payments; they belong. Opened and agreement are post-treatment: they are consequences of the email and part of the channel through which it works. Holding them fixed asks a different question &mdash; and the email coefficient collapses to <strong>&minus;1.61</strong>.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-email" aria-labelledby="lab-email-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-email-title">The control diet</h3>
+            </div>
+            <p class="lab-status mono" id="ch07-email-status">no controls &middot; 5,000 customers</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch07-chart" id="ch07-email-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono">Email coefficient</p>
+              <p class="readout-value" id="ch07-email-coef">&minus;0.62</p>
+              <p class="readout-sub">payments, reais</p>
+              <p class="side-label mono ch07-se-label">Standard error</p>
+              <p class="ch07-se" id="ch07-email-se">2.94</p>
+              <dl class="mini-stats">
+                <div><dt>payments variance</dt><dd id="ch07-email-var">10,808</dd></div>
+                <div><dt>controls</dt><dd id="ch07-email-controls">none</dd></div>
+                <div><dt>customers</dt><dd>5,000</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch07-email-note">the outcome is drowning in noise.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch07-controls">
+            <div class="ch07-presets" role="group" aria-label="Choose a control set">
+              <button class="ch07-preset is-active" type="button" data-model="none" aria-pressed="true">No controls</button>
+              <button class="ch07-preset" type="button" data-model="good" aria-pressed="false">+ Credit &amp; risk</button>
+              <button class="ch07-preset" type="button" data-model="bad" aria-pressed="false">+ Opened &amp; agreement</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The good controls cut the variance in half and make the effect visible. The bad controls cut the effect itself, because they are part of the causal channel.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">try it</p>
+          <p>Start with no controls, then add credit and risk. The coefficient flips sign. Then add opened and agreement: it collapses again.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the rule</p>
+          <p>Pre-treatment predictors of the outcome: yes. Post-treatment consequences: no. The clock matters as much as the correlation.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 HOSPITAL -->
+  <section class="chapter-section sheet" id="hospital" data-section="hospital">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">hospital bench</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Mostly harmful controls</p>
+          <h2 class="section-title">A control that<br>blurs the signal.</h2>
+          <p class="section-deck">Severity is a confounder. Hospital predicts treatment, but not days once severity is in the model. Adding it raises the standard error.</p>
+        </header>
+
+        <div class="prose">
+          <p>Two hospitals run randomised trials with different treatment probabilities, and the hospital with more severe cases gives the drug more often. Without severity, the drug looks harmful: <strong>+14.15 days</strong>. Control for severity and the estimate becomes <strong>&minus;7.59 days</strong>.</p>
+          <p>Should hospital also be a control? It predicts treatment, not the outcome once severity is held fixed. Adding it moves the estimate to <strong>&minus;5.09</strong> and raises the standard error from <strong>2.27</strong> to <strong>3.49</strong>. It consumes treatment variation without explaining days.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-hospital" aria-labelledby="lab-hospital-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 02</p>
+              <h3 class="lab-title" id="lab-hospital-title">The precision penalty</h3>
+            </div>
+            <p class="lab-status mono" id="ch07-hosp-status">treatment only &middot; 80 patients</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch07-chart" id="ch07-hosp-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono">Treatment coefficient</p>
+              <p class="readout-value" id="ch07-hosp-coef">14.15</p>
+              <p class="readout-sub">days in hospital</p>
+              <p class="side-label mono ch07-se-label">Standard error</p>
+              <p class="ch07-se" id="ch07-hosp-se">3.37</p>
+              <dl class="mini-stats">
+                <div><dt>patients</dt><dd>80</dd></div>
+                <div><dt>controls</dt><dd id="ch07-hosp-controls">none</dd></div>
+                <div><dt>direction</dt><dd id="ch07-hosp-sign">more days</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch07-hosp-note">severity is the confounder.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch07-controls">
+            <div class="ch07-presets" role="group" aria-label="Choose a control set">
+              <button class="ch07-preset is-active" type="button" data-model="none" aria-pressed="true">Treatment only</button>
+              <button class="ch07-preset" type="button" data-model="severity" aria-pressed="false">+ Severity</button>
+              <button class="ch07-preset" type="button" data-model="both" aria-pressed="false">+ Severity + hospital</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> Severity changes the sign. Hospital then changes the precision, not the explanation. A control can be causally irrelevant to the outcome and still costly.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the variance</p>
+          <p>Adding hospital cuts the residual variance of treatment from 0.234 to 0.058. Less treatment variation means a larger standard error.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the trade-off</p>
+          <p>A control that predicts only treatment is not a bias fix. It is a precision tax.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 SELECTION -->
+  <section class="chapter-section sheet" id="selection" data-section="selection">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">selection bias</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Bad controls</p>
+          <h2 class="section-title">Do not control<br>for the funnel.</h2>
+          <p class="section-deck">Opened and agreement are caused by the email. They are the funnel through which the email works, not confounders to hold fixed.</p>
+        </header>
+
+        <div class="prose">
+          <p>Email &rarr; opened &rarr; agreement &rarr; payments. Conditioning on a mediator removes the part of the effect that runs through it. Conditioning on a common effect can open a path that was closed. Both are selection bias, and both can happen even in a randomised experiment.</p>
+          <p>The result is the collapse from <strong>+4.43</strong> to <strong>&minus;1.61</strong> in the email model. The bad model has lower residual variance, which makes it look more precise. Precision is not identification.</p>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The Bad COP</p>
+          <p>Do not split an outcome into &ldquo;did anything happen&rdquo; and &ldquo;how much happened, given that it did.&rdquo; Conditioning on participation selects on a consequence of treatment. The participation model can be fine; the conditional-on-positives effect is biased even under randomisation.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Decomposition of the average outcome into participation and conditional-on-positives parts">
+          <span class="formula-label mono">the tempting decomposition</span>
+          <span class="formula-body">E[<span class="math-var">Y</span> | <span class="math-var">T</span>] = E[<span class="math-var">Y</span> | <span class="math-var">Y</span> &gt; 0, <span class="math-var">T</span>] &middot; P(<span class="math-var">Y</span> &gt; 0 | <span class="math-var">T</span>)</span>
+        </div>
+
+        <div class="prose">
+          <p>The identity is true. Estimating the second factor on the subset with positive outcomes is not. The treated and control groups are no longer comparable: the control group loses the people who would have spent only under treatment. That is selection on the outcome&rsquo;s participation margin.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The four-way rule</p>
+          <p>Include confounders. Include outcome predictors. Exclude treatment-only predictors. Exclude mediators and colliders. When in doubt, draw the graph before you add the column.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the test</p>
+          <p>Ask: could this variable have been measured before treatment? If not, it is a consequence. Consequences are not controls.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the trap</p>
+          <p>&ldquo;But it improves the R&sup2;&rdquo; is not an argument. A mediator can improve fit and bias the coefficient at the same time.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>Outcome predictors are precision.</strong> A control that explains Y can shrink the residual variance and sharpen the estimate, even if it is not a confounder.</li>
+          <li><strong>Treatment-only predictors are a tax.</strong> They eat the variation in T without explaining Y; the standard error grows.</li>
+          <li><strong>Post-treatment controls are dangerous.</strong> Mediators and colliders can remove the effect or open a non-causal path, even under randomisation.</li>
+          <li><strong>Precision is not identification.</strong> A smaller standard error around a biased coefficient is still a biased coefficient.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The kitchen sink</p>
+          <p>More controls can mean less variance, more variance, or a new bias. The graph decides which column belongs; the data only decides how precisely it is estimated.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Before adding a control, ask: does it predict Y, T, both, or neither &mdash; and was it measured before treatment?</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> Why can a control that is not a confounder still be useful?</summary>
+            <p>If it predicts the outcome, it reduces the residual variance. A smaller numerator in the variance formula means a smaller standard error and a sharper estimate, even though the control does not change the identification argument.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> Why does adding hospital increase the standard error?</summary>
+            <p>Hospital predicts treatment but not days once severity is controlled. It absorbs treatment variation, reducing the denominator of the variance formula. Less treatment variation means a larger standard error.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> Why are opened and agreement bad controls?</summary>
+            <p>They are caused by the email and lie on the causal path to payments. Holding them fixed removes part of the effect of the email; they are mediators, not confounders.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> Why is the Bad COP biased even under randomisation?</summary>
+            <p>Conditioning on a positive outcome selects on a consequence of treatment. The control group loses the people who would have spent only under treatment, so the treated and control groups are no longer comparable.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next chapter</p>
+          <h3>Instrumental variables</h3>
+          <p>When a confounder cannot be measured, sometimes an instrument can do the work. The next chapter builds the logic.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Write the control&rsquo;s job in one word: confounder, precision, tax, or bias. If you cannot, do not add it.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-ch07.js"></script>
+<script src="../assets/js/regression.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: '07',
+    slug: '07-beyond-confounders',
+    title: 'Beyond confounders',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/07-Beyond-Confounders.html',
+    sections: [
+      { id: 'controls', num: '01', label: 'The control diet' },
+      { id: 'email-lab', num: '02', label: 'Email bench' },
+      { id: 'hospital', num: '03', label: 'Hospital bench' },
+      { id: 'selection', num: '04', label: 'Selection bias' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/ch07.js"></script>
+</body>
+</html>

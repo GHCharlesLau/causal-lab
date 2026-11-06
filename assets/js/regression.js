@@ -86,6 +86,8 @@
     var hasEduc = idx > 0;
     var se = hasEduc ? Math.sqrt(sigma2 * inv[idx][idx]) : null;
     var coef = hasEduc ? beta[idx] : null;
+    var seAll = [];
+    for (var z = 0; z < k; z++) seAll.push(Math.sqrt(sigma2 * inv[z][z]));
 
     return {
       coef: coef,
@@ -93,6 +95,7 @@
       coefficients: beta,
       names: ['intercept'].concat(xNames),
       se: se,
+      seAll: seAll,
       lo: hasEduc ? coef - 1.96 * se : null,
       hi: hasEduc ? coef + 1.96 * se : null,
       r2: 1 - rss / tss,
@@ -139,10 +142,13 @@
     if (idx <= 0) throw new Error('educ must be a regressor');
     var se = Math.sqrt(sigma2 * inv[idx][idx]);
     var coef = beta[idx];
+    var seAll = [];
+    for (var z = 0; z < k; z++) seAll.push(Math.sqrt(sigma2 * inv[z][z]));
     return {
       coef: coef,
       intercept: beta[0],
       se: se,
+      seAll: seAll,
       lo: coef - 1.96 * se,
       hi: coef + 1.96 * se,
       n: n,

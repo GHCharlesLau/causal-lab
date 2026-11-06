@@ -8,11 +8,11 @@ and arguments you can defend.
 It is a local, static website: no backend, no build step, no tracking. Open `index.html`
 for the landing page, or serve the folder over HTTP.
 
-**Status: 7 of 30 pages live.** Chapters 01 (Introduction to causality), 02 (Randomised
+**Status: 8 of 30 pages live.** Chapters 01 (Introduction to causality), 02 (Randomised
 experiments), 03 (Stats review), 04 (Graphical causal models), 05 (Linear regression),
-06 (Grouped and dummy regression), and 10 (Matching) are complete. The other 23 pages are
-scaffolded in the course manifest and marked as planned; they are added one at a time, with
-numbers checked against the book's notebooks.
+06 (Grouped and dummy regression), 07 (Beyond confounders), and 10 (Matching) are complete.
+The other 22 pages are scaffolded in the course manifest and marked as planned; they are
+added one at a time, with numbers checked against the book's notebooks.
 
 ---
 
@@ -79,6 +79,15 @@ the individual regression; equal cell weights give 0.0481. A second bench makes 
 regression a staircase of cell means: baseline 18.56 at 9 years, +9.59 at 17 years. The
 interaction section moves from a naive +4.90 hourly-wage gap to +3.16 at the same IQ.
 
+### 07 — Beyond confounders
+
+Good controls, treatment-only controls, and post-treatment controls. In the email
+experiment, credit limit and risk score cut the payment variance from 10,808 to 5,652 and
+move the email coefficient from −0.62 to +4.43. In the hospital experiment, adding severity
+flips the treatment coefficient from +14.15 to −7.59; adding hospital then raises the
+standard error from 2.27 to 3.49. Opened and agreement collapse the email effect to −1.61.
+The chapter closes with the Bad COP.
+
 ### 10 — Matching
 
 Seven sections, six experiments, and a full matching bench: severity bands, regression
@@ -131,6 +140,8 @@ point here is to let you see estimator bias separately from confounding bias.
 
 ![Chapter 06, the weighting bench](assets/img/screenshots/ch06-weights.png)
 
+![Chapter 07, the email control diet](assets/img/screenshots/ch07-email.png)
+
 ![The Matching chapter](assets/img/screenshots/matching.png)
 
 ---
@@ -142,9 +153,10 @@ point here is to let you see estimator bias separately from confounding bias.
 Open `index.html` in Chrome or Edge. It is the landing page. The live chapters are
 `chapters/01-introduction.html`, `chapters/02-randomised-experiments.html`,
 `chapters/03-stats-review.html`, `chapters/04-graphical-causal-models.html`,
-`chapters/05-linear-regression.html`, `chapters/06-grouped-regression.html`, and
-`chapters/10-matching.html`. Everything needed is local: CSS, JS, data, fonts, the poster,
-and the rendered opener at `assets/video/matching-opener.mp4`.
+`chapters/05-linear-regression.html`, `chapters/06-grouped-regression.html`,
+`chapters/07-beyond-confounders.html`, and `chapters/10-matching.html`. Everything needed
+is local: CSS, JS, data, fonts, the poster, and the rendered opener at
+`assets/video/matching-opener.mp4`.
 
 ### Option 2: local server
 
@@ -250,9 +262,9 @@ Reference, chapter, and manifest tests (Node 24, no packages):
 The suite checks the Matching book numbers, the k-curve, severity-band checkpoints, the
 oracle, the k-d tree, the OLS toy regression, the Chapter 01 potential-outcomes arithmetic
 (ATE −50, ATT −75, naive +125, bias +200), the Chapter 02 group means and missing-data
-balance, the Chapter 03 standard errors, interval, z, and p-values, the Chapter 04 DAG path logic, the Chapter 05 OLS/control path, the Chapter 06 weighted/dummy regression, and the site manifest
+balance, the Chapter 03 standard errors, interval, z, and p-values, the Chapter 04 DAG path logic, the Chapter 05 OLS/control path, the Chapter 06 weighted/dummy regression, the Chapter 07 control models, and the site manifest
 (30 pages, unique slugs, every live page exists, the shared reading scale is loaded).
-43 tests in total.
+48 tests in total.
 
 Browser smoke tests use Chrome DevTools Protocol through Node's built-in WebSocket (no
 Playwright/Puppeteer). Matching-specific scripts default to
@@ -268,6 +280,7 @@ to test a different page.
 & "...\node.exe" tools/cdp-ch04.mjs   # Chapter 04: DAG scenarios and conditioning
 & "...\node.exe" tools/cdp-ch05.mjs   # Chapter 05: control dial
 & "...\node.exe" tools/cdp-ch06.mjs   # Chapter 06: cell weights, dummy stairs
+& "...\node.exe" tools/cdp-ch07.mjs   # Chapter 07: email and hospital controls
 & "...\node.exe" tools/cdp-a11y.mjs
 & "...\node.exe" tools/cdp-reduced.mjs
 & "...\node.exe" tools/cdp-film.mjs
@@ -284,7 +297,8 @@ practice mode, and the course map. It prints the observed values and any console
 `cdp-ch03.mjs` checks the sample-size dial and the interval ruler;
 `cdp-ch04.mjs` checks the confounding, collider, and mediator verdicts;
 `cdp-ch05.mjs` checks the wage control paths;
-`cdp-ch06.mjs` checks the weighting toggle and the dummy cell contrast.
+`cdp-ch06.mjs` checks the weighting toggle and the dummy cell contrast;
+`cdp-ch07.mjs` checks the email and hospital control models.
 `cdp-a11y.mjs` checks button names, input labels, duplicate IDs, and heading structure;
 `cdp-reduced.mjs` verifies that reduced motion lands on final states; `cdp-film.mjs`
 checks the rendered video’s metadata and dialog; `cdp-persist.mjs` reloads after scoring
@@ -303,6 +317,7 @@ chapters/
   04-graphical-causal-models.html  live chapter: DAGs and the backdoor
   05-linear-regression.html live chapter: the control dial
   06-grouped-regression.html live chapter: weighted cells, dummy stairs
+  07-beyond-confounders.html live chapter: good and bad controls
   10-matching.html         live chapter: the matching bench
 assets/css/
   tokens.css               paper/ink/pencil tokens, type scale
@@ -319,6 +334,7 @@ assets/css/
   ch04.css                 chapter 04 DAG grammar and workbench
   ch05.css                 chapter 05 control-dial coefficient rows
   ch06.css                 chapter 06 bubble weights and dummy staircase
+  ch07.css                 chapter 07 control taxonomy and coefficient rows
   print.css                readable paper version
 assets/js/
   chapters.js              the manifest: 25 chapters + 5 notes, live/planned
@@ -327,6 +343,7 @@ assets/js/
   data-ch02.js             online-classroom payload (323 students)
   data-ch05.js             wage payload (663 complete records)
   data-ch06.js             wage payload (935 rows, with hourly wage)
+  data-ch07.js             email + hospital payload (5,000 + 80 rows)
   dag.js                   chapter 04 graph definitions + path verdicts
   regression.js            OLS/WLS engine + classical SEs
   labs/ch01.js             the counterfactual lens
@@ -335,6 +352,7 @@ assets/js/
   labs/ch04.js             the DAG workbench renderer
   labs/ch05.js             the control-dial renderer
   labs/ch06.js             the weighting bench and dummy staircase
+  labs/ch07.js             the email and hospital control labs
   data.js                  matching payload (20k patients)
   reference.js             generated book numbers
   stats.js                 mean/sd/OLS, k-d tree, k-NN matching, correction
@@ -392,9 +410,9 @@ The site is built to grow by one chapter at a time. To add one:
 5. Add a browser test (the `tools/cdp-ch01.mjs` pattern) and a Node arithmetic test.
 6. Update this README's live list and screenshots.
 
-The next chapter is **07 — Beyond confounders**: instruments, front doors, and designs for
-the identification problems a backdoor cannot solve. After that, the plan is 08–09 in
-order, then 11–16, then Part II 17–25, then the five technical notes.
+The next chapter is **08 — Instrumental variables**: when a confounder cannot be measured,
+an instrument can sometimes do the identification work. After that, the plan is 09, then
+11–16, then Part II 17–25, then the five technical notes.
 
 ---
 
@@ -448,15 +466,15 @@ source is still valid and can be rendered later.
 ## Credits
 
 - **Book & data:** Matheus Facure Alves, *Causal Inference for the Brave and True*,
-  chapters 01, 02, 03, 04, 05, 06, and 10, MIT-licensed repository. Chapter 01's four-school
-  table and its arithmetic are the book's example; Chapter 02's online-classroom data comes
-  from Alpert, Couch & Harmon (2016) via the book repository. Chapter 03's sampling
-  simulation uses the book's true mean 74 and standard deviation 2. Chapter 04's graph
-  structures and verdicts follow the book's DAG examples. Chapters 05 and 06 use the book's
-  `wage.csv`; the grouped cells and dummy contrasts are the book's specifications. The prose
-  is adapted and shortened, and the counterfactual lens, three-classroom dot strip,
-  sample-size dial, interval ruler, DAG workbench, control dial, weighting bench, and dummy
-  staircase are new.
+  chapters 01, 02, 03, 04, 05, 06, 07, and 10, MIT-licensed repository. Chapter 01's
+  four-school table and its arithmetic are the book's example; Chapter 02's online-classroom
+  data comes from Alpert, Couch & Harmon (2016) via the book repository. Chapter 03's
+  sampling simulation uses the book's true mean 74 and standard deviation 2. Chapter 04's
+  graph structures and verdicts follow the book's DAG examples. Chapters 05 and 06 use the
+  book's `wage.csv`; Chapter 07 uses the book's collections-email and hospital-treatment
+  data. The prose is adapted and shortened, and the counterfactual lens, three-classroom dot
+  strip, sample-size dial, interval ruler, DAG workbench, control dial, weighting bench,
+  dummy staircase, and control labs are new.
 - **Visual language:** adapted from the **Data Storytelling** style in
   [Lemo-Opuscar](https://github.com/lemomo-ai/lemo-opuscar) by Lemomo (MIT). The charts,
   copy, and motion here are original; no demo assets or story are reused.
