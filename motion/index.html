@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080">
+  <title>Matching &mdash; 12 second primer</title>
+  <style>
+    @font-face {
+      font-family: "Newsreader";
+      src: url("assets/fonts/newsreader.woff2") format("woff2");
+      font-weight: 400;
+      font-display: block;
+    }
+    @font-face {
+      font-family: "Plex Mono";
+      src: url("assets/fonts/plexmono.woff2") format("woff2");
+      font-weight: 400;
+      font-display: block;
+    }
+    @font-face {
+      font-family: "Caveat";
+      src: url("assets/fonts/caveat.woff2") format("woff2");
+      font-weight: 500;
+      font-display: block;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background: #f6f3ec;
+      color: #2b2723;
+      font-family: "Newsreader", Georgia, serif;
+    }
+    #stage {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background-color: #f6f3ec;
+      background-image: radial-gradient(circle at 1px 1px, rgba(43, 39, 35, 0.10) 1px, transparent 1.2px);
+      background-size: 32px 32px;
+    }
+    #film {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+    }
+    .grain {
+      position: absolute;
+      inset: 0;
+      opacity: 0.05;
+      mix-blend-mode: multiply;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E");
+    }
+    .kicker {
+      position: absolute;
+      left: 120px;
+      top: 78px;
+      font-family: "Plex Mono", monospace;
+      font-size: 20px;
+      letter-spacing: 0.16em;
+      color: #6e665c;
+      text-transform: uppercase;
+    }
+    .kicker::before {
+      content: "";
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-right: 14px;
+      background: #a8283a;
+      transform: rotate(45deg);
+    }
+    .title {
+      position: absolute;
+      left: 108px;
+      top: 158px;
+      font-size: 172px;
+      line-height: 0.82;
+      letter-spacing: -0.06em;
+      font-weight: 400;
+    }
+    .title .dot { color: #a8283a; }
+    .hand {
+      position: absolute;
+      left: 400px;
+      top: 322px;
+      font-family: "Caveat", cursive;
+      font-size: 58px;
+      color: #2f5d8a;
+      transform: rotate(-3deg);
+      transform-origin: left center;
+    }
+    .deck {
+      position: absolute;
+      left: 120px;
+      top: 436px;
+      width: 600px;
+      font-size: 32px;
+      line-height: 1.25;
+      color: #6e665c;
+      letter-spacing: -0.015em;
+    }
+    .deck-final {
+      position: absolute;
+      left: 120px;
+      top: 430px;
+      width: 660px;
+      font-size: 52px;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      color: #2b2723;
+      opacity: 0;
+    }
+    .numbers {
+      position: absolute;
+      left: 120px;
+      top: 612px;
+      width: 640px;
+      display: flex;
+      gap: 36px;
+      align-items: flex-end;
+    }
+    .num-label {
+      font-family: "Plex Mono", monospace;
+      font-size: 17px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #6e665c;
+      margin-bottom: 6px;
+    }
+    .num-value {
+      font-size: 82px;
+      line-height: 0.9;
+      letter-spacing: -0.04em;
+      font-variant-numeric: tabular-nums;
+    }
+    .num-value.blue { color: #2f5d8a; }
+    .num-note {
+      font-family: "Plex Mono", monospace;
+      font-size: 14px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #6e665c;
+      margin-top: 8px;
+    }
+    .arrow {
+      font-size: 46px;
+      color: #6e665c;
+      padding-bottom: 30px;
+    }
+    .matched {
+      opacity: 0;
+    }
+    .footer {
+      position: absolute;
+      left: 120px;
+      bottom: 66px;
+      font-family: "Plex Mono", monospace;
+      font-size: 15px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #6e665c;
+    }
+    .panel {
+      position: absolute;
+      left: 820px;
+      top: 150px;
+    }
+    .panel svg {
+      display: block;
+      overflow: visible;
+    }
+    .chart-label {
+      font-family: "Plex Mono", monospace;
+      font-size: 15px;
+      fill: #6e665c;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .chart-note {
+      font-family: "Plex Mono", monospace;
+      font-size: 15px;
+      fill: #6e665c;
+      letter-spacing: 0.04em;
+    }
+    .chart-hand {
+      font-family: "Caveat", cursive;
+      font-size: 30px;
+      fill: #2f5d8a;
+    }
+    .axis {
+      stroke: #6e665c;
+      stroke-width: 1.6;
+      fill: none;
+    }
+    .grid {
+      stroke: #ddd6c9;
+      stroke-width: 1.2;
+    }
+    .zero {
+      stroke: #bdb4a5;
+      stroke-width: 1.5;
+    }
+    .mean-treated {
+      stroke: #a8283a;
+      stroke-width: 2.2;
+      stroke-dasharray: 10 8;
+      fill: none;
+    }
+    .mean-control {
+      stroke: #2f5d8a;
+      stroke-width: 2.2;
+      stroke-dasharray: 10 8;
+      fill: none;
+    }
+    .dot-treated {
+      fill: #a8283a;
+      stroke: #2b2723;
+      stroke-width: 1.4;
+    }
+    .dot-control {
+      fill: #f6f3ec;
+      stroke: #2f5d8a;
+      stroke-width: 2.4;
+    }
+    .match-line {
+      fill: none;
+      stroke: #2f5d8a;
+      stroke-width: 2;
+      opacity: 0.65;
+    }
+    .gap-label {
+      font-family: "Newsreader", Georgia, serif;
+      font-size: 30px;
+      fill: #a8283a;
+    }
+    .matched-label {
+      font-family: "Newsreader", Georgia, serif;
+      font-size: 30px;
+      fill: #2f5d8a;
+      opacity: 0;
+    }
+    .chart-title {
+      font-family: "Newsreader", Georgia, serif;
+      font-size: 30px;
+      fill: #2b2723;
+    }
+    .pencil {
+      opacity: 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="stage" data-composition-id="matching-opener" data-start="0" data-duration="12" data-width="1920" data-height="1080">
+    <div id="film">
+      <div class="grain"></div>
+
+      <div id="kicker" class="kicker">Causal Field Notes &middot; Chapter 10</div>
+      <h1 id="title" class="title">Matching<span class="dot">.</span></h1>
+      <div id="hand" class="hand">find the twin</div>
+
+      <p id="deck" class="deck">A 12-second primer on finding the untreated twin.</p>
+      <p id="deck-final" class="deck-final">Same age.<br>Different lives.</p>
+
+      <div id="numbers" class="numbers">
+        <div>
+          <div class="num-label">Naive gap</div>
+          <div class="num-value">&minus;4,297</div>
+          <div class="num-note">trainees earn less</div>
+        </div>
+        <div class="arrow">&rarr;</div>
+        <div class="matched" id="matched">
+          <div class="num-label">Same-age match</div>
+          <div class="num-value blue">+2,458</div>
+          <div class="num-note">the sign flips</div>
+        </div>
+      </div>
+
+      <div class="footer" id="footer">Causal Inference for the Brave and True &middot; Chapter 10</div>
+
+      <div class="panel">
+        <svg id="chart" width="980" height="790" viewBox="0 0 980 790" aria-label="Age and earnings for 40 trainees and controls, with same-age matching lines.">
+          <g id="panel-frame">
+            <rect x="0" y="0" width="980" height="790" fill="#fbf8f1" stroke="#ddd6c9" stroke-width="1.5"/>
+          </g>
+          <g id="chart-copy">
+            <text x="42" y="52" class="chart-label">Age &rarr; earnings, 40 trainees</text>
+            <text x="42" y="82" class="chart-title">The naive gap is age, not training.</text>
+          </g>
+          <g id="axes"></g>
+          <g id="mean-lines"></g>
+          <g id="match-lines"></g>
+          <g id="dots"></g>
+          <g id="annotations">
+            <text id="gap" x="640" y="666" class="gap-label">&minus;$4,297</text>
+            <text id="matched-label" x="640" y="706" class="matched-label">+$2,458 matched</text>
+            <text id="pair-count" x="640" y="746" class="chart-note" visibility="hidden">0 / 19 pairs</text>
+            <text id="hand-note" x="60" y="700" class="chart-hand" opacity="0">same age, different life</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/gsap.min.js"></script>
+  <script>
+    (function () {
+      "use strict";
+      var NS = "http://www.w3.org/2000/svg";
+      var data = [
+        [1,1,28,17700],[2,1,34,10200],[3,1,29,14400],[4,1,25,20800],[5,1,29,6100],
+        [6,1,23,28600],[7,1,33,21900],[8,1,27,28800],[9,1,31,20300],[10,1,26,28100],
+        [11,1,25,9400],[12,1,27,14300],[13,1,29,12500],[14,1,24,19700],[15,1,25,10100],
+        [16,1,43,10700],[17,1,28,11500],[18,1,27,10700],[19,1,28,16300],
+        [20,0,43,20900],[21,0,50,31000],[22,0,30,21000],[23,0,27,9300],[24,0,54,41100],
+        [25,0,48,29800],[26,0,39,42000],[27,0,28,8800],[28,0,24,25500],[29,0,33,15500],
+        [31,0,26,400],[32,0,31,26600],[33,0,26,16500],[34,0,34,24200],[35,0,25,23300],
+        [36,0,24,9700],[37,0,29,6200],[38,0,35,30200],[39,0,32,17800],[40,0,23,9500],
+        [41,0,32,25900]
+      ].map(function (r) { return { unit: r[0], treated: r[1], age: r[2], earnings: r[3] }; });
+
+      var treated = data.filter(function (d) { return d.treated === 1; });
+      var control = data.filter(function (d) { return d.treated === 0; });
+      var firstByAge = {};
+      control.forEach(function (d) { if (!(d.age in firstByAge)) firstByAge[d.age] = d; });
+      var pairs = treated.map(function (t) { return { t: t, c: firstByAge[t.age] }; }).filter(function (p) { return p.c; });
+
+      var x0 = 110, x1 = 920, y0 = 120, y1 = 560;
+      function sx(age) { return x0 + ((age - 21) / (56 - 21)) * (x1 - x0); }
+      function sy(v) { return y1 - (v / 45000) * (y1 - y0); }
+
+      function el(name, attrs, parent) {
+        var n = document.createElementNS(NS, name);
+        for (var k in attrs) if (Object.prototype.hasOwnProperty.call(attrs, k)) n.setAttribute(k, attrs[k]);
+        if (parent) parent.appendChild(n);
+        return n;
+      }
+
+      var axes = document.getElementById("axes");
+      var meanLines = document.getElementById("mean-lines");
+      var dots = document.getElementById("dots");
+      var matchLines = document.getElementById("match-lines");
+
+      // grid + ticks
+      [0, 10000, 20000, 30000, 40000].forEach(function (v) {
+        el("line", { x1: x0, x2: x1, y1: sy(v), y2: sy(v), class: v === 0 ? "zero" : "grid" }, axes);
+        el("text", { x: x0 - 18, y: sy(v) + 6, class: "chart-label", "text-anchor": "end" }, axes).textContent = "$" + (v / 1000) + "k";
+      });
+      [25, 30, 35, 40, 45, 50, 55].forEach(function (v) {
+        el("line", { x1: sx(v), x2: sx(v), y1: y0, y2: y1, class: "grid" }, axes);
+        el("text", { x: sx(v), y: y1 + 30, class: "chart-label", "text-anchor": "middle" }, axes).textContent = v;
+      });
+      el("line", { x1: x0, x2: x1, y1: y1, y2: y1, class: "axis" }, axes);
+      el("line", { x1: x0, x2: x0, y1: y0, y2: y1, class: "axis" }, axes);
+      el("text", { x: x0 - 18, y: y0 - 14, class: "chart-label" }, axes).textContent = "EARNINGS";
+      el("text", { x: x1, y: y1 + 62, class: "chart-label", "text-anchor": "end" }, axes).textContent = "AGE";
+
+      // dots
+      data.forEach(function (d) {
+        el("circle", {
+          cx: sx(d.age), cy: sy(d.earnings), r: d.treated ? 8 : 7,
+          class: d.treated ? "dot-treated" : "dot-control"
+        }, dots).setAttribute("opacity", "0");
+      });
+
+      // mean lines
+      var tMean = treated.reduce(function (s, d) { return s + d.earnings; }, 0) / treated.length;
+      var cMean = control.reduce(function (s, d) { return s + d.earnings; }, 0) / control.length;
+      var meanT = el("line", { x1: x0, x2: x1, y1: sy(tMean), y2: sy(tMean), class: "mean-treated" }, meanLines);
+      var meanC = el("line", { x1: x0, x2: x1, y1: sy(cMean), y2: sy(cMean), class: "mean-control" }, meanLines);
+      [meanT, meanC].forEach(function (line) {
+        var len = x1 - x0;
+        line.setAttribute("stroke-dasharray", len + " " + len);
+        line.setAttribute("stroke-dashoffset", len);
+      });
+
+      // match lines
+      var lines = pairs.map(function (p, i) {
+        var xa = sx(p.t.age), ya = sy(p.t.earnings), yb = sy(p.c.earnings);
+        var bow = 9 + (i % 5) * 3;
+        var d = "M" + xa + "," + ya + "Q" + (xa + bow) + "," + ((ya + yb) / 2) + " " + xa + "," + yb;
+        var line = el("path", { d: d, class: "match-line" }, matchLines);
+        var len = line.getTotalLength ? line.getTotalLength() : 200;
+        line.setAttribute("stroke-dasharray", len + " " + len);
+        line.setAttribute("stroke-dashoffset", len);
+        return line;
+      });
+
+      // timeline
+      window.__timelines = window.__timelines || {};
+      var tl = gsap.timeline({ paused: true, defaults: { ease: "power2.out" } });
+      window.__timelines["matching-opener"] = tl;
+
+      gsap.set("#panel-frame", { opacity: 0, y: 16 });
+      gsap.set("#kicker", { opacity: 0, y: -10 });
+      gsap.set("#title", { opacity: 0, y: 24 });
+      gsap.set("#hand", { opacity: 0 });
+      gsap.set("#deck", { opacity: 0, y: 12 });
+      gsap.set("#numbers", { opacity: 0, y: 14 });
+      gsap.set("#footer", { opacity: 0 });
+      gsap.set("#chart-copy", { opacity: 0, y: 8 });
+      gsap.set("#gap", { opacity: 0 });
+      gsap.set("#matched-label", { opacity: 0 });
+
+      tl.to("#panel-frame", { opacity: 1, y: 0, duration: 0.7 }, 0.15)
+        .to("#kicker", { opacity: 1, y: 0, duration: 0.5 }, 0.25)
+        .to("#title", { opacity: 1, y: 0, duration: 0.8 }, 0.35)
+        .to("#hand", { opacity: 1, duration: 0.5 }, 0.95)
+        .to("#chart-copy", { opacity: 1, y: 0, duration: 0.6 }, 1.0)
+        .to("#deck", { opacity: 1, y: 0, duration: 0.6 }, 1.2)
+        .to("#footer", { opacity: 1, duration: 0.5 }, 1.2)
+        .to("#numbers", { opacity: 1, y: 0, duration: 0.6 }, 1.5);
+
+      // axes draw
+      tl.to(meanT, { attr: { "stroke-dashoffset": 0 }, duration: 0.8 }, 1.7)
+        .to(meanC, { attr: { "stroke-dashoffset": 0 }, duration: 0.8 }, 1.8)
+        .to("#gap", { opacity: 1, duration: 0.4 }, 2.5)
+        .to("#dots circle", {
+          attr: { opacity: 1 },
+          duration: 0.22,
+          stagger: 0.035,
+          ease: "back.out(1.6)"
+        }, 2.6)
+        .to("#hand-note", { opacity: 1, duration: 0.5 }, 4.1);
+
+      // match the pairs
+      tl.to(lines, {
+        attr: { "stroke-dashoffset": 0 },
+        duration: 0.55,
+        stagger: 0.11,
+        ease: "power1.inOut"
+      }, 4.8)
+        .to("#pair-count", { attr: { visibility: "visible" }, duration: 0.1 }, 4.8)
+        .to("#mean-lines", { opacity: 0.18, duration: 0.6 }, 5.4)
+        .to("#gap", { opacity: 0, duration: 0.4 }, 5.4)
+        .to("#matched", { opacity: 1, y: 0, duration: 0.6 }, 6.2)
+        .to("#matched-label", { opacity: 1, duration: 0.5 }, 6.3)
+        .to("#hand-note", { opacity: 0, duration: 0.3 }, 6.4);
+
+      // counter
+      var counter = { v: 0 };
+      tl.to(counter, {
+        v: pairs.length,
+        duration: 2.1,
+        ease: "none",
+        onUpdate: function () {
+          document.getElementById("pair-count").textContent = Math.round(counter.v) + " / " + pairs.length + " pairs";
+        }
+      }, 4.9);
+
+      // final line
+      tl.to("#deck", { opacity: 0, y: -6, duration: 0.4 }, 8.4)
+        .to("#deck-final", { opacity: 1, y: 0, duration: 0.7 }, 8.7)
+        .to("#hand", { opacity: 0, duration: 0.4 }, 8.4)
+
+      // hold
+      tl.to({}, { duration: 2.3 }, 9.7);
+
+      tl.seek(0);
+    })();
+  </script>
+</body>
+</html>
+
+
+
+
+

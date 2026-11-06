@@ -1,0 +1,57 @@
+﻿:root {
+  color-scheme: light;
+
+  /* paper & ink */
+  --paper: #f6f3ec;
+  --paper-2: #fbf8f1;
+  --paper-3: #efe9dc;
+  --paper-4: #e7dfcf;
+  --ink: #2b2723;
+  --ink-2: #6e665c;
+  --ink-3: #70675b;
+  --rule: #ddd6c9;
+  --rule-strong: #bdb4a5;
+
+  /* pencils */
+  --blue: #2f5d8a;
+  --blue-2: #4a7aa6;
+  --blue-soft: #e4ecf3;
+  --red: #a8283a;
+  --red-2: #c14a58;
+  --red-soft: #f3e1e3;
+  --accent: #a85a3c;
+  --accent-soft: #f6e6dd;
+  --green: #4c6b50;
+  --green-soft: #e4ebe2;
+
+  /* type */
+  --serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+  --hand: "Caveat", "Segoe Print", "Bradley Hand", cursive;
+
+  --step--2: clamp(0.68rem, 0.66rem + 0.1vw, 0.74rem);
+  --step--1: clamp(0.78rem, 0.75rem + 0.15vw, 0.86rem);
+  --step-0: clamp(1rem, 0.97rem + 0.16vw, 1.1rem);
+  --step-1: clamp(1.12rem, 1.06rem + 0.28vw, 1.3rem);
+  --step-2: clamp(1.32rem, 1.2rem + 0.55vw, 1.7rem);
+  --step-3: clamp(1.7rem, 1.45rem + 1.1vw, 2.5rem);
+  --step-4: clamp(2.2rem, 1.7rem + 2.2vw, 3.8rem);
+  --step-5: clamp(3.2rem, 2.1rem + 5vw, 7rem);
+
+  /* layout */
+  --maxw: 1320px;
+  --readw: 70ch;
+  --railw: 150px;
+  --gut: clamp(20px, 4vw, 52px);
+  --topbar: 58px;
+  --radius: 2px;
+
+  --shadow-paper: 0 1px 0 rgba(43, 39, 35, 0.04), 0 24px 60px -42px rgba(43, 39, 35, 0.4);
+  --shadow-note: 0 10px 22px -18px rgba(43, 39, 35, 0.45);
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-soft: cubic-bezier(0.25, 0.6, 0.2, 1);
+
+  --selection: #f0d7c9;
+}
+
+

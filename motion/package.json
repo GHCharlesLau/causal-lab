@@ -1,0 +1,12 @@
+{
+  "name": "matching-opener",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "preview": "hyperframes preview",
+    "render": "hyperframes render . --output ../assets/video/matching-opener.mp4 --fps 24 --quality looks --workers 2"
+  },
+  "devDependencies": {
+    "hyperframes": "0.9.16"
+  }
+}

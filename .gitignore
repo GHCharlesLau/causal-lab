@@ -1,0 +1,6 @@
+﻿node_modules/
+motion/node_modules/
+motion/.hyperframes/
+motion/renders/
+assets/img/_shots/
+*.log

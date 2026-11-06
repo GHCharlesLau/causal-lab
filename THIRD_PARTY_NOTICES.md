@@ -1,0 +1,85 @@
+# Third-party notices
+
+This project is an independent learning demo. It is not affiliated with the authors or
+maintainers of the works below.
+
+## Book and data
+
+**Causal Inference for the Brave and True** by Matheus Facure Alves.
+Chapter 10, “Matching”: <https://matheusfacure.github.io/python-causality-handbook/10-Matching.html>
+
+Repository and data: <https://github.com/matheusfacure/python-causality-handbook>
+
+The book repository is released under the MIT License. The medicine table and trainee
+table in `data/` are the chapter's datasets, redistributed here for the interactive demo.
+
+MIT License text:
+
+```text
+MIT License
+
+Copyright (c) Matheus Facure Alves
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+## Visual language
+
+The paper/ink/red-blue-pencil visual language is adapted from the **Data Storytelling**
+style in **Lemo-Opuscar** by Lemomo:
+
+<https://github.com/lemomo-ai/lemo-opuscar> (MIT)
+
+No demo assets, story, chart, or engine code from that project are reused. The charts,
+copy, layout, and motion in this chapter are original work made for this demo.
+
+## Motion tooling
+
+The optional opener is authored with **HyperFrames** by HeyGen:
+
+<https://github.com/heygen-com/hyperframes> (Apache License 2.0)
+
+HyperFrames is a build/render tool; its source is not bundled into the web page. The
+composition source is in `motion/`.
+
+The composition loads **GSAP** 3.15 from a local copy (`motion/assets/gsap.min.js`).
+GSAP is copyright GreenSock, Inc. and is distributed under the
+[GreenSock Standard License](https://gsap.com/community/standard-license/). The page
+itself does not load GSAP.
+
+## Type
+
+The page and film use **Newsreader**, **IBM Plex Mono**, and **Caveat**. All three are
+licensed under the SIL Open Font License 1.1. The license text is in
+`assets/fonts/OFL.txt`; upstream copyright notices are embedded in the woff2 metadata and
+available at:
+
+- Newsreader: <https://github.com/productiontype/Newsreader>
+- IBM Plex Mono: <https://github.com/IBM/plex>
+- Caveat: <https://github.com/impallari/Caveat>
+
+## Numerical references
+
+The page reproduces figures from the book chapter and from the book's companion simulation
+notebook:
+
+<https://github.com/matheusfacure/python-causality-handbook/blob/master/Simulated-Data.ipynb>
+
+The medicine data is simulated. The simulation sets a constant −10-day treatment effect;
+the page labels that as the “simulation truth” and uses it only as a teaching benchmark.

@@ -1,0 +1,807 @@
+/* ============================================================ svg chart grammar */
+.chart-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  font-family: var(--mono);
+  overflow: visible;
+}
+
+.axis-line {
+  stroke: var(--ink-2);
+  stroke-width: 1;
+  fill: none;
+}
+
+.axis-line--soft {
+  stroke: var(--rule-strong);
+}
+
+.grid-line {
+  stroke: var(--rule);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.grid-line--zero {
+  stroke: var(--rule-strong);
+}
+
+.tick-label {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  fill: var(--ink-3);
+  letter-spacing: 0.02em;
+}
+
+.axis-title {
+  font-family: var(--mono);
+  font-size: 8px;
+  fill: var(--ink-2);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.plot-title {
+  font-family: var(--serif);
+  font-size: 18px;
+  fill: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+.data-dot {
+  fill: var(--paper-2);
+  stroke: var(--ink);
+  stroke-width: 1;
+  transition: r 0.12s var(--ease);
+}
+
+.data-dot--treated {
+  fill: var(--red);
+  stroke: var(--ink);
+  stroke-width: 1;
+}
+
+.data-dot--control {
+  fill: var(--paper-2);
+  stroke: var(--blue);
+  stroke-width: 1.5;
+}
+
+.data-dot--square {
+  rx: 1;
+}
+
+.data-dot:hover {
+  stroke: var(--accent);
+  stroke-width: 1.8;
+}
+
+.data-dot.is-selected {
+  stroke: var(--accent);
+  stroke-width: 2.4;
+}
+
+.match-line {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 0.9;
+  opacity: 0.48;
+  stroke-linecap: round;
+}
+
+.match-line--treated {
+  stroke: var(--red);
+  opacity: 0.38;
+}
+
+.match-line.is-selected {
+  stroke: var(--accent);
+  stroke-width: 1.7;
+  opacity: 1;
+}
+
+.match-line.is-drawn {
+  stroke-dasharray: none;
+}
+
+.mean-line {
+  fill: none;
+  stroke-width: 1.2;
+  stroke-dasharray: 5 4;
+  opacity: 0.85;
+}
+
+.mean-line--treated {
+  stroke: var(--red);
+}
+
+.mean-line--control {
+  stroke: var(--blue);
+}
+
+.annotation-text {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink);
+  letter-spacing: 0.02em;
+}
+
+.annotation-text--blue {
+  fill: var(--blue);
+}
+
+.annotation-text--red {
+  fill: var(--red);
+}
+
+.annotation-hand {
+  font-family: var(--hand);
+  font-size: 17px;
+  fill: var(--blue);
+}
+
+.annotation-leader {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 0.9;
+  stroke-dasharray: 2 3;
+}
+
+.annotation-box {
+  fill: var(--paper-2);
+  stroke: var(--rule);
+  stroke-width: 1;
+}
+
+.band-rect {
+  fill: var(--accent);
+  opacity: 0.11;
+  stroke: var(--accent);
+  stroke-opacity: 0.4;
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.band-rail {
+  stroke: var(--rule-strong);
+  stroke-width: 1.4;
+  fill: none;
+}
+
+.band-point {
+  fill: var(--red);
+  stroke: var(--ink);
+  stroke-width: 1;
+}
+
+.band-point--control {
+  fill: var(--paper-2);
+  stroke: var(--blue);
+  stroke-width: 1.4;
+}
+
+/* ============================================================ regression scale */
+.scale-post {
+  stroke: var(--ink);
+  stroke-width: 1.2;
+  fill: none;
+}
+
+.scale-beam {
+  stroke: var(--ink);
+  stroke-width: 1.4;
+  fill: none;
+  transform-origin: 50% 0;
+  transition: transform 0.55s var(--ease);
+}
+
+.scale-pan {
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: 1;
+}
+
+.scale-weight {
+  fill: var(--red);
+  stroke: var(--ink);
+  stroke-width: 0.8;
+}
+
+.scale-weight--control {
+  fill: var(--paper-2);
+  stroke: var(--blue);
+  stroke-width: 1.3;
+}
+
+.scale-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-2);
+}
+
+.scale-effect {
+  font-family: var(--serif);
+  font-size: 15px;
+  fill: var(--ink);
+}
+
+/* ============================================================ cell atlas */
+.cell-rect {
+  fill: var(--paper);
+  stroke: var(--rule);
+  stroke-width: 1;
+  transition: fill 0.2s var(--ease);
+}
+
+.cell-rect.has-both {
+  fill: var(--blue-soft);
+  stroke: var(--blue);
+}
+
+.cell-rect.has-one {
+  fill: var(--red-soft);
+  stroke: var(--red);
+  stroke-dasharray: 3 2;
+}
+
+.cell-rect.is-empty {
+  fill: transparent;
+  stroke: var(--rule-strong);
+  stroke-dasharray: 2 3;
+}
+
+.cell-count {
+  font-family: var(--mono);
+  font-size: 11px;
+  fill: var(--ink-2);
+}
+
+.cell-axis {
+  font-family: var(--mono);
+  font-size: 10px;
+  fill: var(--ink-3);
+}
+
+/* ============================================================ knn stage */
+.knn-stage {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.knn-canvas-wrap {
+  position: relative;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 360px;
+  background: rgba(246, 243, 236, 0.34);
+  border: 1px solid var(--rule);
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+#knn-canvas,
+#knn-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#knn-overlay {
+  pointer-events: none;
+}
+
+.knn-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-top: 6px;
+  color: var(--ink-2);
+  font-size: 7.5px;
+}
+
+.knn-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legend-dot--treated {
+  background: var(--red);
+  border: 1px solid var(--ink);
+}
+
+.legend-dot--control {
+  background: var(--paper-2);
+  border: 1.5px solid var(--blue);
+}
+
+.legend-shape {
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--ink-2);
+  display: inline-block;
+}
+
+.knn-legend-hint {
+  margin-left: auto;
+  color: var(--ink-3);
+}
+
+.knn-axis-note {
+  margin-top: 4px;
+  color: var(--ink-3);
+  font-size: 7px;
+}
+
+.knn-tooltip {
+  position: absolute;
+  z-index: 6;
+  max-width: 230px;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 7px 9px;
+  font-family: var(--mono);
+  font-size: 9px;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+  pointer-events: none;
+  box-shadow: 0 8px 18px -10px rgba(0, 0, 0, 0.5);
+}
+
+.knn-tooltip strong {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.knn-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  min-width: 0;
+}
+
+.estimate-ruler-wrap {
+  border-top: 1px solid var(--rule);
+  padding-top: 9px;
+}
+
+.ruler {
+  height: 64px;
+  margin: 4px 0 6px;
+}
+
+.ruler svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.ruler-track {
+  stroke: var(--rule-strong);
+  stroke-width: 1.2;
+}
+
+.ruler-tick {
+  stroke: var(--ink-3);
+  stroke-width: 1;
+}
+
+.ruler-tick--major {
+  stroke: var(--ink-2);
+}
+
+.ruler-label {
+  font-family: var(--mono);
+  font-size: 7px;
+  fill: var(--ink-3);
+}
+
+.ruler-marker {
+  stroke: var(--red);
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.ruler-marker--truth {
+  stroke: var(--accent);
+  stroke-dasharray: 3 3;
+}
+
+.ruler-marker-label {
+  font-family: var(--mono);
+  font-size: 6.5px;
+  fill: var(--red);
+  letter-spacing: 0.03em;
+}
+
+.ruler-marker-label--truth {
+  fill: var(--accent);
+}
+
+.estimate-numbers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.estimate-numbers div {
+  border-top: 1px dotted var(--rule);
+  padding-top: 4px;
+}
+
+.estimate-numbers span {
+  display: block;
+  color: var(--ink-3);
+  font-size: 6.5px;
+  margin-bottom: 1px;
+}
+
+.estimate-numbers strong {
+  display: block;
+  font-family: var(--serif);
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+#knn-corrected {
+  color: var(--blue);
+}
+
+#knn-truth {
+  color: var(--accent);
+}
+
+.diagnostics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px 12px;
+  border-top: 1px solid var(--rule);
+  padding-top: 7px;
+}
+
+.diag {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  border-bottom: 1px dotted var(--rule);
+  padding: 3px 0;
+}
+
+.diag span {
+  color: var(--ink-3);
+  font-size: 6.5px;
+}
+
+.diag b {
+  font-family: var(--mono);
+  font-size: 8px;
+  font-weight: 400;
+  color: var(--ink);
+}
+
+.spark-wrap {
+  border-top: 1px solid var(--rule);
+  padding-top: 7px;
+}
+
+.spark {
+  height: 52px;
+}
+
+.spark svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.spark-note {
+  font-size: 6.5px;
+  color: var(--ink-3);
+  font-family: var(--mono);
+  letter-spacing: 0.03em;
+  margin-top: 2px;
+}
+
+.knn-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  border-top: 1px solid var(--rule);
+  padding-top: 8px;
+}
+
+.knn-controls {
+  border-top: 1px solid var(--rule);
+  padding: 11px 14px;
+  display: grid;
+  grid-template-columns: 1.05fr 1.1fr 1.05fr 1.5fr;
+  gap: 12px;
+  align-items: end;
+  background: rgba(239, 233, 220, 0.38);
+}
+
+.lab-foot--knn {
+  grid-template-columns: 0.9fr 1.1fr;
+}
+
+.dist {
+  height: 58px;
+}
+
+.dist svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.truth-note {
+  border-left: 2px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 8px 10px;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+.truth-note p {
+  margin-bottom: 4px;
+}
+
+.truth-note p:last-child {
+  margin-bottom: 0;
+}
+
+.truth-note .mono {
+  color: var(--accent);
+  font-size: 7px;
+}
+
+.truth-note strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ============================================================ bias / waterfall */
+.waterfall {
+  border-top: 1px solid var(--rule);
+  padding: 10px 15px;
+  height: 94px;
+}
+
+.waterfall svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.wf-bar {
+  fill: var(--blue);
+  opacity: 0.75;
+}
+
+.wf-bar--raw {
+  fill: var(--red);
+  opacity: 0.8;
+}
+
+.wf-bar--corrected {
+  fill: var(--blue);
+  opacity: 0.85;
+}
+
+.wf-line {
+  stroke: var(--ink-3);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+
+.wf-label {
+  font-family: var(--mono);
+  font-size: 8px;
+  fill: var(--ink-2);
+}
+
+/* ============================================================ curse */
+.curse-grid {
+  border-top: 1px solid var(--rule);
+  padding: 10px 15px 12px;
+  display: grid;
+  gap: 3px;
+}
+
+.curse-row {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) 74px;
+  gap: 8px;
+  align-items: center;
+}
+
+.curse-row-label {
+  font-family: var(--mono);
+  font-size: 7px;
+  color: var(--ink-3);
+}
+
+.curse-bar-track {
+  height: 5px;
+  background: var(--rule);
+  position: relative;
+}
+
+.curse-bar {
+  height: 100%;
+  background: var(--blue);
+  transition: width 0.35s var(--ease);
+}
+
+.curse-row.is-active .curse-bar {
+  background: var(--red);
+}
+
+.curse-count {
+  font-family: var(--mono);
+  font-size: 7px;
+  color: var(--ink-2);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================ responsive */
+@media (max-width: 1120px) {
+  .knn-controls {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .lab-body--knn {
+    grid-template-columns: minmax(0, 1fr) 230px;
+  }
+}
+
+@media (max-width: 960px) {
+  .lab-body--knn {
+    grid-template-columns: 1fr;
+  }
+
+  .knn-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 18px;
+    border-top: 1px solid var(--rule);
+    padding-top: 10px;
+  }
+
+  .knn-panel .estimate-ruler-wrap,
+  .knn-panel .diagnostics {
+    grid-column: 1 / -1;
+  }
+
+  .knn-panel .pair-card--knn {
+    grid-column: 1 / -1;
+  }
+
+  .lab-foot--knn {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .knn-panel {
+    display: flex;
+  }
+
+  .knn-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .knn-canvas-wrap {
+    aspect-ratio: 1 / 1;
+    min-height: 280px;
+  }
+
+  .knn-legend-hint {
+    display: none;
+  }
+
+  .estimate-numbers strong {
+    font-size: 0.92rem;
+  }
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* ============================================================ estimate curve */
+.estimate-curve {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+}
+
+.estimate-dot {
+  fill: var(--paper-2);
+  stroke: var(--blue);
+  stroke-width: 1;
+}
+
+.estimate-marker {
+  fill: var(--red);
+  stroke: var(--ink);
+  stroke-width: 1.2;
+}
+
+.estimate-marker-line {
+  stroke: var(--red);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0.75;
+}
+
+/* ============================================================ regression beam */
+.scale-beam-group {
+  transform-box: view-box;
+  transform-origin: 486px 96px;
+  transition: transform 0.55s var(--ease);
+}
+
+/* ============================================================ small annotations */
+.annotation-line {
+  stroke: var(--red);
+  stroke-width: 1;
+}
+
+/* ============================================================ ruler variants */
+.ruler-marker--naive {
+  stroke: var(--ink-3);
+  stroke-dasharray: 2 3;
+}
+
+/* ============================================================ sparkline */
+.spark-line {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 1.4;
+}
+
+.spark-dot {
+  fill: var(--paper-2);
+  stroke: var(--blue);
+  stroke-width: 1;
+}
+
+.spark-dot--current {
+  fill: var(--red);
+  stroke: var(--ink);
+  stroke-width: 1;
+}
+
+/* ============================================================ match distance histogram */
+.dist-bar {
+  fill: var(--blue);
+  opacity: 0.6;
+}
+
+.dist-caliper {
+  stroke: var(--red);
+  stroke-width: 1;
+  stroke-dasharray: 3 2;
+}
+
+
+
+
+
