@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Synthetic control &mdash; Causal Field Notes</title>
+  <meta name="description" content="Chapter 15: synthetic control — build California out of donor states, estimate the effect of Proposition 99, and test it with placebo controls.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/ch15.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the chapter</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Chapter 15</p>
+      <h1 class="hero-title">Borrow a state<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">build the comparison you need &darr;</p>
+      <p class="hero-deck">Synthetic control builds the counterfactual from a weighted average of untreated units.</p>
+      <p class="hero-sub">No single state followed California. So the page builds a synthetic California from five donor states, matches the pre-1988 path, and reads the post-1988 gap. By 2000, cigarette sales are about 25 packs lower.</p>
+      <div class="hero-meta mono">
+        <span>39 states</span><span>31 years</span><span>5 donors</span><span>~20 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#path-bench">Open the synthetic bench <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/15-Synthetic-Control.html" target="_blank" rel="noreferrer">Read the source chapter</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="California cigarette sales versus a synthetic control built from donor states; a vertical line marks Proposition 99 in 1988.">
+        <g class="hero-paper">
+          <path d="M24 28h412v244H24z" fill="#fbf8f1" stroke="#ddd6c9"/>
+        </g>
+        <g class="synth-hero">
+          <line x1="54" y1="228" x2="416" y2="228" stroke="#bdb4a5"/>
+          <line x1="54" y1="54" x2="54" y2="228" stroke="#bdb4a5"/>
+          <text x="54" y="246" text-anchor="middle" class="synth-axis">1970</text>
+          <text x="232" y="246" text-anchor="middle" class="synth-axis">1988</text>
+          <text x="416" y="246" text-anchor="middle" class="synth-axis">2000</text>
+          <text x="44" y="60" text-anchor="end" class="synth-axis">140</text>
+          <text x="44" y="228" text-anchor="end" class="synth-axis">40</text>
+          <path d="M54 100 C 120 98, 170 108, 232 136 C 300 152, 360 168, 416 181" fill="none" stroke="#2f5d8a" stroke-width="1.6" stroke-dasharray="5 4"/>
+          <path d="M54 100 C 120 96, 170 110, 232 140 C 300 170, 360 186, 416 193" fill="none" stroke="#a8283a" stroke-width="2.2"/>
+          <line x1="232" y1="54" x2="232" y2="228" stroke="#2b2723" stroke-width="1" stroke-dasharray="2 4"/>
+          <text x="238" y="66" class="synth-prop">Prop 99</text>
+          <text x="300" y="208" class="synth-gap">gap grows</text>
+          <text x="68" y="286" class="hand synth-hand">a weighted average of other states</text>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">California cigarette sales fall below the synthetic control after Proposition 99 in 1988; the gap grows through 2000.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Donors</span>
+        <span class="hero-stat-value">5</span>
+        <span class="hero-stat-note">states with positive weight</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Effect in 2000</span>
+        <span class="hero-stat-value">&minus;24.8</span>
+        <span class="hero-stat-note">packs per capita</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Placebo p</span>
+        <span class="hero-stat-value">0.057</span>
+        <span class="hero-stat-note">35 placebo effects</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 PROPOSITION -->
+  <section class="chapter-section sheet" id="proposition" data-section="proposition">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">the proposition</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">One state, no twin</p>
+          <h2 class="section-title">What would<br>California have done?</h2>
+          <p class="section-deck">Proposition 99 raised tobacco taxes and restricted smoking in California in 1988. To know its effect, we need the path California would have followed without it.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">The data covers <strong>39 states</strong> from <strong>1970 to 2000</strong>. California is the treated unit; every other state is a potential donor. No single donor tracks California’s pre-1988 cigarette sales closely enough to be a credible control.</p>
+          <p>Synthetic control builds a comparison as a weighted average of donors. The weights are chosen so that the synthetic series matches California’s pre-treatment path on cigarette sales and retail prices. After 1988, the synthetic series continues as the counterfactual.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Synthetic control formula">
+          <span class="formula-label mono">synthetic</span>
+          <span class="formula-body"><span class="math-var">Y&#770;</span><sub>CA,t</sub> = &Sigma;<sub>j</sub> <span class="math-var">w</span><sub>j</sub> <span class="math-var">Y</span><sub>j,t</sub>, &nbsp; <span class="math-var">w</span><sub>j</sub> &ge; 0, &nbsp; &Sigma;<sub>j</sub> <span class="math-var">w</span><sub>j</sub> = 1</span>
+        </div>
+
+        <div class="prose">
+          <p>The weights are constrained to be non-negative and sum to one. The synthetic control is therefore an interpolation, never an extrapolation: it cannot invent a state with negative sales or a price outside the donor cloud.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The logic</p>
+          <p>Fit the pre-period. Freeze the weights. Read the post-period gap. The post-period is never used to choose the weights, so the comparison is not tuned to produce an effect.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the donor pool</p>
+          <p>38 other states. A convex combination can match features inside the donor cloud, not outside it.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the cost</p>
+          <p>With 38 donors and only 19 pre-years, it is easy to overfit. Convexity and sparsity are the guards.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 WEIGHTS -->
+  <section class="chapter-section sheet" id="weights" data-section="weights">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">the weights</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">A sparse combination</p>
+          <h2 class="section-title">Five states<br>do the work.</h2>
+          <p class="section-deck">The optimizer puts positive weight on only five donors. The largest weight is 45.7%; the rest are smaller. Most states get zero.</p>
+        </header>
+
+        <div class="prose">
+          <p>The weights minimize the pre-treatment difference in cigarette sales and retail prices, subject to the convexity constraints. The solution is sparse because the treated unit lies on a face of the donor cloud.</p>
+        </div>
+
+        <div class="weight-bars" id="ch15-weights" aria-label="Synthetic control donor weights">
+          <!-- bars are filled by ch15.js -->
+        </div>
+
+        <div class="prose">
+          <p>The five donors sum to 1. The synthetic California is not a real state; it is a statistical blend chosen to match the pre-period. Its post-period path is the counterfactual.</p>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">Do not extrapolate</p>
+          <p>Unconstrained regression weights can be negative and can produce a fake donor with impossible values. The book first shows that failure, then imposes non-negativity and sum-to-one.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the biggest donor</p>
+          <p>State 23 carries 45.66% of the weight; state 34 carries 24.01%. The other three fill in the rest.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">not a state</p>
+          <p>Do not interpret a donor weight as a causal share. It is a fitting device, not a real policy counterfactual.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 PATH -->
+  <section class="chapter-section sheet" id="path-bench" data-section="path-bench">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">the path</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">The post-period gap</p>
+          <h2 class="section-title">A gap that<br>keeps growing.</h2>
+          <p class="section-deck">Before 1988, California and synthetic California track each other. After 1988, California falls away.</p>
+        </header>
+
+        <div class="prose">
+          <p>The synthetic series is built from the five donors. The effect is the difference between California and its synthetic twin, year by year. By 2000, the gap is about <strong>&minus;24.8 packs per capita</strong>.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-path" aria-labelledby="lab-path-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-path-title">The synthetic counterfactual</h3>
+            </div>
+            <p class="lab-status mono" id="ch15-path-status">levels &middot; California vs synthetic</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch15-chart" id="ch15-path-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="ch15-path-label">Effect in 2000</p>
+              <p class="readout-value" id="ch15-path-value">&minus;24.8</p>
+              <p class="readout-sub">packs per capita</p>
+              <p class="side-label mono ch15-side-label">Synthetic weights</p>
+              <p class="ch15-weights-line" id="ch15-path-weights">23: 45.7% &middot; 34: 24.0%</p>
+              <dl class="mini-stats">
+                <div><dt>donors</dt><dd>5</dd></div>
+                <div><dt>years</dt><dd>31</dd></div>
+                <div><dt>treated</dt><dd>California</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch15-path-note">the gap is the treatment effect.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch15-controls">
+            <div class="ch15-presets" role="group" aria-label="Choose a view">
+              <button class="ch15-preset is-active" type="button" data-view="levels" aria-pressed="true">Levels</button>
+              <button class="ch15-preset" type="button" data-view="gap" aria-pressed="false">Gap</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The pre-period fit is close but not perfect. The post-period gap is the estimate; it grows as the policy bites.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the fit</p>
+          <p>The synthetic line tracks California closely before 1988. That fit is what makes the post-1988 counterfactual credible.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the gap</p>
+          <p>The gap is not proof. It is an estimate under the assumption that the synthetic control would have continued to track California.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 INFERENCE -->
+  <section class="chapter-section sheet" id="inference" data-section="inference">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">inference</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Placebo tests</p>
+          <h2 class="section-title">Is California<br>extreme?</h2>
+          <p class="section-deck">Pretend each donor state was treated. Build its synthetic control. Compare the placebo effects with California’s.</p>
+        </header>
+
+        <div class="prose">
+          <p>Fisher’s exact test logic: permute the treatment across states. For each state, fit a synthetic control using the other states, then compute the post-treatment effect. Most placebo effects should be small. California’s should be unusually negative.</p>
+        </div>
+
+        <div class="placebo-figure" id="ch15-placebo" aria-hidden="true"></div>
+
+        <div class="prose">
+          <p>The book’s code reports <strong>p = 0.057</strong>: two of the 35 placebo effects are at least as extreme as California’s. The narrative calls it 1/35 because California’s own rounded value is included in the comparison. Either way, the result is borderline, not conventionally significant at 5%.</p>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The honest sentence</p>
+          <p>&ldquo;The synthetic control estimates a 24.8-pack reduction by 2000. A placebo test puts the result at about the 5.7% tail; the evidence is suggestive, not overwhelming.&rdquo;</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">What drives the p-value</p>
+          <p>The number of placebo units, the pre-treatment fit, and the choice of donor pool. It is not a conventional sampling standard error.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the filter</p>
+          <p>The book drops states with pre-treatment MSE above 80, because a poor pre-fit makes the placebo effect uninformative.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the caution</p>
+          <p>A placebo p-value is not a test of the parallel trends assumption. It measures how unusual California is relative to the donor pool.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>The counterfactual is constructed.</strong> Synthetic control is a weighted average of untreated units, chosen to match the treated unit before treatment.</li>
+          <li><strong>Weights are convex.</strong> Non-negative and sum to one; the synthetic unit is an interpolation, not an extrapolation.</li>
+          <li><strong>Freeze the weights.</strong> The post-period is not used to fit; the gap after treatment is the estimate.</li>
+          <li><strong>Inference is placebo-based.</strong> Pretend each donor was treated and see how extreme the real effect is. It is not a conventional standard error.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The sentence to avoid</p>
+          <p>&ldquo;California’s smoking fell, so Proposition 99 worked.&rdquo; Smoking fell in many states. The synthetic gap is what isolates the policy.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>A good synthetic control fits the pre-period for the right reasons. Check the fit, the donor weights, and the placebo distribution before trusting the gap.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> Why not use a single control state?</summary>
+            <p>No single state tracks California’s pre-1988 path closely enough. A weighted combination can match multiple features and produce a more credible counterfactual.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> Why constrain the weights to be non-negative and sum to one?</summary>
+            <p>To keep the synthetic control inside the donor cloud. Unconstrained regression can extrapolate to impossible values; convexity makes the comparison an interpolation.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> What does the placebo test do?</summary>
+            <p>It pretends each donor state was treated, builds its synthetic control, and computes a placebo effect. The real effect is compared with that distribution.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> What does the p-value not mean?</summary>
+            <p>It is not a conventional sampling p-value or a proof of parallel trends. It is a permutation tail probability, sensitive to the donor pool and pre-fit filter.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next chapter</p>
+          <h3>Regression discontinuity</h3>
+          <p>When treatment flips at a threshold, compare units just above and just below it. The next chapter moves to local comparisons at a cutoff.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Check the pre-fit, the weights, and the placebo distribution. The gap is the last thing you read.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-ch15.js"></script>
+<script src="../assets/js/iv15.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: '15',
+    slug: '15-synthetic-control',
+    title: 'Synthetic control',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/15-Synthetic-Control.html',
+    sections: [
+      { id: 'proposition', num: '01', label: 'The proposition' },
+      { id: 'weights', num: '02', label: 'The weights' },
+      { id: 'path-bench', num: '03', label: 'The path' },
+      { id: 'inference', num: '04', label: 'Inference' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/ch15.js"></script>
+</body>
+</html>

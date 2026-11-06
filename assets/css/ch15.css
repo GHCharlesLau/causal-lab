@@ -1,0 +1,263 @@
+/* ============================================================
+   Chapter 15 — synthetic-control hero, weights, path, placebos.
+   ============================================================ */
+
+.synth-axis,
+.synth-prop,
+.synth-gap {
+  font-family: var(--mono);
+}
+
+.synth-axis {
+  font-size: 9px;
+  fill: var(--ink-3);
+}
+
+.synth-prop {
+  font-size: 9px;
+  fill: var(--ink);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.synth-gap {
+  font-size: 9px;
+  fill: var(--red);
+}
+
+.synth-hand {
+  font-family: var(--hand);
+  font-size: 18px;
+  fill: var(--blue);
+}
+
+/* ---------------------------------------------------------- weights */
+.weight-bars {
+  margin: 18px 0;
+  border-top: 1px solid var(--rule-strong);
+  border-bottom: 1px solid var(--rule-strong);
+  padding: 10px 0;
+}
+
+.weight-row {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr) 56px;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.weight-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink-3);
+}
+
+.weight-track {
+  height: 12px;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+}
+
+.weight-fill {
+  display: block;
+  height: 100%;
+  background: var(--red);
+  opacity: 0.7;
+}
+
+.weight-value {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink-2);
+  text-align: right;
+}
+
+/* ---------------------------------------------------------- charts */
+.ch15-chart {
+  min-height: 300px;
+}
+
+.ch15-chart svg,
+.placebo-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ch15-tick {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-3);
+}
+
+.ch15-axis-title {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  fill: var(--ink-2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ch15-line-ca {
+  fill: none;
+  stroke: var(--red);
+  stroke-width: 2.2;
+}
+
+.ch15-line-synth {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 1.8;
+  stroke-dasharray: 5 4;
+}
+
+.ch15-line-gap {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.8;
+}
+
+.ch15-prop-line {
+  stroke: var(--ink);
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+}
+
+.ch15-prop-label {
+  font-family: var(--mono);
+  font-size: 8px;
+  fill: var(--ink-2);
+}
+
+.ch15-legend {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-2);
+}
+
+.ch15-weights-line {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 8.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+.ch15-side-label {
+  margin-top: 8px;
+}
+
+/* ---------------------------------------------------------- placebos */
+.placebo-figure {
+  margin: 18px 0;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  padding: 10px;
+}
+
+.placebo-bar {
+  fill: var(--blue);
+  opacity: 0.45;
+}
+
+.placebo-ca-line {
+  stroke: var(--red);
+  stroke-width: 2;
+}
+
+.placebo-ca-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--red);
+}
+
+.placebo-note {
+  font-family: var(--hand);
+  font-size: 16px;
+  fill: var(--ink-3);
+}
+
+/* ---------------------------------------------------------- controls */
+.ch15-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ch15-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.ch15-preset {
+  padding: 7px 11px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.ch15-preset:hover {
+  border-color: var(--ink-2);
+  color: var(--ink);
+}
+
+.ch15-preset.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.ch15-preset:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.lab--no-swipe .lab-head::after {
+  content: none;
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .lab-body {
+    grid-template-columns: 1fr;
+  }
+
+  .weight-row {
+    grid-template-columns: 58px minmax(0, 1fr) 48px;
+    gap: 6px;
+  }
+
+  .ch15-chart {
+    overflow: visible;
+    min-height: 210px;
+  }
+
+  .ch15-chart svg,
+  .placebo-figure svg {
+    width: 100%;
+    max-width: none;
+  }
+
+  .ch15-tick,
+  .ch15-axis-title,
+  .ch15-legend,
+  .ch15-prop-label,
+  .placebo-ca-label {
+    font-size: 15px;
+  }
+
+  .ch15-preset {
+    flex: 1 1 100%;
+    text-align: left;
+  }
+
+  .placebo-figure {
+    overflow: visible;
+  }
+}
