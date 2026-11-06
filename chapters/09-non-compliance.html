@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Non-compliance and LATE &mdash; Causal Field Notes</title>
+  <meta name="description" content="Chapter 09: compliers, never takers, always takers, defiers, ITT, and the local average treatment effect — with a compliance matrix lab.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/ch09.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the chapter</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Chapter 09</p>
+      <h1 class="hero-title">The effect is local<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">on the people who comply &darr;</p>
+      <p class="hero-deck">Assignment is not delivery. IV estimates the effect on the people whose treatment the assignment changes.</p>
+      <p class="hero-sub">A push is assigned at random, but only 71.8% of assigned users receive it. The rest are never takers. The IV estimate is not the effect on everyone; it is the effect on the compliers &mdash; and that is a different, narrower claim.</p>
+      <div class="hero-meta mono">
+        <span>10,000 users</span><span>71.8% compliers</span><span>2 labs</span><span>~18 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#matrix-bench">Open the compliance matrix <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/09-Non-Compliance-and-LATE.html" target="_blank" rel="noreferrer">Read the source chapter</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="A four-way compliance matrix: compliers, never takers, always takers, and defiers.">
+        <g class="compliance-grid">
+          <rect x="34" y="40" width="184" height="96" fill="#fbf8f1" stroke="#bdb4a5"/>
+          <rect x="242" y="40" width="184" height="96" fill="#fbf8f1" stroke="#bdb4a5"/>
+          <rect x="34" y="154" width="184" height="96" fill="#fbf8f1" stroke="#bdb4a5"/>
+          <rect x="242" y="154" width="184" height="96" fill="#fbf8f1" stroke="#bdb4a5"/>
+          <text x="48" y="64" class="compliance-kicker">compliers</text>
+          <text x="48" y="94" class="compliance-count">3,547</text>
+          <text x="48" y="118" class="compliance-detail">take when assigned</text>
+          <text x="256" y="64" class="compliance-kicker">never takers</text>
+          <text x="256" y="94" class="compliance-count">1,396</text>
+          <text x="256" y="118" class="compliance-detail">never take</text>
+          <text x="48" y="178" class="compliance-kicker">always takers</text>
+          <text x="48" y="208" class="compliance-count">0</text>
+          <text x="48" y="232" class="compliance-detail">take regardless</text>
+          <text x="256" y="178" class="compliance-kicker">defiers</text>
+          <text x="256" y="208" class="compliance-count">0</text>
+          <text x="256" y="232" class="compliance-detail">do the opposite</text>
+        </g>
+        <g class="hand">
+          <text x="40" y="282" fill="#2f5d8a" font-size="20">LATE = the effect on compliers</text>
+          <path d="M324 290c14 4 26 3 38-2" fill="none" stroke="#2f5d8a" stroke-width="1"/>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">Four compliance types: 3,547 compliers, 1,396 never takers, zero always takers, and zero defiers.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Compliers</span>
+        <span class="hero-stat-value">71.8%</span>
+        <span class="hero-stat-note">of assigned users receive the push</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">ITT</span>
+        <span class="hero-stat-value">+2.36</span>
+        <span class="hero-stat-note">effect of assignment</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">LATE</span>
+        <span class="hero-stat-value">+3.29</span>
+        <span class="hero-stat-note">effect on compliers</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 TYPES -->
+  <section class="chapter-section sheet" id="types" data-section="types">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">four types</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Dipping into a heterogeneous world</p>
+          <h2 class="section-title">Assignment<br>is not delivery.</h2>
+          <p class="section-deck">People respond differently to the same nudge. IV does not average over everyone; it isolates the group whose treatment the nudge actually moves.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">Let <span class="math-var">Z</span> be assignment and <span class="math-var">T</span> be delivery. Each person has two potential treatments: <span class="math-var">T<sub>0</sub></span> when not assigned and <span class="math-var">T<sub>1</sub></span> when assigned. The four types are defined by that pair.</p>
+        </div>
+
+        <div class="type-grid">
+          <article>
+            <p class="mono">Compliers</p>
+            <p class="type-formula">T<sub>1</sub> = 1, T<sub>0</sub> = 0</p>
+            <p>They take the push when assigned and do not take it otherwise. The instrument changes their treatment.</p>
+          </article>
+          <article>
+            <p class="mono">Never takers</p>
+            <p class="type-formula">T<sub>1</sub> = 0, T<sub>0</sub> = 0</p>
+            <p>They never take the push, even when assigned. The instrument leaves their treatment unchanged.</p>
+          </article>
+          <article>
+            <p class="mono">Always takers</p>
+            <p class="type-formula">T<sub>1</sub> = 1, T<sub>0</sub> = 1</p>
+            <p>They take the push regardless of assignment. The instrument leaves their treatment unchanged.</p>
+          </article>
+          <article>
+            <p class="mono">Defiers</p>
+            <p class="type-formula">T<sub>1</sub> = 0, T<sub>0</sub> = 1</p>
+            <p>They do the opposite of assignment. Monotonicity rules them out in the usual IV design.</p>
+          </article>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="LATE is the average effect on compliers">
+          <span class="formula-label mono">the local effect</span>
+          <span class="formula-body">LATE = E[<span class="math-var">Y<sub>1</sub></span> &minus; <span class="math-var">Y<sub>0</sub></span> | <span class="math-var">T<sub>1</sub></span> &gt; <span class="math-var">T<sub>0</sub></span>]</span>
+        </div>
+
+        <div class="prose">
+          <p>The IV ratio does not estimate the average effect for never takers or always takers, because for them the instrument does not change treatment. It estimates the effect for compliers. Under monotonicity, the first stage is exactly the complier share.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The four assumptions</p>
+          <p><strong>Independence:</strong> assignment is as good as random. <strong>Exclusion:</strong> assignment affects purchases only through delivery. <strong>Relevance:</strong> assignment moves delivery. <strong>Monotonicity:</strong> assignment never reduces delivery.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the names</p>
+          <p>Compliers, never takers, always takers, defiers. The first two are the only ones that appear in this experiment.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the price</p>
+          <p>LATE is internally valid for compliers. It is not automatically valid for the population you want to persuade.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 MATRIX -->
+  <section class="chapter-section sheet" id="matrix-bench" data-section="matrix-bench">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">the matrix</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">The compliance bench</p>
+          <h2 class="section-title">Who is<br>in the cell?</h2>
+          <p class="section-deck">10,000 users, assigned by coin flip. The 2&times;2 table of assignment and delivery tells us who the experiment can speak about.</p>
+        </header>
+
+        <div class="prose">
+          <p>Assignment was close to a coin flip: 4,943 users were assigned to the push, 5,057 were not. Among the assigned, 3,547 received it (71.76%) and 1,396 did not. Among the unassigned, nobody received it. That is one-sided non-compliance: there are compliers and never takers, but no always takers.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-matrix" aria-labelledby="lab-matrix-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-matrix-title">The compliance matrix</h3>
+            </div>
+            <p class="lab-status mono" id="ch09-matrix-status">compliers &middot; 3,547 users</p>
+          </div>
+          <div class="lab-body">
+            <div class="matrix-wrap">
+              <table class="compliance-matrix">
+                <caption class="sr-only">Assignment by delivery, with counts for 10,000 users</caption>
+                <thead>
+                  <tr>
+                    <th scope="col"><span class="mono">assigned</span></th>
+                    <th scope="col"><span class="mono">delivered 0</span></th>
+                    <th scope="col"><span class="mono">delivered 1</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row"><span class="mono">0</span></th>
+                    <td><button type="button" class="matrix-cell" data-cell="a0d0" aria-pressed="false"><span class="cell-count">5,057</span><span class="cell-tag">mixed</span></button></td>
+                    <td><button type="button" class="matrix-cell matrix-cell--zero" data-cell="a0d1" aria-pressed="false"><span class="cell-count">0</span><span class="cell-tag">always takers</span></button></td>
+                  </tr>
+                  <tr>
+                    <th scope="row"><span class="mono">1</span></th>
+                    <td><button type="button" class="matrix-cell" data-cell="a1d0" aria-pressed="false"><span class="cell-count">1,396</span><span class="cell-tag">never takers</span></button></td>
+                    <td><button type="button" class="matrix-cell is-selected" data-cell="a1d1" aria-pressed="true"><span class="cell-count">3,547</span><span class="cell-tag">compliers</span></button></td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div class="compliance-bar" aria-label="Complier share of all users: 71.8 percent; never takers: 28.2 percent">
+                <span class="compliance-bar-fill" style="width:71.758%"></span>
+              </div>
+              <div class="compliance-bar-labels mono">
+                <span>compliers 71.8%</span>
+                <span>never takers 28.2%</span>
+              </div>
+            </div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="ch09-matrix-type-label">Compliers</p>
+              <p class="readout-value" id="ch09-matrix-count">3,547</p>
+              <p class="readout-sub" id="ch09-matrix-share">71.8% of assigned users</p>
+              <p class="matrix-note" id="ch09-matrix-note">They receive the push when assigned and do not when unassigned. The instrument changes their treatment.</p>
+              <dl class="mini-stats">
+                <div><dt>all users</dt><dd>10,000</dd></div>
+                <div><dt>assigned</dt><dd>4,943</dd></div>
+                <div><dt>delivered</dt><dd>3,547</dd></div>
+              </dl>
+            </aside>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The lower-right cell is the complier group. The lower-left cell is the never takers. The upper-left cell is a mixture we cannot split person by person.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">one-sided</p>
+          <p>No one receives the push without assignment. That rules out always takers in this experiment; it does not rule them out in every experiment.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the mixed cell</p>
+          <p>The 5,057 unassigned non-deliveries contain compliers and never takers. We can estimate the mix; we cannot label each person.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 ESTIMATORS -->
+  <section class="chapter-section sheet" id="estimators" data-section="estimators">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">three estimates</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">OLS, ITT, LATE</p>
+          <h2 class="section-title">The same data,<br>three questions.</h2>
+          <p class="section-deck">OLS with delivery asks a confounded question. ITT asks the effect of assignment. LATE rescales ITT into treatment units.</p>
+        </header>
+
+        <div class="prose">
+          <p>The OLS coefficient on delivery is <strong>27.60 reais</strong>, but it conditions on a delivery that richer users are more likely to receive. The ITT is <strong>2.36</strong>: assigning the push raises purchases by about 2.36 reais. Dividing by the first stage gives LATE: <strong>3.29</strong>.</p>
+          <p>LATE is larger than ITT because the assignment effect is diluted by never takers. It is much smaller than the OLS coefficient because OLS is contaminated by the income confounder.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-estimators" aria-labelledby="lab-estimators-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 02</p>
+              <h3 class="lab-title" id="lab-estimators-title">The three estimates</h3>
+            </div>
+            <p class="lab-status mono" id="ch09-est-status">LATE &middot; 2SLS</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch09-chart" id="ch09-est-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="ch09-est-label">LATE: 2SLS</p>
+              <p class="readout-value" id="ch09-est-coef">3.29</p>
+              <p class="readout-sub">reais per user</p>
+              <p class="side-label mono ch09-se-label">Standard error</p>
+              <p class="ch09-se" id="ch09-est-se">0.72</p>
+              <p class="side-label mono ch09-se-label">95% CI</p>
+              <p class="ch09-ci" id="ch09-est-ci">(1.89, 4.70)</p>
+              <dl class="mini-stats">
+                <div><dt>first stage</dt><dd>0.7176</dd></div>
+                <div><dt>compliers</dt><dd>71.8%</dd></div>
+                <div><dt>users</dt><dd>10,000</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch09-est-note">the effect on compliers, not on everyone.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch09-controls">
+            <div class="ch09-presets" role="group" aria-label="Choose an estimator">
+              <button class="ch09-preset" type="button" data-model="ols" aria-pressed="false">OLS with delivery</button>
+              <button class="ch09-preset" type="button" data-model="itt" aria-pressed="false">ITT: assignment</button>
+              <button class="ch09-preset is-active" type="button" data-model="late" aria-pressed="true">LATE: 2SLS</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The OLS estimate is almost an order of magnitude larger. The LATE is the effect on the 71.8% of users whose delivery the assignment actually changes.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the arithmetic</p>
+          <p>2.3636 / 0.7176 = 3.2938. The reduced form is in purchase units; the first stage converts it into delivery units.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the warning</p>
+          <p>OLS is not a conservative estimate here. It is biased upward because delivery is correlated with income.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 EXTERNAL -->
+  <section class="chapter-section sheet" id="external" data-section="external">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">external validity</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Who is the estimate for?</p>
+          <h2 class="section-title">Local, not<br>universal.</h2>
+          <p class="section-deck">The compliers are not a random sample of users. They are the ones with newer phones and, likely, higher income.</p>
+        </header>
+
+        <div class="prose">
+          <p>Delivery failed for users with older phones. Those users are more likely to be never takers, and lower income is associated with lower purchases. The compliers are therefore richer and more engaged than the average user. LATE describes them, not the never takers.</p>
+          <p>This is the trade-off of modern IV: a credible local effect instead of an incredible global one. If the decision is whether to assign the push, ITT is the policy-relevant number. If the decision is about delivery technology, LATE is closer to the effect on the people who can receive it.</p>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The sentence to avoid</p>
+          <p>&ldquo;The push increases purchases by 3.29 reais for every user.&rdquo; It increases purchases by 3.29 for the compliers. For never takers, the effect is not identified &mdash; and may be zero because they never receive it.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">Policy vs mechanism</p>
+          <p>ITT answers &ldquo;what happens if we assign?&rdquo; LATE answers &ldquo;what happens to those whose treatment changes?&rdquo; They are different decisions, not competing estimates of one number.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the question</p>
+          <p>Who are the compliers? If you cannot describe them, you cannot know to whom the LATE generalizes.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the limit</p>
+          <p>Always takers and defiers are assumed away here. In another design, they may not be.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>Assignment is not treatment.</strong> Non-compliance creates never takers and always takers; the experiment identifies the effect of assignment, not automatically of treatment.</li>
+          <li><strong>The first stage is the complier share.</strong> Under monotonicity, 71.8% delivery among the assigned means 71.8% compliers.</li>
+          <li><strong>LATE is local.</strong> IV identifies the average effect for compliers, not for never takers, always takers, or the whole population.</li>
+          <li><strong>ITT and LATE answer different questions.</strong> Use ITT for assignment policy; use LATE for the effect on those whose treatment changes.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The missing 28%</p>
+          <p>Never takers are not a nuisance to be averaged away. They are the reason the assignment effect is diluted and the reason the LATE is local.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Before quoting LATE, describe the compliers. Before quoting ITT, remember it is diluted by people the treatment never reached.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> What are the four compliance types?</summary>
+            <p>Compliers take treatment when assigned and not when unassigned. Never takers never take it. Always takers always take it. Defiers do the opposite of assignment.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> Why is the ITT smaller than the LATE?</summary>
+            <p>ITT averages over everyone who was assigned, including never takers whose treatment did not change. LATE divides by the complier share, so it is the effect on the people the instrument actually moved.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> Why is the OLS estimate so much larger?</summary>
+            <p>Delivery is correlated with income: richer users have newer phones, receive the push more often, and spend more. OLS conditions on delivery and inherits that confounder.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> What does LATE not tell us?</summary>
+            <p>It does not identify the effect for never takers or always takers, and it does not automatically generalize beyond compliers. The compliers here are likely richer, newer-phone users.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next chapter</p>
+          <h3>Matching</h3>
+          <p>The matching bench returns: compare units with similar covariates when randomisation is not available.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Name the estimand before the estimate: assignment, delivery, or compliers. The number is only as good as the population it describes.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-ch09.js"></script>
+<script src="../assets/js/iv09.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: '09',
+    slug: '09-non-compliance',
+    title: 'Non-compliance and LATE',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/09-Non-Compliance-and-LATE.html',
+    sections: [
+      { id: 'types', num: '01', label: 'Four types' },
+      { id: 'matrix-bench', num: '02', label: 'The matrix' },
+      { id: 'estimators', num: '03', label: 'Three estimates' },
+      { id: 'external', num: '04', label: 'External validity' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/ch09.js"></script>
+</body>
+</html>

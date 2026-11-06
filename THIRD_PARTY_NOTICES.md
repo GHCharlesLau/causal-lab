@@ -6,7 +6,7 @@ maintainers of the works below.
 ## Book and data
 
 **Causal Inference for the Brave and True** by Matheus Facure Alves.
-Chapters 01 (Introduction to Causality), 02 (Randomised Experiments), 03 (Stats Review), 04 (Graphical Causal Models), 05 (Linear Regression), 06 (Grouped and Dummy Regression), 07 (Beyond Confounders), 08 (Instrumental Variables), and 10 (Matching):
+Chapters 01 (Introduction to Causality), 02 (Randomised Experiments), 03 (Stats Review), 04 (Graphical Causal Models), 05 (Linear Regression), 06 (Grouped and Dummy Regression), 07 (Beyond Confounders), 08 (Instrumental Variables), 09 (Non-Compliance and LATE), and 10 (Matching):
 <https://matheusfacure.github.io/python-causality-handbook/01-Introduction-To-Causality.html>,
 <https://matheusfacure.github.io/python-causality-handbook/02-Randomised-Experiments.html>,
 <https://matheusfacure.github.io/python-causality-handbook/03-Stats-Review-The-Most-Dangerous-Equation.html>,
@@ -15,6 +15,7 @@ Chapters 01 (Introduction to Causality), 02 (Randomised Experiments), 03 (Stats 
 <https://matheusfacure.github.io/python-causality-handbook/06-Grouped-and-Dummy-Regression.html>,
 <https://matheusfacure.github.io/python-causality-handbook/07-Beyond-Confounders.html>,
 <https://matheusfacure.github.io/python-causality-handbook/08-Instrumental-Variables.html>,
+<https://matheusfacure.github.io/python-causality-handbook/09-Non-Compliance-and-LATE.html>,
 and <https://matheusfacure.github.io/python-causality-handbook/10-Matching.html>
 
 Repository and data: <https://github.com/matheusfacure/python-causality-handbook>

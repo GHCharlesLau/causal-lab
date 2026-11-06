@@ -21,7 +21,7 @@
         { num: '06', slug: '06-grouped-regression', title: 'Grouped and dummy regression', short: 'Compare within groups', deck: 'Dummy variables, fixed effects, and the difference between between and within.', status: 'live' },
         { num: '07', slug: '07-beyond-confounders', title: 'Beyond confounders', short: 'Bad controls', deck: 'Mediators and colliders: when adding a variable makes the estimate worse.', status: 'live' },
         { num: '08', slug: '08-instrumental-variables', title: 'Instrumental variables', short: 'A nudge from outside', deck: 'When treatment is chosen, an external nudge can isolate the compliers.', status: 'live' },
-        { num: '09', slug: '09-non-compliance', title: 'Non-compliance and LATE', short: 'Who actually takes it', deck: 'Encouragement, take-up, and the local average treatment effect.', status: 'planned' },
+        { num: '09', slug: '09-non-compliance', title: 'Non-compliance and LATE', short: 'Who actually takes it', deck: 'Encouragement, take-up, and the local average treatment effect.', status: 'live' },
         { num: '10', slug: '10-matching', title: 'Matching', short: 'Find the twin', deck: 'Compare like with like, then measure the bias that survives the match.', status: 'live' },
         { num: '11', slug: '11-propensity-score', title: 'Propensity score', short: 'The probability of treatment', deck: 'Collapse many confounders into one balancing score.', status: 'planned' },
         { num: '12', slug: '12-doubly-robust', title: 'Doubly robust estimation', short: 'Two chances to be right', deck: 'Combine an outcome model and a treatment model; get it right if either is.', status: 'planned' },

@@ -1,0 +1,325 @@
+/* ============================================================
+   Chapter 09 — compliance types, matrix, and estimator chart.
+   ============================================================ */
+
+.compliance-kicker {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  fill: var(--ink-3);
+}
+
+.compliance-count {
+  font-family: var(--serif);
+  font-size: 28px;
+  letter-spacing: -0.02em;
+  fill: var(--ink);
+}
+
+.compliance-detail {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-2);
+}
+
+.type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 18px 0;
+}
+
+.type-grid article {
+  padding: 12px 14px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+}
+
+.type-grid .mono {
+  color: var(--red);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.type-formula {
+  margin: 7px 0 7px;
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+.type-grid p:last-child {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+/* ---------------------------------------------------------- matrix lab */
+.matrix-wrap {
+  padding: 8px 6px 16px;
+}
+
+.compliance-matrix {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 5px;
+}
+
+.compliance-matrix th {
+  padding: 4px;
+  color: var(--ink-3);
+  font-weight: 400;
+  text-align: center;
+}
+
+.compliance-matrix thead th:first-child,
+.compliance-matrix tbody th {
+  width: 54px;
+  text-align: right;
+}
+
+.matrix-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 76px;
+  padding: 8px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease), background 0.15s var(--ease);
+}
+
+.matrix-cell:hover {
+  border-color: var(--ink-2);
+  background: var(--paper-2);
+}
+
+.matrix-cell.is-selected {
+  border-color: var(--red);
+  background: var(--red-soft);
+}
+
+.matrix-cell--zero {
+  color: var(--ink-3);
+}
+
+.cell-count {
+  font-family: var(--serif);
+  font-size: 1.7rem;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.cell-tag {
+  margin-top: 5px;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.matrix-cell.is-selected .cell-tag {
+  color: var(--red);
+}
+
+.compliance-bar {
+  display: flex;
+  height: 14px;
+  margin: 12px 0 5px;
+  background: var(--blue-soft);
+  border: 1px solid var(--rule);
+  overflow: hidden;
+}
+
+.compliance-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--red);
+  opacity: 0.75;
+}
+
+.compliance-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  color: var(--ink-3);
+  font-size: 8px;
+}
+
+.matrix-note {
+  margin: 0 0 10px;
+  color: var(--ink-2);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+/* ---------------------------------------------------------- estimator chart */
+.ch09-chart {
+  min-height: 280px;
+}
+
+.ch09-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ch09-tick {
+  font-family: var(--mono);
+  font-size: 11px;
+  fill: var(--ink-3);
+}
+
+.ch09-axis-title {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ch09-row-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  fill: var(--ink-3);
+}
+
+.ch09-row-value {
+  font-family: var(--mono);
+  font-size: 11px;
+  fill: var(--ink-2);
+}
+
+.ch09-row-line {
+  stroke: var(--blue);
+  stroke-width: 1.2;
+}
+
+.ch09-row-dot {
+  fill: var(--paper);
+  stroke: var(--blue);
+  stroke-width: 1.5;
+}
+
+.ch09-row.is-current .ch09-row-label,
+.ch09-row.is-current .ch09-row-value {
+  fill: var(--red);
+}
+
+.ch09-row.is-current .ch09-row-line {
+  stroke: var(--red);
+  stroke-width: 1.8;
+}
+
+.ch09-row.is-current .ch09-row-dot {
+  fill: var(--red);
+  stroke: var(--ink);
+}
+
+.ch09-se-label {
+  margin-top: 8px;
+}
+
+.ch09-se {
+  margin: 0 0 8px;
+  font-family: var(--mono);
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+
+.ch09-ci {
+  margin: 0 0 8px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink-2);
+}
+
+.ch09-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ch09-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.ch09-preset {
+  padding: 7px 11px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.ch09-preset:hover {
+  border-color: var(--ink-2);
+  color: var(--ink);
+}
+
+.ch09-preset.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.ch09-preset:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.lab--no-swipe .lab-head::after {
+  content: none;
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .type-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lab-body {
+    grid-template-columns: 1fr;
+  }
+
+  .matrix-wrap {
+    overflow-x: auto;
+  }
+
+  .compliance-matrix {
+    min-width: 320px;
+  }
+
+  .ch09-chart {
+    overflow: visible;
+    min-height: 210px;
+  }
+
+  .ch09-chart svg {
+    width: 100%;
+    max-width: none;
+  }
+
+  .ch09-tick,
+  .ch09-axis-title,
+  .ch09-row-label,
+  .ch09-row-value {
+    font-size: 17px;
+  }
+
+  .ch09-preset {
+    flex: 1 1 100%;
+    text-align: left;
+  }
+}
