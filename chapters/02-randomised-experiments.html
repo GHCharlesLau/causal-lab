@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Randomised experiments &mdash; Causal Field Notes</title>
+  <meta name="description" content="Chapter 02: why random assignment makes the difference in means a causal estimate, using the online-classroom experiment.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/ch02.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the chapter</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Chapter 02</p>
+      <h1 class="hero-title">The coin decides<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">flip the link away &darr;</p>
+      <p class="hero-deck">When assignment is random, the treated and control are comparable before treatment.</p>
+      <p class="hero-sub">A field experiment assigned students to face-to-face, blended, or online classes. Because the coin did the assigning, the difference in final exam scores becomes an estimate of the format&rsquo;s effect.</p>
+      <div class="hero-meta mono">
+        <span>1 experiment</span><span>323 students</span><span>3 formats</span><span>~15 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#experiment">Meet the experiment <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/02-Randomised-Experiments.html" target="_blank" rel="noreferrer">Read the source chapter</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="A coin at the center of an experiment, with three arrows to face-to-face, blended, and online classrooms and their average scores.">
+        <g class="hero-paper">
+          <path d="M46 30h368v238H46z" fill="#fbf8f1" stroke="#ddd6c9"/>
+          <path d="M46 88h368" stroke="#ddd6c9" stroke-dasharray="2 4"/>
+        </g>
+        <g class="coin-figure">
+          <circle cx="102" cy="154" r="42" fill="#f6f3ec" stroke="#2b2723" stroke-width="1.5"/>
+          <circle cx="102" cy="154" r="34" fill="none" stroke="#bdb4a5" stroke-dasharray="2 3"/>
+          <text x="102" y="148" text-anchor="middle" class="coin-word">RANDOM</text>
+          <text x="102" y="170" text-anchor="middle" class="coin-word coin-word--small">ASSIGNMENT</text>
+          <path d="M102 112v-12M102 208v12" stroke="#a8283a" stroke-width="1.2"/>
+          <text x="102" y="96" text-anchor="middle" class="coin-note">the coin</text>
+        </g>
+        <g class="format-branches">
+          <path d="M146 138 C 200 100, 220 72, 286 68" fill="none" stroke="#2f5d8a" stroke-width="1.4" stroke-dasharray="4 4"/>
+          <path d="M146 154 C 205 154, 225 154, 286 154" fill="none" stroke="#a85a3c" stroke-width="1.4" stroke-dasharray="4 4"/>
+          <path d="M146 170 C 200 208, 220 236, 286 240" fill="none" stroke="#a8283a" stroke-width="1.4" stroke-dasharray="4 4"/>
+          <rect x="286" y="48" width="142" height="40" fill="#f6f3ec" stroke="#2f5d8a"/>
+          <rect x="286" y="134" width="142" height="40" fill="#f6f3ec" stroke="#a85a3c"/>
+          <rect x="286" y="220" width="142" height="40" fill="#f6f3ec" stroke="#a8283a"/>
+          <text x="298" y="65" class="format-name">face-to-face</text>
+          <text x="298" y="81" class="format-score">78.55</text>
+          <text x="298" y="151" class="format-name">blended</text>
+          <text x="298" y="167" class="format-score">77.09</text>
+          <text x="298" y="237" class="format-name">online</text>
+          <text x="298" y="253" class="format-score">73.64</text>
+        </g>
+        <g class="hand">
+          <text x="142" y="292" fill="#2f5d8a" font-size="19">the same students, three assignments</text>
+          <path d="M250 298c14 4 26 3 38-2" fill="none" stroke="#2f5d8a" stroke-width="1"/>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">A random assignment sends students to face-to-face, blended, or online classrooms; their average scores are 78.55, 77.09, and 73.64.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Online vs. face-to-face</span>
+        <span class="hero-stat-value">&minus;4.91</span>
+        <span class="hero-stat-note">exam points, randomized</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Blended vs. face-to-face</span>
+        <span class="hero-stat-value">&minus;1.45</span>
+        <span class="hero-stat-note">exam points</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Students</span>
+        <span class="hero-stat-value">323</span>
+        <span class="hero-stat-note">120 / 109 / 94</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 GOLD -->
+  <section class="chapter-section sheet" id="gold" data-section="gold">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">the gold standard</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Why a coin is different</p>
+          <h2 class="section-title">Break the link<br>before treatment.</h2>
+          <p class="section-deck">Randomisation does not make the treated and control identical. It makes their potential outcomes independent of treatment &mdash; and that is enough for the difference in means.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">In the last chapter, the bias term was the difference in untreated outcomes between the groups. A coin removes that difference in expectation: the treated and untreated are drawn from the same pool, so their potential outcomes have the same distribution.</p>
+          <p>Formally, random assignment makes the pair of potential outcomes independent of treatment:</p>
+        </div>
+
+        <div class="formula" role="math" aria-label="Potential outcomes are independent of treatment">
+          <span class="formula-label mono">the assumption</span>
+          <span class="formula-body">(<span class="math-var">Y<sub>0</sub></span>, <span class="math-var">Y<sub>1</sub></span>) &perp; <span class="math-var">T</span></span>
+        </div>
+
+        <div class="prose">
+          <p>This does <em>not</em> say the observed outcome is independent of treatment. We hope treatment changes the outcome. It says the outcomes the units <em>would have had</em> do not predict who gets treated. In particular, the untreated outcomes of the treated and control groups have the same mean:</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Randomization implies equal untreated potential outcomes, so the difference in means equals the ATE">
+          <span class="formula-label mono">the result</span>
+          <span class="formula-body">E[<span class="math-var">Y<sub>0</sub></span> | <span class="math-var">T</span>=1] = E[<span class="math-var">Y<sub>0</sub></span> | <span class="math-var">T</span>=0] &nbsp;&rArr;&nbsp; E[<span class="math-var">Y</span> | <span class="math-var">T</span>=1] &minus; E[<span class="math-var">Y</span> | <span class="math-var">T</span>=0] = <span class="math-var">ATE</span></span>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The whole trick</p>
+          <p>Randomisation moves the selection problem into the design. You do not have to model why a student chose online classes; you made that choice unrelated to the student.</p>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">In expectation, not every sample</p>
+          <p>A coin can still produce an unlucky split. The estimate is unbiased in expectation, but any one experiment can be imbalanced. That is why the next chapter is about uncertainty.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">one sentence</p>
+          <p>Randomisation makes the treatment independent of the potential outcomes, not of the observed outcome.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">not a magic wand</p>
+          <p>Random assignment fixes selection. It does not fix a broken implementation, attrition, or a treatment that people refuse to take.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 EXPERIMENT -->
+  <section class="chapter-section sheet" id="experiment" data-section="experiment">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">in a school far away</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">The online-classroom experiment</p>
+          <h2 class="section-title">One exam.<br>Three formats.</h2>
+          <p class="section-deck">323 students were randomly assigned to face-to-face, blended, or online classes. At the end of the semester, everyone took the same exam.</p>
+        </header>
+
+        <div class="prose">
+          <p>This is the kind of comparison the previous chapter could not make. Students did not choose their format. The assignment mechanism did. The groups differ on the exam by <strong>4.91 points</strong> between online and face-to-face, and by <strong>1.45 points</strong> between blended and face-to-face.</p>
+          <p>Click a format below to see its distribution and its gap. The reference is always face-to-face; the question is what the coin bought.</p>
+        </div>
+
+        <figure class="lab" id="lab-format" aria-labelledby="lab-format-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-format-title">The three classrooms</h3>
+            </div>
+            <p class="lab-status mono" id="ch02-status">online &middot; n = 94</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch02-chart" id="ch02-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="ch02-side-label">Online</p>
+              <p class="readout-value" id="ch02-mean">73.64</p>
+              <p class="readout-sub">final exam mean, n = 94</p>
+              <p class="side-label mono ch02-gap-label">Gap vs. face-to-face</p>
+              <p class="readout-value readout-value--blue ch02-gap" id="ch02-gap">&minus;4.91</p>
+              <p class="readout-sub">exam points</p>
+              <dl class="mini-stats">
+                <div><dt>face-to-face</dt><dd id="ch02-ref">78.55</dd></div>
+                <div><dt>students</dt><dd>323</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch02-note">the coin did the selecting.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch02-tabs" role="group" aria-label="Choose a class format">
+            <button class="ch02-tab" type="button" data-format="0">Face-to-face <span class="mono">78.55</span></button>
+            <button class="ch02-tab" type="button" data-format="1">Blended <span class="mono">77.09</span></button>
+            <button class="ch02-tab is-active" type="button" data-format="2" aria-pressed="true">Online <span class="mono">73.64</span></button>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The online distribution is not just shifted; it is wider. A difference in means is a summary, and the next chapter asks how much of it could be noise. The random assignment is what lets the gap be read as causal in the first place.</figcaption>
+        </figure>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The estimate</p>
+          <p>The ATE of online versus face-to-face is <strong>&minus;4.91 exam points</strong>. The blended format is <strong>&minus;1.45</strong>. These are simple differences in means &mdash; and the design is what makes them credible.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">try it first</p>
+          <p>Before clicking: which format do you expect to have the widest spread? Then look at the dots, not just the mean.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the fine print</p>
+          <p>One zero score sits at the bottom of the data. It is real, and it is included in the means. Do not quietly drop it to make the chart prettier.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 BALANCE -->
+  <section class="chapter-section sheet" id="balance" data-section="balance">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">check the coin</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Balance</p>
+          <h2 class="section-title">Did the coin<br>do its job?</h2>
+          <p class="section-deck">A good sanity check is to compare pre-treatment variables across groups. If randomisation worked, they should look similar &mdash; within the noise of a finite sample.</p>
+        </header>
+
+        <div class="prose">
+          <p>The table below uses the experiment&rsquo;s pre-treatment variables. Gender looks close. The Black share does not: <strong>2.9% online</strong> versus <strong>7.1% face-to-face</strong>. The book flags this as a small-sample imbalance, not evidence that the randomisation failed.</p>
+          <p>Ethnicity is missing for 76 of the 323 records; the percentages use the non-missing responses, exactly as the book&rsquo;s groupby does.</p>
+        </div>
+
+        <div class="balance-wrap">
+          <table class="balance-table" id="balance-table">
+            <caption class="sr-only">Pre-treatment covariate proportions by class format</caption>
+            <thead>
+              <tr><th scope="col">Pre-treatment variable</th><th scope="col">Face-to-face</th><th scope="col">Blended</th><th scope="col">Online</th></tr>
+            </thead>
+            <tbody id="balance-body"></tbody>
+          </table>
+        </div>
+        <p class="balance-note" id="balance-note">Values are proportions of non-missing responses. The highlighted row is the largest gap.</p>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">Chance is not bias</p>
+          <p>A finite randomized experiment can be imbalanced. The right response is not to &ldquo;control for&rdquo; the imbalance automatically; it is to report it, and to remember that the estimate is unbiased in expectation, not in every sample.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the check</p>
+          <p>Gender: 63.3% face-to-face, 55.0% blended, 54.3% online. Similar, not identical. Randomisation is a distribution, not a guarantee.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the honest sentence</p>
+          <p>&ldquo;The groups look balanced on most covariates; the Black share is lower online, which is consistent with chance in a 323-person sample.&rdquo;</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 IDEAL -->
+  <section class="chapter-section sheet" id="ideal" data-section="ideal">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">the ideal experiment</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">When you cannot randomise</p>
+          <h2 class="section-title">The experiment<br>you cannot run.</h2>
+          <p class="section-deck">RCTs are the cleanest design, but they are often expensive, unethical, or impossible. The next best move is to reason about the assignment mechanism.</p>
+        </header>
+
+        <div class="prose">
+          <p>You cannot randomly assign pregnant mothers to smoke, or countries to a minimum wage, or customers to a credit line just to see what happens. In those settings, the assignment mechanism is the thing you have to argue about.</p>
+          <p>That is why the ideal-experiment question is useful even when you cannot run it: <em>if I could randomise anything, what would I randomise, and what would that isolate?</em> The answer tells you which comparison the observational design is trying to approximate.</p>
+          <p>The data cannot reveal the assignment mechanism by itself. A correlation between education and wealth is consistent with education causing wealth, or with wealthy families buying education. Causal inference is the discipline of making that choice explicit &mdash; and then testing the implications.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">Next</p>
+          <p>Chapter 03 &mdash; <strong>Stats review</strong>: standard errors, sampling distributions, and why &ldquo;4.91 points&rdquo; needs an uncertainty interval before it becomes a claim.</p>
+        </div>
+        <p class="source-line">Source: <a href="https://matheusfacure.github.io/python-causality-handbook/02-Randomised-Experiments.html" target="_blank" rel="noreferrer">Chapter 02 &middot; Randomised Experiments</a>, Facure. Data: Alpert, Couch &amp; Harmon (2016), <em>A Randomized Assessment of Online Learning</em>, AER 106(5), via the book repository. Adapted under the book&rsquo;s MIT license.</p>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the question</p>
+          <p>If you could run the perfect experiment, what would you assign, to whom, and for how long?</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the limit</p>
+          <p>An RCT identifies the effect of the treatment you assigned, for the people who took it. It does not automatically generalise to another population or another version of the treatment.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Three things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>Randomise the assignment, not the outcome.</strong> The potential outcomes become independent of treatment; the observed outcome should still depend on it.</li>
+          <li><strong>The difference in means is the estimate.</strong> Under randomisation, no regression is needed to make it causal; the design does the identification.</li>
+          <li><strong>Balance is a check, not a proof.</strong> Finite samples can be unlucky; report the imbalance instead of pretending it away.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">Common trap</p>
+          <p>&ldquo;It was randomised, so it is significant.&rdquo; Randomisation removes selection bias; it does not remove sampling noise. The next chapter puts a standard error on the gap.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Randomisation is a design, not an analysis technique. You cannot add it after the data arrive.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> Why does random assignment make the difference in means causal?</summary>
+            <p>It makes the potential outcomes independent of treatment, so the treated and control groups have the same distribution of untreated outcomes. The bias term <span class="math-var">E[Y<sub>0</sub>|T=1] &minus; E[Y<sub>0</sub>|T=0]</span> is zero in expectation, leaving the ATE.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> The online group averages 73.64 and face-to-face averages 78.55. What is the estimate, and what exactly is it estimating?</summary>
+            <p>The difference is <strong>&minus;4.91</strong> exam points. Under randomisation it estimates the average effect of being assigned to online rather than face-to-face for the students in this experiment. It is not automatically the effect for a different population or a different online course.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> The Black share is lower online. Does that mean the randomisation failed?</summary>
+            <p>Not necessarily. A 323-person experiment can produce an imbalance by chance. The right response is to report it and to avoid overinterpreting a single covariate. A formal balance test or a larger sample would sharpen the check.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> Why can&rsquo;t we always randomise, and what do we do instead?</summary>
+            <p>Randomisation can be unethical, expensive, or infeasible. Then we reason explicitly about the assignment mechanism and use designs &mdash; regression, matching, instruments, panels, discontinuities &mdash; that try to reconstruct a credible comparison.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next chapter</p>
+          <h3>Stats review</h3>
+          <p>The 4.91-point gap is an estimate. How much of it could be sampling noise?</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Write the assignment mechanism before you write the estimate. &ldquo;Who got which format, and why?&rdquo;</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-ch02.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: '02',
+    slug: '02-randomised-experiments',
+    title: 'Randomised experiments',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/02-Randomised-Experiments.html',
+    sections: [
+      { id: 'gold', num: '01', label: 'The gold standard' },
+      { id: 'experiment', num: '02', label: 'The experiment' },
+      { id: 'balance', num: '03', label: 'Check the coin' },
+      { id: 'ideal', num: '04', label: 'The ideal experiment' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/ch02.js"></script>
+</body>
+</html>

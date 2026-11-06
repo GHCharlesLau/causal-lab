@@ -14,7 +14,7 @@
       blurb: 'The core moves: potential outcomes, experiments, graphs, regression, instruments, matching, and the designs that make a comparison defensible.',
       chapters: [
         { num: '01', slug: '01-introduction', title: 'Introduction to causality', short: 'The two roads', deck: 'You can only take one road. Causal inference is the discipline of reasoning about the other.', status: 'live' },
-        { num: '02', slug: '02-randomised-experiments', title: 'Randomised experiments', short: 'The coin decides', deck: 'When assignment is random, the difference in means becomes an estimate of the effect.', status: 'planned' },
+        { num: '02', slug: '02-randomised-experiments', title: 'Randomised experiments', short: 'The coin decides', deck: 'When assignment is random, the difference in means becomes an estimate of the effect.', status: 'live' },
         { num: '03', slug: '03-stats-review', title: 'Stats review', short: 'The most dangerous equation', deck: 'Sampling, standard errors, and why small samples tell big lies.', status: 'planned' },
         { num: '04', slug: '04-graphical-causal-models', title: 'Graphical causal models', short: 'Draw the assumptions', deck: 'Pictures that make confounding, mediation, and colliders visible.', status: 'planned' },
         { num: '05', slug: '05-linear-regression', title: 'Linear regression', short: 'The unreasonable effectiveness', deck: 'Regression as a conditional expectation, a weighting device, and a bias machine.', status: 'planned' },

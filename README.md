@@ -1,4 +1,4 @@
-﻿# Causal Field Notes
+# Causal Field Notes
 
 An interactive field guide to the whole of
 [*Causal Inference for the Brave and True*](https://matheusfacure.github.io/python-causality-handbook/landing-page.html):
@@ -8,16 +8,16 @@ and arguments you can defend.
 It is a local, static website: no backend, no build step, no tracking. Open `index.html`
 for the landing page, or serve the folder over HTTP.
 
-**Status: 2 of 30 pages live.** Chapter 01 (Introduction to causality) and Chapter 10
-(Matching) are complete. The other 28 pages are scaffolded in the course manifest and
-marked as planned; they are added one at a time, with numbers checked against the book's
-notebooks.
+**Status: 3 of 30 pages live.** Chapters 01 (Introduction to causality), 02 (Randomised
+experiments), and 10 (Matching) are complete. The other 27 pages are scaffolded in the
+course manifest and marked as planned; they are added one at a time, with numbers checked
+against the book's notebooks.
 
 ---
 
 ## Live now
 
-### 01 â€” Introduction to causality
+### 01 — Introduction to causality
 
 The two roads: potential outcomes, the fundamental problem, and the bias decomposition.
 The counterfactual lens starts with the observed table, then reveals the missing column.
@@ -25,12 +25,25 @@ Verified against the book's four-school table:
 
 | Quantity | Value |
 |---|---|
-| ATE | âˆ’50 |
-| ATT | âˆ’75 |
+| ATE | −50 |
+| ATT | −75 |
 | Naive association | +125 |
 | Bias | +200 |
 
-### 10 â€” Matching
+### 02 — Randomised experiments
+
+The online-classroom experiment: 323 students randomly assigned to face-to-face, blended,
+or online classes. The page includes a dot-strip lab and a pre-treatment balance table.
+
+| Quantity | Value |
+|---|---|
+| Face-to-face mean | 78.55 (n = 120) |
+| Blended mean | 77.09 (n = 109) |
+| Online mean | 73.64 (n = 94) |
+| Online − face-to-face | −4.91 |
+| Blended − face-to-face | −1.45 |
+
+### 10 — Matching
 
 Seven sections, six experiments, and a full matching bench: severity bands, regression
 weights, the cell atlas, exact twins, k-NN with caliper and correction, the bias
@@ -53,15 +66,15 @@ The Matching page reproduces the book's values:
 | Check | Value |
 |---|---|
 | Medicine, naive | +16.90 |
-| Medicine, 1-NN matching | âˆ’0.9954 |
-| Medicine, bias-corrected | âˆ’7.3627 |
-| Trainees, naive | âˆ’4,297.49 |
+| Medicine, 1-NN matching | −0.9954 |
+| Medicine, bias-corrected | −7.3627 |
+| Trainees, naive | −4,297.49 |
 | Trainees, exact match on age | +2,457.89 |
-| Drug example, naive / cells / OLS | âˆ’1.1905 / âˆ’2.6000 / âˆ’2.4545 |
+| Drug example, naive / cells / OLS | −1.1905 / −2.6000 / −2.4545 |
 
-The medicine data is simulated in the book's companion notebook with a **constant âˆ’10-day
+The medicine data is simulated in the book's companion notebook with a **constant −10-day
 treatment effect**. The page uses that as a labelled "truth" line and includes an oracle
-outcome model benchmark (about âˆ’10.05). The book's chapter does not reveal the truth; the
+outcome model benchmark (about −10.05). The book's chapter does not reveal the truth; the
 point here is to let you see estimator bias separately from confounding bias.
 
 ---
@@ -72,6 +85,8 @@ point here is to let you see estimator bias separately from confounding bias.
 
 ![Chapter 01, with the counterfactual lens open](assets/img/screenshots/ch01-lens.png)
 
+![Chapter 02, the three classrooms](assets/img/screenshots/ch02-lab.png)
+
 ![The Matching chapter](assets/img/screenshots/matching.png)
 
 ---
@@ -81,9 +96,9 @@ point here is to let you see estimator bias separately from confounding bias.
 ### Option 1: double-click
 
 Open `index.html` in Chrome or Edge. It is the landing page. The live chapters are
-`chapters/01-introduction.html` and `chapters/10-matching.html`. Everything needed is
-local: CSS, JS, data, fonts, the poster, and the rendered opener at
-`assets/video/matching-opener.mp4`.
+`chapters/01-introduction.html`, `chapters/02-randomised-experiments.html`, and
+`chapters/10-matching.html`. Everything needed is local: CSS, JS, data, fonts, the poster,
+and the rendered opener at `assets/video/matching-opener.mp4`.
 
 ### Option 2: local server
 
@@ -142,12 +157,12 @@ C:\Users\liuyu\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\node\bin\node.
 Columns for the medicine data: `sex`, `age`, `severity`, `medication`, `recovery`.
 6,924 of the 20,000 patients are treated. The companion notebook
 [`Simulated-Data.ipynb`](https://github.com/matheusfacure/python-causality-handbook/blob/master/Simulated-Data.ipynb)
-sets the recovery function so the treatment effect is exactly âˆ’10 days.
+sets the recovery function so the treatment effect is exactly −10 days.
 
 `tools/build-data.py` reads the CSVs and regenerates:
 
-- `assets/js/data.js` â€” the embedded typed-array payload;
-- `assets/js/reference.js` â€” book numbers, k-curve, severity-band checkpoints, oracle;
+- `assets/js/data.js` — the embedded typed-array payload;
+- `assets/js/reference.js` — book numbers, k-curve, severity-band checkpoints, oracle;
 - `data/drug_example.csv`.
 
 Run it with the bundled Python:
@@ -156,7 +171,7 @@ Run it with the bundled Python:
 & "C:\Users\liuyu\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\python\python.exe" tools/build-data.py
 ```
 
-It takes about 20â€“30 seconds because it computes the exact 20,000 Ã— 20,000 nearest
+It takes about 20–30 seconds because it computes the exact 20,000 × 20,000 nearest
 neighbours for the reference values.
 
 ---
@@ -169,7 +184,7 @@ Before a page is marked `live` in `assets/js/chapters.js`:
    `python tools/extract-briefs.py`. It records the headings, code cells, printed outputs,
    images, and data files that the page must agree with.
 2. Every number that appears on the page is recomputed from the notebook/data. The four-school
-   table in Chapter 01 is the worked example: ATE âˆ’50, ATT âˆ’75, naive +125, bias +200.
+   table in Chapter 01 is the worked example: ATE −50, ATT −75, naive +125, bias +200.
 3. A Node test guards the arithmetic (`tests/*.test.mjs`).
 4. A CDP test exercises the actual interaction and checks the DOM (`tools/cdp-ch01.mjs`).
 5. Only then does the manifest status change to `live`. Planned pages are never linked as
@@ -188,8 +203,9 @@ Reference, chapter, and manifest tests (Node 24, no packages):
 
 The suite checks the Matching book numbers, the k-curve, severity-band checkpoints, the
 oracle, the k-d tree, the OLS toy regression, the Chapter 01 potential-outcomes arithmetic
-(ATE âˆ’50, ATT âˆ’75, naive +125, bias +200), and the site manifest (30 pages, unique slugs,
-every live page exists, the shared reading scale is loaded). 20 tests in total.
+(ATE −50, ATT −75, naive +125, bias +200), the Chapter 02 group means and missing-data
+balance, and the site manifest (30 pages, unique slugs, every live page exists, the shared
+reading scale is loaded). 24 tests in total.
 
 Browser smoke tests use Chrome DevTools Protocol through Node's built-in WebSocket (no
 Playwright/Puppeteer). Matching-specific scripts default to
@@ -200,6 +216,7 @@ to test a different page.
 & "...\node.exe" tools/cdp-smoke.mjs
 & "...\node.exe" tools/cdp-interact.mjs
 & "...\node.exe" tools/cdp-ch01.mjs   # Chapter 01: lens, course map, practice
+& "...\node.exe" tools/cdp-ch02.mjs   # Chapter 02: three formats, balance
 & "...\node.exe" tools/cdp-a11y.mjs
 & "...\node.exe" tools/cdp-reduced.mjs
 & "...\node.exe" tools/cdp-film.mjs
@@ -211,10 +228,11 @@ to test a different page.
 `cdp-interact.mjs` drives the band, regression, exact-match play, k, bias correction,
 omitting sex, unit inspection, bias cycling, the dimension slider, the quiz, the checklist,
 practice mode, and the course map. It prints the observed values and any console errors.
-`cdp-ch01.mjs` checks the observed table, the lens, the course map, and practice mode.
+`cdp-ch01.mjs` checks the observed table, the lens, the course map, and practice mode;
+`cdp-ch02.mjs` checks all three format means, the gaps, and the balance table.
 `cdp-a11y.mjs` checks button names, input labels, duplicate IDs, and heading structure;
 `cdp-reduced.mjs` verifies that reduced motion lands on final states; `cdp-film.mjs`
-checks the rendered videoâ€™s metadata and dialog; `cdp-persist.mjs` reloads after scoring
+checks the rendered video’s metadata and dialog; `cdp-persist.mjs` reloads after scoring
 the quiz and completing the checklist to verify localStorage restoration.
 
 ---
@@ -225,6 +243,7 @@ the quiz and completing the checklist to verify localStorage restoration.
 index.html                 landing page + course map
 chapters/
   01-introduction.html     live chapter: the two roads
+  02-randomised-experiments.html  live chapter: the coin, three classrooms
   10-matching.html         live chapter: the matching bench
 assets/css/
   tokens.css               paper/ink/pencil tokens, type scale
@@ -236,12 +255,15 @@ assets/css/
   site.css                 reading progress, course map, chapter pager
   landing.css              landing page
   ch01.css                 chapter 01 lab and bias equation
+  ch02.css                 chapter 02 dot strip, tabs, balance table
   print.css                readable paper version
 assets/js/
   chapters.js              the manifest: 25 chapters + 5 notes, live/planned
   site.js                  chapter shell: top bar, rail, course map, pager
   landing.js               landing course-map renderer + visit state
+  data-ch02.js             online-classroom payload (323 students)
   labs/ch01.js             the counterfactual lens
+  labs/ch02.js             the three-classroom dot strip + balance
   data.js                  matching payload (20k patients)
   reference.js             generated book numbers
   stats.js                 mean/sd/OLS, k-d tree, k-NN matching, correction
@@ -299,18 +321,18 @@ The site is built to grow by one chapter at a time. To add one:
 5. Add a browser test (the `tools/cdp-ch01.mjs` pattern) and a Node arithmetic test.
 6. Update this README's live list and screenshots.
 
-The next chapter is **02 â€” Randomised experiments**: the coin, the standard error, and
-the difference between "no effect" and "not enough evidence." After that, the plan is
-03â€“09 in order, then 11â€“16, then Part II 17â€“25, then the five technical notes.
+The next chapter is **03 — Stats review**: standard errors, sampling distributions, and
+why a 4.91-point gap needs an uncertainty interval. After that, the plan is 04–09 in
+order, then 11–16, then Part II 17–25, then the five technical notes.
 
 ---
 
 ## HyperFrames opener
 
-`motion/` contains a 1920Ã—1080, 24 fps, 12-second composition using the same trainee story:
+`motion/` contains a 1920×1080, 24 fps, 12-second composition using the same trainee story:
 the naive gap, the same-age match lines, and the flip to +2,458. The rendered MP4 is
-included at `assets/video/matching-opener.mp4`; the page shows it in the â€œWatch the 12s
-primerâ€ dialog with a poster and transcript.
+included at `assets/video/matching-opener.mp4`; the page shows it in the “Watch the 12s
+primer” dialog with a poster and transcript.
 
 To re-render:
 
@@ -337,7 +359,7 @@ source is still valid and can be rendered later.
 - The 20,000-point cloud is drawn on Canvas from a cached offscreen layer; the k-d tree is
   rebuilt only when the matching design changes. Estimates use all 20,000 rows.
 - Mobile SVG charts below 720 px keep a 600 px wide drawing and scroll horizontally inside
-  their card, so labels stay legible instead of shrinking to 4 px. A â€œswipe â†’â€ hint marks
+  their card, so labels stay legible instead of shrinking to 4 px. A “swipe →” hint marks
   the cards that scroll.
 - The reading scale is deliberately larger than the first demo: 18px root, about 21px
   body text at desktop, and 10px+ micro-labels. It is a reading site, not a dashboard.
@@ -355,9 +377,10 @@ source is still valid and can be rendered later.
 ## Credits
 
 - **Book & data:** Matheus Facure Alves, *Causal Inference for the Brave and True*,
-  chapters 01 and 10, MIT-licensed repository. Chapter 01's four-school table and its
-  arithmetic are the book's example; the prose is adapted and shortened, and the
-  counterfactual lens is new.
+  chapters 01, 02, and 10, MIT-licensed repository. Chapter 01's four-school table and its
+  arithmetic are the book's example; Chapter 02's online-classroom data comes from Alpert,
+  Couch & Harmon (2016) via the book repository. The prose is adapted and shortened, and
+  the counterfactual lens and three-classroom dot strip are new.
 - **Visual language:** adapted from the **Data Storytelling** style in
   [Lemo-Opuscar](https://github.com/lemomo-ai/lemo-opuscar) by Lemomo (MIT). The charts,
   copy, and motion here are original; no demo assets or story are reused.

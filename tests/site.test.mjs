@@ -1,4 +1,4 @@
-import test from 'node:test';
+﻿import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -14,7 +14,11 @@ const chapters = sandbox.window.CAUSAL_CHAPTERS;
 test('manifest: 25 chapters + 5 technical notes', () => {
   assert.equal(parts.length, 3);
   assert.equal(chapters.length, 30);
-  assert.equal(chapters.filter((c) => c.status === 'live').length, 2);
+  assert.equal(chapters.filter((c) => c.status === 'live').length, 3);
+  assert.equal(
+    chapters.filter((c) => c.status === 'live').map((c) => c.slug).sort().join(','),
+    '01-introduction,02-randomised-experiments,10-matching'
+  );
 });
 
 test('manifest: numbers and slugs are unique', () => {
@@ -48,3 +52,4 @@ test('landing and live pages load the shared reading scale', () => {
   assert.match(ch01, /\.\.\/assets\/js\/site\.js/);
   assert.match(ch01, /window\.CHAPTER/);
 });
+

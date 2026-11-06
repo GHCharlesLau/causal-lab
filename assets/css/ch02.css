@@ -1,0 +1,247 @@
+/* ============================================================
+   Chapter 02 — the coin, the three classrooms, balance.
+   ============================================================ */
+
+.coin-word {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  fill: var(--ink);
+}
+
+.coin-word--small {
+  font-size: 6.5px;
+  fill: var(--ink-3);
+}
+
+.coin-note {
+  font-family: var(--hand);
+  font-size: 16px;
+  fill: var(--blue);
+}
+
+.format-name {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.03em;
+  fill: var(--ink-2);
+}
+
+.format-score {
+  font-family: var(--serif);
+  font-size: 16px;
+  fill: var(--ink);
+}
+
+/* ---------------------------------------------------------- chart */
+.ch02-chart {
+  min-height: 300px;
+}
+
+.ch02-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ch02-tick {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-3);
+}
+
+.ch02-axis-title {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  fill: var(--ink-2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ch02-group-label {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  fill: var(--ink-2);
+  letter-spacing: 0.03em;
+}
+
+.ch02-group-mean {
+  font-family: var(--serif);
+  font-size: 15px;
+  fill: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.ch02-group.is-active .ch02-group-label {
+  fill: var(--red);
+  font-weight: 500;
+}
+
+.ch02-group.is-active .ch02-group-mean {
+  fill: var(--red);
+}
+
+.ch02-dot {
+  opacity: 0.5;
+  transition: opacity 0.15s var(--ease), r 0.15s var(--ease);
+}
+
+.ch02-dot.is-active {
+  opacity: 0.92;
+}
+
+.ch02-dot.is-muted {
+  opacity: 0.16;
+}
+
+.ch02-mean-line {
+  stroke-width: 1.4;
+  stroke-dasharray: 4 3;
+}
+
+.ch02-mean-line.is-active {
+  stroke-width: 2.2;
+  stroke-dasharray: none;
+}
+
+.ch02-hit {
+  fill: transparent;
+  cursor: pointer;
+}
+
+.ch02-hit:focus-visible {
+  outline: 2px solid var(--red);
+}
+
+/* ---------------------------------------------------------- tabs */
+.ch02-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.ch02-tab {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  color: var(--ink-2);
+  font-family: var(--serif);
+  font-size: 0.92rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ch02-tab .mono {
+  color: var(--ink-3);
+  font-size: 8.5px;
+  white-space: nowrap;
+}
+
+.ch02-tab:hover {
+  border-color: var(--ink-2);
+  color: var(--ink);
+}
+
+.ch02-tab.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.ch02-tab.is-active .mono {
+  color: var(--accent);
+}
+
+.ch02-tab:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.ch02-gap-label {
+  margin-top: 12px;
+}
+
+.readout-value.ch02-gap {
+  color: var(--blue);
+}
+
+/* ---------------------------------------------------------- balance table */
+.balance-wrap {
+  margin: 18px 0 0;
+  overflow-x: auto;
+}
+
+.balance-table {
+  width: 100%;
+  min-width: 470px;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.balance-table caption {
+  text-align: left;
+}
+
+.balance-table th {
+  padding: 0 8px 8px;
+  border-bottom: 1px solid var(--rule-strong);
+  color: var(--ink-3);
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.balance-table th:first-child {
+  text-align: left;
+}
+
+.balance-table td {
+  padding: 8px;
+  border-bottom: 1px dotted var(--rule);
+  font-size: 11px;
+  text-align: right;
+}
+
+.balance-table td:first-child {
+  color: var(--ink-2);
+  text-align: left;
+}
+
+.balance-table tr.is-highlight td {
+  background: var(--red-soft);
+  color: var(--ink);
+}
+
+.balance-note {
+  margin: 10px 0 0;
+  color: var(--ink-3);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 720px) {
+  .ch02-chart {
+    overflow-x: auto;
+  }
+
+  .ch02-chart svg {
+    width: 600px;
+    max-width: none;
+  }
+
+  .ch02-tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .ch02-tab {
+    font-size: 0.9rem;
+  }
+}

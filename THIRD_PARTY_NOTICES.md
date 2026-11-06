@@ -6,15 +6,19 @@ maintainers of the works below.
 ## Book and data
 
 **Causal Inference for the Brave and True** by Matheus Facure Alves.
-Chapters 01 (Introduction to Causality) and 10 (Matching):
-<https://matheusfacure.github.io/python-causality-handbook/01-Introduction-To-Causality.html>
+Chapters 01 (Introduction to Causality), 02 (Randomised Experiments), and 10 (Matching):
+<https://matheusfacure.github.io/python-causality-handbook/01-Introduction-To-Causality.html>,
+<https://matheusfacure.github.io/python-causality-handbook/02-Randomised-Experiments.html>,
 and <https://matheusfacure.github.io/python-causality-handbook/10-Matching.html>
 
 Repository and data: <https://github.com/matheusfacure/python-causality-handbook>
 
 The book repository is released under the MIT License. The four-school potential-outcomes
-table in Chapter 01, the medicine table, and the trainee table in `data/` are the book's
-examples, redistributed here for the interactive field guide.
+table in Chapter 01, the online-classroom data in Chapter 02, and the medicine and trainee
+tables in `data/` are the book's examples, redistributed here for the interactive field
+guide. The Chapter 02 data originates from Alpert, Couch & Harmon (2016), “A Randomized
+Assessment of Online Learning,” American Economic Review 106(5), and is used through the
+book repository.
 
 MIT License text:
 
