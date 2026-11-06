@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Debiasing with propensity score &mdash; Causal Field Notes</title>
+  <meta name="description" content="Technical note A2: inverse probability weighting — stored propensity scores, weighted resampling, balance, estimated scores, large weights, and positivity.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/a2.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the note</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Technical Note A2</p>
+      <h1 class="hero-title hero-title--long">Who looks <br>treated<span class="hero-period">?</span></h1>
+      <p class="hero-note hand" aria-hidden="true">weight by the inverse of the score &darr;</p>
+      <p class="hero-deck">If treatment was assigned with known probabilities, the propensity score can reweight the data back to balance.</p>
+      <p class="hero-sub">Income is correlated with email 1 at −0.306. After inverse-probability weighting, the correlation is −0.027. The treated and control groups now look alike on the confounders.</p>
+      <div class="hero-meta mono">
+        <span>5,000 customers</span><span>21.6% treated</span><span>2 labs</span><span>~14 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#balance-bench">Open the balance bench <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/Debiasing-with-Propensity-Score.html" target="_blank" rel="noreferrer">Read the source note</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="A treated unit with low propensity gets a large weight; a control unit with high propensity also gets a large weight.">
+        <g class="hero-paper">
+          <path d="M24 28h412v244H24z" fill="#fbf8f1" stroke="#ddd6c9"/>
+        </g>
+        <g class="ps-figure">
+          <text x="66" y="56" class="ps-title">treated</text>
+          <text x="240" y="56" class="ps-title">control</text>
+          <rect x="44" y="76" width="130" height="54" fill="none" stroke="#bdb4a5"/>
+          <text x="109" y="100" text-anchor="middle" class="ps-node">score 0.05</text>
+          <text x="109" y="119" text-anchor="middle" class="ps-sub">weight 20</text>
+          <rect x="212" y="76" width="130" height="54" fill="none" stroke="#bdb4a5"/>
+          <text x="277" y="100" text-anchor="middle" class="ps-node">score 0.95</text>
+          <text x="277" y="119" text-anchor="middle" class="ps-sub">weight 20</text>
+
+          <path d="M109 130 L109 168" stroke="#a8283a" stroke-width="2"/>
+          <path d="M277 130 L277 168" stroke="#2f5d8a" stroke-width="2"/>
+          <circle cx="109" cy="186" r="20" fill="#a8283a" opacity="0.15"/>
+          <text x="109" y="190" text-anchor="middle" class="ps-weight">20</text>
+          <circle cx="277" cy="186" r="20" fill="#2f5d8a" opacity="0.15"/>
+          <text x="277" y="190" text-anchor="middle" class="ps-weight">20</text>
+          <text x="64" y="230" class="ps-label">rare treated</text>
+          <text x="228" y="230" class="ps-label">rare control</text>
+          <text x="52" y="278" class="hand ps-hand">rare types get more say</text>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">A treated customer with low propensity and a control customer with high propensity both receive large weights.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Raw corr.</span>
+        <span class="hero-stat-value">&minus;0.306</span>
+        <span class="hero-stat-note">income and email 1</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Weighted</span>
+        <span class="hero-stat-value">&minus;0.027</span>
+        <span class="hero-stat-note">after IPW</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Max weight</span>
+        <span class="hero-stat-value">37.2</span>
+        <span class="hero-stat-note">one unit, 38 copies</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 IPW -->
+  <section class="chapter-section sheet" id="ipw" data-section="ipw">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">inverse probability</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Stored probabilities</p>
+          <h2 class="section-title">Reweight<br>the rare.</h2>
+          <p class="section-deck">Each unit gets the inverse of the probability of the treatment it actually received. Rare types get more say.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">The treatment is binary, and the assignment probability was stored for every customer. That means the weights need no model: <span class="math-var">w</span> = <span class="math-var">T</span>/<span class="math-var">p</span>(<span class="math-var">X</span>) + (1−<span class="math-var">T</span>)/(1−<span class="math-var">p</span>(<span class="math-var">X</span>)).</p>
+          <p>Resampling with those weights makes a synthetic sample in which the confounders are balanced across treatment. It is as if the treatment had been randomized with equal probabilities.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Inverse probability weights">
+          <span class="formula-label mono">IPW</span>
+          <span class="formula-body"><span class="w">w</span><sub>i</sub> = <span class="frac"><span class="num"><span class="math-var">T</span><sub>i</sub></span><span class="den"><span class="math-var">p</span>(<span class="math-var">X</span><sub>i</sub>)</span></span> + <span class="frac"><span class="num">1 &minus; <span class="math-var">T</span><sub>i</sub></span><span class="den">1 &minus; <span class="math-var">p</span>(<span class="math-var">X</span><sub>i</sub>)</span></span></span>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">Why it works</p>
+          <p>A unit that got the unlikely treatment stands in for the counterfactual units like it. Weighting by the inverse probability gives those units the representation they would have had under random assignment.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the data</p>
+          <p>The probabilities were stored during the experiment: <span class="mono">em1_ps</span>, <span class="mono">em2_ps</span>, <span class="mono">em3_ps</span>. That is the best case for IPW.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the catch</p>
+          <p>Resampling inflates the sample size. Confidence intervals computed on the resampled data are not valid without correction.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 BALANCE -->
+  <section class="chapter-section sheet" id="balance-bench" data-section="balance-bench">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">the balance bench</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Correlations after weighting</p>
+          <h2 class="section-title">The confounders<br>let go.</h2>
+          <p class="section-deck">Compare each confounder’s correlation with treatment before and after inverse-probability weighting.</p>
+        </header>
+
+        <figure class="lab lab--no-swipe" id="lab-balance" aria-labelledby="lab-balance-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-balance-title">The balance bench</h3>
+            </div>
+            <p class="lab-status mono" id="a2-status">weighted &middot; max 0.038</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart a2-chart" id="a2-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="a2-label">Weighted correlations</p>
+              <p class="readout-value" id="a2-max">0.038</p>
+              <p class="readout-sub">maximum absolute correlation</p>
+              <p class="side-label mono a2-side-label">Income</p>
+              <p class="a2-corr" id="a2-income">&minus;0.027</p>
+              <dl class="mini-stats">
+                <div><dt>customers</dt><dd>5,000</dd></div>
+                <div><dt>confounders</dt><dd>4</dd></div>
+                <div><dt>sample</dt><dd>10,000</dd></div>
+              </dl>
+              <p class="side-note hand" id="a2-note">income is balanced; the raw bias is gone.</p>
+            </aside>
+          </div>
+          <div class="lab-controls a2-controls">
+            <div class="a2-presets" role="group" aria-label="Choose raw or weighted correlations">
+              <button class="a2-preset" type="button" data-view="raw" aria-pressed="false">Raw</button>
+              <button class="a2-preset is-active" type="button" data-view="weighted" aria-pressed="true">Weighted</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> Raw correlations are sizeable, especially income and invested. After weighting, all four are close to zero.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the check</p>
+          <p>Balance is a diagnostic, not proof. A confounder you did not measure cannot be balanced by the score.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the resample</p>
+          <p>10,000 draws from 5,000 customers. The same customer can appear many times; this is what changes the correlation structure.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 WEAKNESS -->
+  <section class="chapter-section sheet" id="weakness" data-section="weakness">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">the weakness</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Huge weights</p>
+          <h2 class="section-title">One unit,<br>thirty-eight copies.</h2>
+          <p class="section-deck">Customer 1014 has a 0.027 probability of email 1 and received it. Its weight is 37.2; it appears 38 times in the resample.</p>
+        </header>
+
+        <div class="prose">
+          <p>That is not a rounding error. A single rare treated unit can dominate the debiased sample. Remove it and the sample changes; that is high variance, not a small technicality.</p>
+          <p>Clipping the weights reduces variance but reintroduces bias. The better fix is at the design stage: avoid very low treatment probabilities for anyone.</p>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-block">
+            <span class="mono">Score</span>
+            <strong>0.0269</strong>
+            <p>customer 1014</p>
+          </div>
+          <div class="stat-block">
+            <span class="mono">Weight</span>
+            <strong>37.23</strong>
+            <p>1 / 0.0269</p>
+          </div>
+          <div class="stat-block">
+            <span class="mono">Copies</span>
+            <strong>38</strong>
+            <p>in the 10,000 resample</p>
+          </div>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">Do not clip blindly</p>
+          <p>Clipping trades variance for bias. If the goal is debiasing, it is usually the wrong knob.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the lesson</p>
+          <p>Propensity weighting is only as stable as the overlap. Low scores are a design problem, not just an analysis problem.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the diagnosis</p>
+          <p>Plot the replication counts against the propensity score. The rare types show up immediately.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 POSITIVITY -->
+  <section class="chapter-section sheet" id="positivity" data-section="positivity">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">positivity</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Common support</p>
+          <h2 class="section-title">Where the score<br>has no overlap.</h2>
+          <p class="section-deck">Email 1 has overlap. Email 3 does not: nobody under 40 was ever treated.</p>
+        </header>
+
+        <div class="prose">
+          <p>If a group has zero probability of treatment, no weight can create its counterfactual. Email 3 was only sent to older customers, so its effect is identified only for the age &gt; 40 population.</p>
+          <p>That is not a failure of the estimator; it is a limit of the data. Restrict the claim to the population where both treatment and control exist.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-positivity" aria-labelledby="lab-positivity-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 02</p>
+              <h3 class="lab-title" id="lab-positivity-title">The positivity check</h3>
+            </div>
+            <p class="lab-status mono" id="a2-pos-status">email 1 &middot; good overlap</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart a2-chart" id="a2-pos-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="a2-pos-label">Email 1</p>
+              <p class="readout-value" id="a2-pos-max">0.91</p>
+              <p class="readout-sub">max propensity score</p>
+              <p class="side-label mono a2-side-label">Zero-score units</p>
+              <p class="a2-corr" id="a2-pos-zero">0</p>
+              <dl class="mini-stats">
+                <div><dt>bins</dt><dd>20</dd></div>
+                <div><dt>treated</dt><dd id="a2-pos-treated">1,079</dd></div>
+                <div><dt>control</dt><dd id="a2-pos-control">3,921</dd></div>
+              </dl>
+              <p class="side-note hand" id="a2-pos-note">both groups span the score range.</p>
+            </aside>
+          </div>
+          <div class="lab-controls a2-controls">
+            <div class="a2-presets" role="group" aria-label="Choose an email">
+              <button class="a2-preset is-active" type="button" data-email="em1" aria-pressed="true">Email 1</button>
+              <button class="a2-preset" type="button" data-email="em3" aria-pressed="false">Email 3</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> Email 3 has a spike at zero and almost no treated units below 0.4. The comparison is not defined for young customers.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the fix</p>
+          <p>Restrict to the region of common support. Estimate the effect for age &gt; 40, not for everyone.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the honesty</p>
+          <p>Do not generalize a treated-only-older effect to younger customers. Positivity tells you exactly where the claim stops.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>IPW reweights the rare.</strong> Treated units with low propensity and controls with high propensity get large weights.</li>
+          <li><strong>Balance is the check.</strong> Correlations between treatment and confounders should shrink toward zero after weighting.</li>
+          <li><strong>Large weights are high variance.</strong> A single low-probability unit can dominate the sample; clipping trades bias back in.</li>
+          <li><strong>Positivity is a data limit.</strong> If a group never gets treated, the effect is not identified for that group.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The sentence to avoid</p>
+          <p>&ldquo;The weighted sample is randomized, so the confidence interval is valid.&rdquo; Resampling inflates the sample size; the interval must account for it.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Prefer stored probabilities over estimated ones. Prefer overlapping treatment probabilities over rare ones.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> What weight does a treated unit with propensity 0.1 get?</summary>
+            <p>10. A control with the same propensity gets 1/(1−0.1) = 1.11. The treated unit is rare, so it stands in for more units.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> Why does weighting balance the confounders?</summary>
+            <p>It gives more representation to units that look like the other treatment group. The weighted distribution of X becomes similar across T.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> Why is a weight of 37 dangerous?</summary>
+            <p>One customer can dominate the resample. The estimate becomes sensitive to a single observation, which is high variance.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> What does poor positivity mean for the claim?</summary>
+            <p>The effect is only identified where both treatment and control exist. For email 3, that is the age &gt; 40 population, not everyone.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next note</p>
+          <h3>When prediction fails</h3>
+          <p>Distribution shift, overlap, and the predictions that cannot save a causal claim.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Plot the weights and the score distributions before you trust the weighted estimate.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-a2.js"></script>
+<script src="../assets/js/iv-a2.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: 'A2',
+    slug: 'a2-debiasing-propensity-score',
+    title: 'Debiasing with propensity score',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/Debiasing-with-Propensity-Score.html',
+    sections: [
+      { id: 'ipw', num: '01', label: 'Inverse probability' },
+      { id: 'balance-bench', num: '02', label: 'The balance bench' },
+      { id: 'weakness', num: '03', label: 'The weakness' },
+      { id: 'positivity', num: '04', label: 'Positivity' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/a2.js"></script>
+</body>
+</html>
