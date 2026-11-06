@@ -1,0 +1,228 @@
+/* ============================================================
+   Chapter 19 — cumulative gain, sensitivity bands, model summary.
+   ============================================================ */
+
+.gain-axis,
+.gain-label {
+  font-family: var(--mono);
+}
+
+.gain-axis {
+  font-size: 9px;
+  fill: var(--ink-3);
+}
+
+.gain-label {
+  font-size: 9px;
+  letter-spacing: 0.03em;
+}
+
+.gain-label--red { fill: var(--red); }
+.gain-label--blue { fill: var(--blue); }
+.gain-label--gray { fill: var(--ink-3); }
+
+.gain-hand {
+  font-family: var(--hand);
+  font-size: 18px;
+  fill: var(--blue);
+}
+
+/* ---------------------------------------------------------- model summary */
+.model-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 18px 0;
+}
+
+.model-summary > div {
+  padding: 12px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+}
+
+.model-summary .mono {
+  display: block;
+  color: var(--ink-3);
+  font-size: 8px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.model-summary strong {
+  display: block;
+  margin: 4px 0;
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  font-weight: 400;
+}
+
+.model-summary p {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 0.82rem;
+}
+
+/* ---------------------------------------------------------- charts */
+.ch19-chart,
+.bands-chart {
+  min-height: 290px;
+}
+
+.ch19-chart svg,
+.bands-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ch19-tick {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-3);
+}
+
+.ch19-axis-title {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  fill: var(--ink-2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.gain-curve {
+  fill: none;
+  stroke-width: 1.6;
+  opacity: 0.55;
+}
+
+.gain-curve.is-active {
+  stroke-width: 2.6;
+  opacity: 1;
+}
+
+.gain-curve--causal { stroke: var(--red); }
+.gain-curve--predictive { stroke: var(--blue); }
+.gain-curve--random { stroke: #6f6a60; }
+
+.gain-random-line {
+  stroke: var(--ink-3);
+  stroke-width: 1.2;
+  stroke-dasharray: 4 4;
+}
+
+.gain-legend {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-2);
+}
+
+.ch19-ate {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+.ch19-side-label {
+  margin-top: 8px;
+}
+
+/* ---------------------------------------------------------- band chart */
+.bands-chart {
+  margin: 18px 0;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  padding: 10px;
+}
+
+.band-line {
+  fill: none;
+  stroke-width: 2;
+}
+
+.band-line--causal { stroke: var(--red); }
+.band-line--predictive { stroke: var(--blue); }
+.band-line--random { stroke: #6f6a60; stroke-dasharray: 4 3; }
+
+.band-dot--causal { fill: var(--red); }
+.band-dot--predictive { fill: var(--blue); }
+.band-dot--random { fill: #6f6a60; }
+
+/* ---------------------------------------------------------- controls */
+.ch19-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ch19-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.ch19-preset {
+  padding: 7px 11px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.ch19-preset:hover {
+  border-color: var(--ink-2);
+  color: var(--ink);
+}
+
+.ch19-preset.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.ch19-preset:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.lab--no-swipe .lab-head::after {
+  content: none;
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .lab-body {
+    grid-template-columns: 1fr;
+  }
+
+  .model-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .ch19-chart,
+  .bands-chart {
+    overflow: visible;
+    min-height: 210px;
+  }
+
+  .ch19-chart svg,
+  .bands-chart svg {
+    width: 100%;
+    max-width: none;
+  }
+
+  .ch19-tick,
+  .ch19-axis-title,
+  .gain-legend {
+    font-size: 15px;
+  }
+
+  .ch19-preset {
+    flex: 1 1 100%;
+    text-align: left;
+  }
+}

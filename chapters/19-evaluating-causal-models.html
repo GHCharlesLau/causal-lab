@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Evaluating causal models &mdash; Causal Field Notes</title>
+  <meta name="description" content="Chapter 19: evaluating causal models — ranking sensitivity without a ground truth, cumulative gain curves, and the random-data test.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/ch19.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the chapter</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Chapter 19</p>
+      <h1 class="hero-title hero-title--long">The missing <br>test set<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">rank, don't score &darr;</p>
+      <p class="hero-deck">Sensitivity is unobservable. Random data and a cumulative gain curve make it testable.</p>
+      <p class="hero-sub">The causal model and the predictive model are trained on non-random prices. They are judged on 5,000 randomized days. The predictive model explains 92.5% of training variance but 77.1% on the randomized test; the evaluation asks which model orders price sensitivity better.</p>
+      <div class="hero-meta mono">
+        <span>5,000 random days</span><span>3 models</span><span>100 curve points</span><span>~20 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#gain-bench">Open the gain bench <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/19-Evaluating-Causal-Models.html" target="_blank" rel="noreferrer">Read the source chapter</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="Three cumulative gain curves against a random diagonal; the causal model diverges from the random line.">
+        <g class="hero-paper">
+          <path d="M24 28h412v244H24z" fill="#fbf8f1" stroke="#ddd6c9"/>
+        </g>
+        <g class="gain-hero">
+          <line x1="54" y1="228" x2="416" y2="228" stroke="#bdb4a5"/>
+          <line x1="54" y1="54" x2="54" y2="228" stroke="#bdb4a5"/>
+          <text x="54" y="246" text-anchor="middle" class="gain-axis">0%</text>
+          <text x="416" y="246" text-anchor="middle" class="gain-axis">100%</text>
+          <text x="44" y="62" text-anchor="end" class="gain-axis">gain</text>
+          <path d="M54 64 L416 210" fill="none" stroke="#bdb4a5" stroke-width="1.2" stroke-dasharray="4 4"/>
+          <path d="M54 64 C 140 108, 230 146, 310 174 S 390 204, 416 210" fill="none" stroke="#2f5d8a" stroke-width="2"/>
+          <path d="M54 64 C 130 86, 220 124, 300 160 S 390 202, 416 210" fill="none" stroke="#a8283a" stroke-width="2"/>
+          <path d="M54 64 C 150 120, 250 164, 330 190 S 400 208, 416 210" fill="none" stroke="#6f6a60" stroke-width="1.4"/>
+          <text x="280" y="148" class="gain-label gain-label--blue">pred</text>
+          <text x="280" y="128" class="gain-label gain-label--red">causal</text>
+          <text x="280" y="182" class="gain-label gain-label--gray">random</text>
+          <text x="66" y="278" class="hand gain-hand">separate from the random line</text>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">Three cumulative gain curves: the causal model diverges above the random diagonal, the predictive model below, and the random model tracks the diagonal.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Train R&sup2;</span>
+        <span class="hero-stat-value">0.925</span>
+        <span class="hero-stat-note">ML sales model</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Random test R&sup2;</span>
+        <span class="hero-stat-value">0.771</span>
+        <span class="hero-stat-note">on randomized prices</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">ATE</span>
+        <span class="hero-stat-value">&minus;2.55</span>
+        <span class="hero-stat-note">full random sample</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 PROBLEM -->
+  <section class="chapter-section sheet" id="problem" data-section="problem">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">the problem</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">No ground truth</p>
+          <h2 class="section-title">You cannot<br>score a slope.</h2>
+          <p class="section-deck">A predictive model is judged against observed outcomes. A sensitivity model is judged against a quantity no one can observe.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">We can’t see an individual price sensitivity. What we can see, with randomized treatment, is the sensitivity of a <em>group</em>. That is enough to evaluate an ordering.</p>
+          <p>Sort the days by a model’s prediction, then estimate the price slope in the top 10%, the top 20%, and so on. A useful model produces a curve that separates from the random benchmark before it converges to the overall average.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Group sensitivity and cumulative gain">
+          <span class="formula-label mono">group slope</span>
+          <span class="formula-body"><span class="math-var">&beta;</span><sub>1,k</sub> = &Sigma;<sub>i&le;k</sub>(<span class="math-var">t</span><sub>i</sub> &minus; <span class="math-var">t&#772;</span>)(<span class="math-var">y</span><sub>i</sub> &minus; <span class="math-var">y&#772;</span>) / &Sigma;<sub>i&le;k</sub>(<span class="math-var">t</span><sub>i</sub> &minus; <span class="math-var">t&#772;</span>)<sup>2</sup></span>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">Why random data</p>
+          <p>With randomized prices, a group slope is an unbiased estimate of that group’s average sensitivity. With non-random prices, the same slope inherits confounding.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the trick</p>
+          <p>Evaluate the ordering, not the individual prediction. A model that ranks the sensitive days near the top is useful even if its levels are noisy.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the cost</p>
+          <p>Random data is expensive. You do not set prices at random for fun; you do it to learn. The evaluation budget is a business decision.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 MODELS -->
+  <section class="chapter-section sheet" id="models" data-section="models">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">three models</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Causal, predictive, random</p>
+          <h2 class="section-title">Three ways<br>to rank a day.</h2>
+          <p class="section-deck">One model predicts sensitivity; one predicts sales; one predicts noise. All three are judged with the same curve.</p>
+        </header>
+
+        <div class="prose">
+          <p><strong>Causal:</strong> a linear model with price &times; context interactions, trained on non-random prices. Its sensitivity prediction is the derivative of the fitted surface.</p>
+          <p><strong>Predictive:</strong> a gradient-boosted sales model, trained on the same non-random data. Train R&sup2; <strong>0.9252</strong>, randomized test R&sup2; <strong>0.7711</strong>.</p>
+          <p><strong>Random:</strong> a uniform score. It is a benchmark: if an evaluation metric rewards the random model, the metric is not measuring ranking skill.</p>
+        </div>
+
+        <div class="model-summary">
+          <div><span class="mono">causal</span><strong>dY/dT</strong><p>targets the slope</p></div>
+          <div><span class="mono">predictive</span><strong>Y</strong><p>targets the level</p></div>
+          <div><span class="mono">random</span><strong>noise</strong><p>the benchmark</p></div>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The R&sup2; trap</p>
+          <p>A high R&sup2; says the model knows the sales level. It says nothing about whether the model knows which days are price-sensitive. Those are different targets.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the test</p>
+          <p>The predictive model was trained on non-random prices and tested on random ones, so some performance drop is expected. It is still a strong sales forecast.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the question</p>
+          <p>Which model puts the most price-sensitive days at the top? That is the question the gain curve answers.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 BANDS -->
+  <section class="chapter-section sheet" id="bands" data-section="bands">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">sensitivity bands</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Ten equal bands</p>
+          <h2 class="section-title">The shape<br>of the ranking.</h2>
+          <p class="section-deck">Split each model’s predictions into ten equal bands and estimate the price slope in each band.</p>
+        </header>
+
+        <div class="prose">
+          <p>A good ranker produces a clear gradient: the top band should have a different slope from the bottom. The random model should be flat, up to noise. The causal model’s first bands are extremely price-sensitive; the predictive model’s bands are more evenly ordered but less extreme.</p>
+        </div>
+
+        <div class="bands-chart" id="ch19-bands" aria-hidden="true"></div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">What to look for</p>
+          <p><strong>Spread:</strong> do the bands differ? <strong>Order:</strong> do they move monotonically? <strong>Extremes:</strong> does the model isolate the most sensitive days?</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the book's reading</p>
+          <p>The causal model finds the extreme sensitive days but its ordering is uneven. The predictive model orders better but misses the extremes. Neither is uniformly better.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the next step</p>
+          <p>Bands are a first look. The cumulative gain curve gives a sharper preference statement.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 GAIN -->
+  <section class="chapter-section sheet" id="gain-bench" data-section="gain-bench">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">cumulative gain</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">The curve that compares</p>
+          <h2 class="section-title">Gain, not<br>accuracy.</h2>
+          <p class="section-deck">Cumulative gain multiplies the group slope by the share of days included. The random benchmark is the diagonal from zero to the ATE.</p>
+        </header>
+
+        <div class="prose">
+          <p>At each fraction <span class="math-var">k</span>/<span class="math-var">N</span>, the curve is the sensitivity of the top <span class="math-var">k</span> days times <span class="math-var">k</span>/<span class="math-var">N</span>. Every model ends at the same ATE; the question is where it sits in between.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-gain" aria-labelledby="lab-gain-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-gain-title">The cumulative gain bench</h3>
+            </div>
+            <p class="lab-status mono" id="ch19-status">causal &middot; top 25%</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch19-chart" id="ch19-gain-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="ch19-label">Causal model</p>
+              <p class="readout-value" id="ch19-gain-value">&minus;0.263</p>
+              <p class="readout-sub">gain at the top 25%</p>
+              <p class="side-label mono ch19-side-label">Full-sample ATE</p>
+              <p class="ch19-ate" id="ch19-ate">&minus;2.552</p>
+              <dl class="mini-stats">
+                <div><dt>days</dt><dd>5,000</dd></div>
+                <div><dt>curve points</dt><dd>100</dd></div>
+                <div><dt>test</dt><dd>randomized</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch19-note">the curve separates from the random line.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch19-controls">
+            <div class="ch19-presets" role="group" aria-label="Choose a model">
+              <button class="ch19-preset is-active" type="button" data-model="causal" aria-pressed="true">Causal</button>
+              <button class="ch19-preset" type="button" data-model="predictive" aria-pressed="false">Predictive</button>
+              <button class="ch19-preset" type="button" data-model="random" aria-pressed="false">Random</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> Every curve ends at the ATE. A useful model diverges before then; the random model stays near the diagonal.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the benchmark</p>
+          <p>The dashed diagonal is the random model. Any curve that hugs it is not adding ranking information.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the caution</p>
+          <p>The cumulative gain is an evaluation on random data. Without randomization, the group slopes would be confounded and the curve would not be trustworthy.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>Sensitivity is unobservable, but group sensitivity is estimable.</strong> Random treatment makes the group slope an unbiased evaluation target.</li>
+          <li><strong>Evaluate the ordering.</strong> A CATE model is useful if it puts responsive units near the top, not if it predicts each slope perfectly.</li>
+          <li><strong>Cumulative gain is the ROC of targeting.</strong> It compares the top-k sensitivity with a random benchmark; all curves converge to the ATE.</li>
+          <li><strong>R&sup2; is not enough.</strong> A sales forecast can be excellent and still rank sensitivity poorly.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The sentence to avoid</p>
+          <p>&ldquo;The model has a high R&sup2;, so it is a good causal model.&rdquo; The R&sup2; measures the level, not the slope, and the model may be ranking the wrong days.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Keep a random sample for evaluation. It is the only place where the group slopes are credible without extra assumptions.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> Why can’t we validate sensitivity at the unit level?</summary>
+            <p>We never observe the same unit under both treatment conditions, so the individual slope is counterfactual. We can estimate a group slope with randomized treatment.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> What does cumulative gain add over sensitivity by band?</summary>
+            <p>It evaluates the entire ordering, not just ten arbitrary bands, and it gives a common benchmark: the diagonal from zero to the ATE.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> Why include a random model?</summary>
+            <p>It is a placebo. If the evaluation metric rewards a random ranking, the metric is not capturing ranking skill.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> Why is randomization essential for the evaluation?</summary>
+            <p>Without it, the group price slope is confounded by other determinants of sales. Randomized prices make the group slope an unbiased sensitivity estimate.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next chapter</p>
+          <h3>Plug-and-play estimators</h3>
+          <p>Use flexible outcome models to estimate CATEs without hand-building interactions. The next chapter moves from linear sensitivity to meta-learners.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Plot the curve, mark the random line, and report the ATE. The shape between the endpoints is the evidence.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-ch19.js"></script>
+<script src="../assets/js/iv19.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: '19',
+    slug: '19-evaluating-causal-models',
+    title: 'Evaluating causal models',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/19-Evaluating-Causal-Models.html',
+    sections: [
+      { id: 'problem', num: '01', label: 'The problem' },
+      { id: 'models', num: '02', label: 'Three models' },
+      { id: 'bands', num: '03', label: 'Sensitivity bands' },
+      { id: 'gain-bench', num: '04', label: 'Cumulative gain' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/ch19.js"></script>
+</body>
+</html>

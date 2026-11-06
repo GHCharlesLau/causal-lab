@@ -39,7 +39,7 @@
       chapters: [
         { num: '17', slug: '17-predictive-models', title: 'Predictive models 101', short: 'Prediction is not causation', deck: 'What machine learning is good at, and where the causal question breaks it.', status: 'live' },
         { num: '18', slug: '18-heterogeneous-effects', title: 'Heterogeneous effects', short: 'Who benefits?', deck: 'From one average effect to a function of the people in front of you.', status: 'live' },
-        { num: '19', slug: '19-evaluating-causal-models', title: 'Evaluating causal models', short: 'Test the claim', deck: 'Why predictive accuracy is the wrong report card for a causal model.', status: 'planned' },
+        { num: '19', slug: '19-evaluating-causal-models', title: 'Evaluating causal models', short: 'Test the claim', deck: 'Why predictive accuracy is the wrong report card for a causal model.', status: 'live' },
         { num: '20', slug: '20-plug-and-play', title: 'Plug-and-play estimators', short: 'Models as components', deck: 'Outcome models, treatment models, and the estimators built from them.', status: 'planned' },
         { num: '21', slug: '21-meta-learners', title: 'Meta learners', short: 'Learn the effect', deck: 'S-, T-, X-, and R-learners: different ways to target the effect, not the outcome.', status: 'planned' },
         { num: '22', slug: '22-orthogonal-ml', title: 'Debiased machine learning', short: 'Orthogonalize the nuisance', deck: 'Neyman orthogonality and cross-fitting, without the hand-waving.', status: 'planned' },
