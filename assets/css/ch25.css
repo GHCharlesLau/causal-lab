@@ -1,0 +1,270 @@
+/* ============================================================
+   Chapter 25 — SDID hero, estimator chart, time-weight bars.
+   ============================================================ */
+
+.sdid-axis {
+  font-family: var(--mono);
+  font-size: 8px;
+  fill: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sdid-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sdid-label--blue { fill: var(--blue); }
+.sdid-label--red { fill: var(--red); }
+
+.sdid-hand {
+  font-family: var(--hand);
+  font-size: 18px;
+  fill: var(--blue);
+}
+
+/* ---------------------------------------------------------- stat row */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 18px 0;
+}
+
+.stat-block {
+  padding: 12px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+}
+
+.stat-block .mono {
+  display: block;
+  color: var(--ink-3);
+  font-size: 8px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.stat-block strong {
+  display: block;
+  margin: 4px 0;
+  font-family: var(--mono);
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.stat-block p {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+/* ---------------------------------------------------------- chart */
+.ch25-chart {
+  min-height: 290px;
+}
+
+.ch25-chart svg,
+.time-weights svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ch25-tick {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-3);
+}
+
+.ch25-axis-title {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  fill: var(--ink-2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ch25-line {
+  fill: none;
+  stroke-width: 2.2;
+}
+
+.ch25-line--cal { stroke: var(--red); }
+.ch25-line--cf { stroke: var(--blue); stroke-dasharray: 4 3; }
+
+.ch25-vline {
+  stroke: var(--ink-3);
+  stroke-width: 1.2;
+  stroke-dasharray: 3 3;
+}
+
+.ch25-legend {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-2);
+}
+
+.ch25-cf {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+
+.ch25-side-label {
+  margin-top: 8px;
+}
+
+/* ---------------------------------------------------------- time weights */
+.time-weights {
+  margin: 14px 0 4px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  padding: 10px;
+}
+
+.time-bar {
+  fill: var(--blue);
+  opacity: 0.75;
+}
+
+.time-label {
+  font-family: var(--mono);
+  font-size: 8px;
+  fill: var(--ink-3);
+}
+
+.time-caption {
+  margin: 0 0 18px;
+  font-size: 8px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ---------------------------------------------------------- intervals */
+.interval-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 18px 0;
+}
+
+.interval-card {
+  padding: 14px;
+  border: 1px solid var(--rule-strong);
+  border-top: 3px solid var(--red);
+  background: var(--paper);
+}
+
+.interval-card--sc {
+  border-top-color: var(--blue);
+}
+
+.interval-card .mono {
+  color: var(--ink-3);
+  font-size: 8px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.interval-card strong {
+  display: block;
+  margin: 4px 0;
+  font-family: var(--mono);
+  font-size: 1.4rem;
+  font-weight: 500;
+}
+
+.interval-card p:last-child {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+/* ---------------------------------------------------------- controls */
+.ch25-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ch25-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.ch25-preset {
+  padding: 7px 11px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.ch25-preset:hover {
+  border-color: var(--ink-2);
+  color: var(--ink);
+}
+
+.ch25-preset.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.ch25-preset:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.lab--no-swipe .lab-head::after {
+  content: none;
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .lab-body {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-row,
+  .interval-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ch25-chart,
+  .time-weights {
+    overflow: visible;
+    min-height: 210px;
+  }
+
+  .ch25-chart svg,
+  .time-weights svg {
+    width: 100%;
+    max-width: none;
+  }
+
+  .ch25-tick,
+  .ch25-axis-title,
+  .ch25-legend,
+  .time-label {
+    font-size: 15px;
+  }
+
+  .ch25-preset {
+    flex: 1 1 100%;
+    text-align: left;
+  }
+}

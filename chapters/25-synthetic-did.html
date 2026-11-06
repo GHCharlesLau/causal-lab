@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Synthetic DiD &mdash; Causal Field Notes</title>
+  <meta name="description" content="Chapter 25: synthetic difference-in-differences — unit and time weights, the Proposition 99 estimate, staggered adoption, and placebo inference.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/ch25.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the chapter</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Chapter 25</p>
+      <h1 class="hero-title hero-title--long">Borrow <br>from both<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">synthetic control + DiD &darr;</p>
+      <p class="hero-deck">A synthetic control that matches trends, plus the fixed effects and time weights of DiD.</p>
+      <p class="hero-sub">Proposition 99 cut cigarette sales in California. DiD says −27.35 packs per person; synthetic control says −19.51; synthetic DiD says −15.61 with a tighter interval. The estimators differ because their counterfactuals differ.</p>
+      <div class="hero-meta mono">
+        <span>39 states</span><span>31 years</span><span>3 estimators</span><span>~24 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#estimator-bench">Open the estimator bench <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/25-Synthetic-Diff-in-Diff.html" target="_blank" rel="noreferrer">Read the source chapter</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="Three counterfactuals for California: DiD projects the control trend, synthetic control matches the pre-trend, and synthetic DiD combines unit and time weights.">
+        <g class="hero-paper">
+          <path d="M24 28h412v244H24z" fill="#fbf8f1" stroke="#ddd6c9"/>
+        </g>
+        <g class="sdid-figure">
+          <line x1="46" y1="214" x2="428" y2="214" stroke="#bdb4a5"/>
+          <line x1="46" y1="58" x2="46" y2="214" stroke="#bdb4a5"/>
+          <line x1="238" y1="58" x2="238" y2="214" stroke="#2b2723" stroke-dasharray="3 4"/>
+          <text x="238" y="234" text-anchor="middle" class="sdid-axis">Prop. 99</text>
+          <text x="60" y="278" class="hand sdid-hand">three answers to one counterfactual</text>
+          <path d="M48 86 C 120 112, 180 132, 236 148 S 340 174, 426 188" fill="none" stroke="#6f6a60" stroke-width="1.4" stroke-dasharray="4 4"/>
+          <path d="M48 94 C 110 116, 170 136, 236 148 S 340 164, 426 172" fill="none" stroke="#2f5d8a" stroke-width="1.8"/>
+          <path d="M48 90 C 120 112, 180 134, 236 148 S 340 166, 426 176" fill="none" stroke="#a8283a" stroke-width="1.8"/>
+          <text x="332" y="166" class="sdid-label sdid-label--blue">SC</text>
+          <text x="332" y="184" class="sdid-label sdid-label--red">SDID</text>
+          <text x="332" y="196" class="sdid-label">DiD</text>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">Three counterfactual paths for California after Proposition 99: DiD, synthetic control, and synthetic DiD.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">DiD</span>
+        <span class="hero-stat-value">&minus;27.35</span>
+        <span class="hero-stat-note">packs per person</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">SC</span>
+        <span class="hero-stat-value">&minus;19.51</span>
+        <span class="hero-stat-note">synthetic control</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">SDID</span>
+        <span class="hero-stat-value">&minus;15.61</span>
+        <span class="hero-stat-note">with time weights</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 DID -->
+  <section class="chapter-section sheet" id="did" data-section="did">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">difference-in-differences</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">The simple comparison</p>
+          <h2 class="section-title">One trend<br>for everyone.</h2>
+          <p class="section-deck">DiD compares the before-and-after change in California with the before-and-after change in the control states.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">The DiD estimate is <strong>−27.35</strong> packs per person. It is easy to compute and easy to explain, but it requires the control states and California to have followed parallel trends in the absence of the law.</p>
+          <p>Look at the pre-period. California was already falling faster than the average state. If that trend continued, the DiD counterfactual is too high and the estimate is too negative.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Difference-in-differences">
+          <span class="formula-label mono">DiD</span>
+          <span class="formula-body"><span class="math-var">&tau;</span> = (<span class="math-var">Y</span><sub>post,tr</sub> &minus; <span class="math-var">Y</span><sub>pre,tr</sub>) &minus; (<span class="math-var">Y</span><sub>post,co</sub> &minus; <span class="math-var">Y</span><sub>pre,co</sub>)</span>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The weak point</p>
+          <p>Parallel trends is not testable. The pre-period gives a hint, and in this case the hint is not reassuring.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the model</p>
+          <p>A regression with post, treated, and their interaction. The interaction is the DiD estimate.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the bias</p>
+          <p>If California was already on a steeper decline, DiD attributes too much of the post-period fall to Proposition 99.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 SC -->
+  <section class="chapter-section sheet" id="sc" data-section="sc">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">synthetic control</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">A made-to-measure control</p>
+          <h2 class="section-title">Match the<br>pre-trend.</h2>
+          <p class="section-deck">Find non-negative weights on the control states so that the weighted control path matches California before 1989.</p>
+        </header>
+
+        <div class="prose">
+          <p>Synthetic control is a horizontal regression: the units are the columns, and the weights are chosen to fit California’s pre-period path. The result is a donor pool that looks like California before the law.</p>
+          <p>The SC estimate is <strong>−19.51</strong>. It is smaller than DiD because the synthetic control bends to California’s pre-trend instead of projecting the average state trend onto it.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Synthetic control">
+          <span class="formula-label mono">SC</span>
+          <span class="formula-body"><span class="w">w</span>&#770; = argmin ||<span class="math-var">y</span><sub>pre,tr</sub> &minus; <span class="math-var">Y</span><sub>pre,co</sub><span class="w">w</span>||<sup>2</sup> &nbsp; s.t. &nbsp; &Sigma;<span class="w">w</span><sub>i</sub> = 1, <span class="w">w</span><sub>i</sub> &ge; 0</span>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The trade-off</p>
+          <p>SC can match a non-parallel pre-trend, but it has no unit fixed effects and no time weights. It fits the whole pre-period equally.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the fit</p>
+          <p>The weights are sparse in the canonical estimator: a few donor states do most of the work.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the variance</p>
+          <p>SC has a wider placebo standard error than SDID in this application, because it does not use time and unit fixed effects.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 SDID -->
+  <section class="chapter-section sheet" id="sdid" data-section="sdid">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">synthetic DiD</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Add the DiD machinery</p>
+          <h2 class="section-title">Unit weights,<br>time weights, fixed effects.</h2>
+          <p class="section-deck">SDID combines a weighted synthetic control with unit and time fixed effects, plus weights on the pre-periods.</p>
+        </header>
+
+        <div class="prose">
+          <p>The unit weights match California’s pre-trend; the time weights match the control group’s post-period level using only the most relevant pre-years. In this application, only 1986, 1987, and 1988 receive weight.</p>
+          <p>The SDID estimate is <strong>−15.61</strong>, smaller than both DiD and SC. The time weights let the counterfactual focus on the years just before the law, when California and its synthetic control were closest.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Synthetic difference-in-differences">
+          <span class="formula-label mono">SDID</span>
+          <span class="formula-body"><span class="math-var">&tau;</span> = argmin &Sigma;<sub>i,t</sub> (<span class="math-var">Y</span><sub>it</sub> &minus; <span class="math-var">&mu;</span> &minus; <span class="math-var">&alpha;</span><sub>i</sub> &minus; <span class="math-var">&beta;</span><sub>t</sub> &minus; <span class="math-var">&tau;</span><span class="math-var">D</span><sub>it</sub>)<sup>2</sup> <span class="w">w</span><sub>i</sub> <span class="l">l</span><sub>t</sub></span>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-estimators" aria-labelledby="lab-estimators-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-estimators-title">The estimator bench</h3>
+            </div>
+            <p class="lab-status mono" id="ch25-status">synthetic DiD &middot; &minus;15.61</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch25-chart" id="ch25-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="ch25-label">Synthetic DiD</p>
+              <p class="readout-value" id="ch25-att">&minus;15.61</p>
+              <p class="readout-sub">packs per person</p>
+              <p class="side-label mono ch25-side-label">Counterfactual</p>
+              <p class="ch25-cf" id="ch25-cf">unit + time weights</p>
+              <dl class="mini-stats">
+                <div><dt>estimators</dt><dd>3</dd></div>
+                <div><dt>years</dt><dd>31</dd></div>
+                <div><dt>donors</dt><dd>38</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch25-note">the time weights focus on 1986–88.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch25-controls">
+            <div class="ch25-presets" role="group" aria-label="Choose an estimator">
+              <button class="ch25-preset" type="button" data-estimator="did" aria-pressed="false">DiD</button>
+              <button class="ch25-preset" type="button" data-estimator="sc" aria-pressed="false">Synthetic control</button>
+              <button class="ch25-preset is-active" type="button" data-estimator="sdid" aria-pressed="true">Synthetic DiD</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The three counterfactuals sit at different levels after 1989. The gap between California and each counterfactual is the estimate.</figcaption>
+        </figure>
+
+        <div class="time-weights" id="ch25-time-weights" aria-hidden="true"></div>
+        <p class="time-caption mono">Time weights &middot; only 1986, 1987, and 1988 are used</p>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the weights</p>
+          <p>Unit weights are penalized to spread across donors; time weights pick the pre-periods that best match the post-period control level.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the intercept</p>
+          <p>SDID allows the synthetic control to sit at a different level. DiD then adjusts the trend, so the level difference is not a problem.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 STAGGERED -->
+  <section class="chapter-section sheet" id="staggered" data-section="staggered">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">staggered adoption</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">More than one treatment date</p>
+          <h2 class="section-title">Split into<br>blocks.</h2>
+          <p class="section-deck">When cohorts are treated at different times, run SDID one cohort at a time and combine the ATT estimates by treated-cell counts.</p>
+        </header>
+
+        <div class="prose">
+          <p>The book simulates three new states that pass a similar law in 1993. Their effect is −17.25; California’s is −15.61. The combined estimate is <strong>−16.70</strong>, with weights 12/36 for California and 24/36 for the new states.</p>
+          <p>The key is to delete rows or columns to recover a block design: one treated cohort, one clean control pool, one clear pre-period. Each block gets its own SDID estimate.</p>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-block">
+            <span class="mono">California</span>
+            <strong>&minus;15.61</strong>
+            <p>12 treated cells</p>
+          </div>
+          <div class="stat-block">
+            <span class="mono">New states</span>
+            <strong>&minus;17.25</strong>
+            <p>24 treated cells</p>
+          </div>
+          <div class="stat-block">
+            <span class="mono">Combined</span>
+            <strong>&minus;16.70</strong>
+            <p>weighted average</p>
+          </div>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The requirement</p>
+          <p>No unit can revert from treated to untreated. Once a cohort is treated, it stays treated; otherwise the block design is not well defined.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the weights</p>
+          <p>12/36 and 24/36 are the shares of treated unit-periods, not the shares of units.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the caution</p>
+          <p>This is a block-by-block decomposition, not a single regression with staggered dummies. It avoids the TWFE contamination from Chapter 24.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 INFERENCE -->
+  <section class="chapter-section sheet" id="inference" data-section="inference">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">placebo inference</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Do not trust the regression SE</p>
+          <h2 class="section-title">Pretend a donor<br>was treated.</h2>
+          <p class="section-deck">The regression standard error ignores the variance from estimating the weights. Placebo tests account for it.</p>
+        </header>
+
+        <div class="prose">
+          <p>Run SDID on each control state as if it were treated, collect the placebo ATTs, and use their standard deviation as the standard error. For California, the SDID standard error is <strong>9.91</strong>; the 90% interval is <strong>[−31.96, 0.75]</strong>.</p>
+          <p>The SC standard error is <strong>11.24</strong>, with interval <strong>[−38.06, −0.96]</strong>. SDID is more precise because the fixed effects absorb a lot of outcome variance.</p>
+        </div>
+
+        <div class="interval-grid">
+          <div class="interval-card">
+            <p class="mono">Synthetic DiD</p>
+            <strong>&minus;15.61</strong>
+            <p>SE 9.91 &middot; 90% CI [&minus;31.96, 0.75]</p>
+          </div>
+          <div class="interval-card interval-card--sc">
+            <p class="mono">Synthetic control</p>
+            <strong>&minus;19.51</strong>
+            <p>SE 11.24 &middot; 90% CI [&minus;38.06, &minus;0.96]</p>
+          </div>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The interpretation</p>
+          <p>The SDID interval includes zero. The estimate is negative and economically meaningful, but the placebo variance is large enough that we cannot rule out no effect at 90% confidence.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">why placebos</p>
+          <p>The estimator has two steps: weights and regression. The regression SE only sees the second step; the placebo sees both.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the sample</p>
+          <p>There are only 38 donor states, so the placebo distribution is coarse. Treat the interval as approximate.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>SDID = SC + DiD.</strong> Unit weights match the pre-trend; unit and time fixed effects absorb level and trend variation.</li>
+          <li><strong>Time weights matter.</strong> They let the counterfactual focus on the pre-periods most similar to the post-period, instead of fitting every pre-year equally.</li>
+          <li><strong>Staggered adoption needs blocks.</strong> Split into one-cohort designs, estimate each, and weight by treated cells.</li>
+          <li><strong>Use placebo inference.</strong> The regression SE ignores weight-estimation variance; placebo tests do not.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The sentence to avoid</p>
+          <p>&ldquo;SDID is always better than SC.&rdquo; SDID allows extrapolation through its intercept and penalty; that can be an advantage or a risk depending on the application.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Plot the three counterfactuals side by side. The estimator you choose is the counterfactual you are willing to defend.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 07 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">07</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> Why does DiD give a larger negative effect than SC?</summary>
+            <p>DiD projects the average control trend onto California, but California was already declining faster. SC matches the pre-trend, producing a less steep counterfactual and a smaller estimate.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> What do the time weights do?</summary>
+            <p>They weight pre-periods so that a weighted average of the control outcomes matches the control group’s post-period level. Here only 1986–88 receive weight.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> How does SDID handle staggered adoption?</summary>
+            <p>It splits the data into block designs with one treated cohort and a clean control pool, runs SDID per block, and combines the ATTs by treated-cell counts.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> Why use placebo standard errors?</summary>
+            <p>The regression SE treats the weights as fixed and ignores their estimation variance. Placebo tests re-estimate the whole procedure under fake treatment assignments.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next stop</p>
+          <h3>The technical notes</h3>
+          <p>Five short appendices: when prediction fails, the meaning of regression, and the rest of the book’s technical toolkit.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Three estimators, three counterfactuals. The number is only as credible as the path behind it.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-ch25.js"></script>
+<script src="../assets/js/iv25.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: '25',
+    slug: '25-synthetic-did',
+    title: 'Synthetic DiD',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/25-Synthetic-Diff-in-Diff.html',
+    sections: [
+      { id: 'did', num: '01', label: 'Difference-in-differences' },
+      { id: 'sc', num: '02', label: 'Synthetic control' },
+      { id: 'sdid', num: '03', label: 'Synthetic DiD' },
+      { id: 'staggered', num: '04', label: 'Staggered adoption' },
+      { id: 'inference', num: '05', label: 'Placebo inference' },
+      { id: 'key', num: '06', label: 'Key ideas' },
+      { id: 'practice', num: '07', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/ch25.js"></script>
+</body>
+</html>
