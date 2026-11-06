@@ -8,13 +8,13 @@ and arguments you can defend.
 It is a local, static website: no backend, no build step, no tracking. Open `index.html`
 for the landing page, or serve the folder over HTTP.
 
-**Status: 13 of 30 pages live.** Chapters 01 (Introduction to causality), 02 (Randomised
+**Status: 14 of 30 pages live.** Chapters 01 (Introduction to causality), 02 (Randomised
 experiments), 03 (Stats review), 04 (Graphical causal models), 05 (Linear regression),
 06 (Grouped and dummy regression), 07 (Beyond confounders), 08 (Instrumental variables),
 09 (Non-compliance and LATE), 10 (Matching), 11 (Propensity score), 12 (Doubly robust
-estimation), and 13 (Difference-in-differences) are complete. The other 17 pages are
-scaffolded in the course manifest and marked as planned; they are added one at a time, with
-numbers checked against the book's notebooks.
+estimation), 13 (Difference-in-differences), and 14 (Panel data and fixed effects) are
+complete. The other 16 pages are scaffolded in the course manifest and marked as planned;
+they are added one at a time, with numbers checked against the book's notebooks.
 
 ---
 
@@ -136,6 +136,13 @@ interaction gives the same number, with a standard error of 5.729 and an interva
 includes zero. The page makes parallel trends the central assumption and shows pre-trends
 that would undermine it.
 
+### 14 — Panel data and fixed effects
+
+The wage panel follows 545 men for 8 years. Pooled OLS gives a 14.1% marriage premium;
+entity fixed effects 11.5%; entity plus time effects 4.8%. The page shows the toy panel where
+the pooled slope is −0.56 and the within-city slope is +1.44, the demeaning identity, and
+the two failure modes: time-varying confounding and reverse causality.
+
 ### What is in each chapter
 
 - A story with the decision, the failure of the naive comparison, and the identification
@@ -193,6 +200,8 @@ point here is to let you see estimator bias separately from confounding bias.
 
 ![Chapter 13, the DiD comparison bench](assets/img/screenshots/ch13-did.png)
 
+![Chapter 14, the toy fixed-effect bench](assets/img/screenshots/ch14-toy.png)
+
 ![The Matching chapter](assets/img/screenshots/matching.png)
 
 ---
@@ -207,9 +216,10 @@ Open `index.html` in Chrome or Edge. It is the landing page. The live chapters a
 `chapters/05-linear-regression.html`, `chapters/06-grouped-regression.html`,
 `chapters/07-beyond-confounders.html`, `chapters/08-instrumental-variables.html`,
 `chapters/09-non-compliance.html`, `chapters/10-matching.html`,
-`chapters/11-propensity-score.html`, `chapters/12-doubly-robust.html`, and
-`chapters/13-difference-in-differences.html`. Everything needed is local: CSS, JS, data,
-fonts, the poster, and the rendered opener at `assets/video/matching-opener.mp4`.
+`chapters/11-propensity-score.html`, `chapters/12-doubly-robust.html`,
+`chapters/13-difference-in-differences.html`, and `chapters/14-panel-fixed-effects.html`.
+Everything needed is local: CSS, JS, data, fonts, the poster, and the rendered opener at
+`assets/video/matching-opener.mp4`.
 
 ### Option 2: local server
 
@@ -340,6 +350,7 @@ to test a different page.
 & "...\node.exe" tools/cdp-ch11.mjs   # Chapter 11: propensity score, estimators
 & "...\node.exe" tools/cdp-ch12.mjs   # Chapter 12: doubly robust grid
 & "...\node.exe" tools/cdp-ch13.mjs   # Chapter 13: DiD comparisons
+& "...\node.exe" tools/cdp-ch14.mjs   # Chapter 14: toy FE and wage models
 & "...\node.exe" tools/cdp-a11y.mjs
 & "...\node.exe" tools/cdp-reduced.mjs
 & "...\node.exe" tools/cdp-film.mjs
@@ -362,7 +373,8 @@ practice mode, and the course map. It prints the observed values and any console
 `cdp-ch09.mjs` checks the compliance matrix and the three estimates;
 `cdp-ch11.mjs` checks the score distribution and the four propensity estimates;
 `cdp-ch12.mjs` checks the robustness grid and the interval chart;
-`cdp-ch13.mjs` checks the before/after, cross-section, and DiD readouts.
+`cdp-ch13.mjs` checks the before/after, cross-section, and DiD readouts;
+`cdp-ch14.mjs` checks the toy fixed-effect flip and the three wage models.
 `cdp-a11y.mjs` checks button names, input labels, duplicate IDs, and heading structure;
 `cdp-reduced.mjs` verifies that reduced motion lands on final states; `cdp-film.mjs`
 checks the rendered video’s metadata and dialog; `cdp-persist.mjs` reloads after scoring
@@ -388,6 +400,7 @@ chapters/
   11-propensity-score.html live chapter: the score, weighting, matching
   12-doubly-robust.html    live chapter: two models, two chances
   13-difference-in-differences.html live chapter: billboards and parallel trends
+  14-panel-fixed-effects.html live chapter: within-person comparisons
 assets/css/
   tokens.css               paper/ink/pencil tokens, type scale
   base.css                 reset, type, focus, grain, toast
@@ -409,6 +422,7 @@ assets/css/
   ch11.css                 chapter 11 score histogram and estimator rows
   ch12.css                 chapter 12 robustness grid and intervals
   ch13.css                 chapter 13 trend chart and comparison cards
+  ch14.css                 chapter 14 FE hero, toy panel, wage chart
   print.css                readable paper version
 assets/js/
   chapters.js              the manifest: 25 chapters + 5 notes, live/planned
@@ -422,11 +436,13 @@ assets/js/
   data-ch09.js             push compliance counts and means
   data-ch11.js             learning-mindset PS and outcome payload
   data-ch13.js             billboard group means and OLS
+  data-ch14.js             toy panel and wage-panel year means
   iv.js                    the book's quarter-of-birth IV constants
   iv09.js                  the book's OLS/ITT/LATE constants
   iv11.js                  the book's propensity-score constants
   iv12.js                  the book's doubly robust constants
   iv13.js                  the book's DiD constants
+  iv14.js                  the book's fixed-effect constants
   dag.js                   chapter 04 graph definitions + path verdicts
   regression.js            OLS/WLS engine + classical SEs
   labs/ch01.js             the counterfactual lens
@@ -441,6 +457,7 @@ assets/js/
   labs/ch11.js             the score histogram, rate strip, and estimators
   labs/ch12.js             the robustness grid and interval chart
   labs/ch13.js             the DiD comparison chart and readout
+  labs/ch14.js             the toy FE chart and wage coefficient chart
   data.js                  matching payload (20k patients)
   reference.js             generated book numbers
   stats.js                 mean/sd/OLS, k-d tree, k-NN matching, correction
@@ -498,9 +515,9 @@ The site is built to grow by one chapter at a time. To add one:
 5. Add a browser test (the `tools/cdp-ch01.mjs` pattern) and a Node arithmetic test.
 6. Update this README's live list and screenshots.
 
-The next build is **Chapter 14 — Panel data and fixed effects**: within-unit comparisons
-that remove stable confounders. After that, the plan is 15–16, then Part II 17–25, then the
-five technical notes.
+The next build is **Chapter 15 — Synthetic control**: build a comparison unit from many
+untreated units when no single control follows the treated trend. After that, the plan is
+16, then Part II 17–25, then the five technical notes.
 
 ---
 
@@ -555,7 +572,7 @@ source is still valid and can be rendered later.
 ## Credits
 
 - **Book & data:** Matheus Facure Alves, *Causal Inference for the Brave and True*,
-  chapters 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, and 13, MIT-licensed repository.
+  chapters 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, and 14, MIT-licensed repository.
   Chapter 01's four-school table and its arithmetic are the book's example; Chapter 02's
   online-classroom data comes from Alpert, Couch & Harmon (2016) via the book repository.
   Chapter 03's sampling simulation uses the book's true mean 74 and standard deviation 2.
@@ -563,12 +580,12 @@ source is still valid and can be rendered later.
   06 use the book's `wage.csv`; Chapter 07 uses the book's collections-email and
   hospital-treatment data; Chapter 08 uses the book's `ak91.csv` and its seed-12 IV
   simulation; Chapter 09 uses the book's push-engagement data; Chapters 11 and 12 use the
-  book's `learning_mindset.csv`; Chapter 13 uses the book's `billboard_impact.csv`. The prose
+  book's `learning_mindset.csv`; Chapter 13 uses the book's `billboard_impact.csv`; Chapter 14 uses the wage panel distributed with linearmodels. The prose
   is adapted and shortened, and the counterfactual lens, three-classroom dot strip,
   sample-size dial, interval ruler, DAG workbench, control dial, weighting bench, dummy
   staircase, control labs, seasonal panel, IV ratio, weak-instrument dial, compliance
   matrix, estimator chart, score histogram, rate strip, robustness grid, interval chart,
-  comparison cards, and trend bench are new.
+  comparison cards, trend bench, fixed-effect hero, toy panel, and wage chart are new.
 - **Visual language:** adapted from the **Data Storytelling** style in
   [Lemo-Opuscar](https://github.com/lemomo-ai/lemo-opuscar) by Lemomo (MIT). The charts,
   copy, and motion here are original; no demo assets or story are reused.

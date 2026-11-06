@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panel data and fixed effects &mdash; Causal Field Notes</title>
+  <meta name="description" content="Chapter 14: panel data and fixed effects — the person as their own control, entity and time effects, and when panel data cannot help.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/ch14.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the chapter</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Chapter 14</p>
+      <h1 class="hero-title">Hold still<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">the person as their own control &darr;</p>
+      <p class="hero-deck">Panel data observes the same unit repeatedly. Fixed effects compare each unit with itself.</p>
+      <p class="hero-sub">Married men earn more. But the men who marry also differ in ways we never measure: beauty, intelligence, family background. If those traits are stable, the person dummy absorbs them. The marriage effect falls from 14.1% to 11.5% &mdash; and to 4.8% once common time shocks are removed.</p>
+      <div class="hero-meta mono">
+        <span>4,360 person-years</span><span>545 men</span><span>8 years</span><span>~20 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#toy-bench">Open the fixed-effect bench <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/14-Panel-Data-and-Fixed-Effects.html" target="_blank" rel="noreferrer">Read the source chapter</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 470 300" role="img" aria-label="One person observed over four periods. Stability in beauty and intelligence is absorbed by the person fixed effect, so only within-person changes remain.">
+        <g class="hero-paper">
+          <path d="M24 28h422v244H24z" fill="#fbf8f1" stroke="#ddd6c9"/>
+        </g>
+        <g class="fe-hero">
+          <line x1="54" y1="234" x2="430" y2="234" stroke="#bdb4a5"/>
+          <line x1="54" y1="58" x2="54" y2="234" stroke="#bdb4a5"/>
+          <text x="70" y="252" text-anchor="middle" class="fe-axis">t1</text>
+          <text x="168" y="252" text-anchor="middle" class="fe-axis">t2</text>
+          <text x="266" y="252" text-anchor="middle" class="fe-axis">t3</text>
+          <text x="364" y="252" text-anchor="middle" class="fe-axis">t4</text>
+          <rect x="82" y="64" width="314" height="146" fill="none" stroke="#ddd6c9" stroke-dasharray="4 4"/>
+          <text x="92" y="80" class="fe-box-label">same person &middot; stable U</text>
+          <line x1="100" y1="106" x2="392" y2="106" stroke="#2f5d8a" stroke-width="1.2" stroke-dasharray="5 4"/>
+          <text x="400" y="110" class="fe-u">U</text>
+          <path d="M70 202 L168 198 L266 170 L364 136" fill="none" stroke="#a8283a" stroke-width="2.2"/>
+          <circle cx="70" cy="202" r="4" fill="#a8283a"/>
+          <circle cx="168" cy="198" r="4" fill="#a8283a"/>
+          <circle cx="266" cy="170" r="4" fill="#a8283a"/>
+          <circle cx="364" cy="136" r="4" fill="#a8283a"/>
+          <text x="70" y="222" text-anchor="middle" class="fe-value">single</text>
+          <text x="168" y="218" text-anchor="middle" class="fe-value">single</text>
+          <text x="266" y="190" text-anchor="middle" class="fe-value">married</text>
+          <text x="364" y="156" text-anchor="middle" class="fe-value">married</text>
+          <text x="80" y="130" class="fe-wage">wage</text>
+          <text x="40" y="276" class="hand fe-hand">within change is the evidence</text>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">One person over four periods. Stable unobservables U are absorbed; the within-person wage change from single to married remains.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Pooled</span>
+        <span class="hero-stat-value">+14.1%</span>
+        <span class="hero-stat-note">married coefficient</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&rarr;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Entity FE</span>
+        <span class="hero-stat-value">+11.5%</span>
+        <span class="hero-stat-note">within person</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&rarr;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Two-way FE</span>
+        <span class="hero-stat-value">+4.8%</span>
+        <span class="hero-stat-note">person + year</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 PANEL -->
+  <section class="chapter-section sheet" id="panel" data-section="panel">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">the panel</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Controlling what you cannot see</p>
+          <h2 class="section-title">The person<br>is the control.</h2>
+          <p class="section-deck">A panel observes the same unit repeatedly. Fixed effects use only the changes inside each unit, so any stable confounder disappears.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">The wage panel follows <strong>545 men</strong> for <strong>8 years</strong>, from 1980 to 1987: <strong>4,360 person-years</strong>. Marriage and wages change over time; beauty, intelligence, and family background do not, at least over this window.</p>
+          <p>Adding a dummy for each person is the fixed effect. It is equivalent to subtracting each person’s mean from every variable and running the regression on the demeaned data. Any variable that is constant within person &mdash; race, ethnicity, education &mdash; is wiped out.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Within transformation">
+          <span class="formula-label mono">within</span>
+          <span class="formula-body"><span class="math-var">y</span><sub>it</sub> &minus; <span class="math-var">y&#772;</span><sub>i</sub> = <span class="math-var">&beta;</span>(<span class="math-var">X</span><sub>it</sub> &minus; <span class="math-var">X&#772;</span><sub>i</sub>) + (<span class="math-var">e</span><sub>it</sub> &minus; <span class="math-var">e&#772;</span><sub>i</sub>)</span>
+        </div>
+
+        <div class="prose">
+          <p>The unobserved <span class="math-var">U</span><sub>i</sub> is constant, so <span class="math-var">U</span><sub>i</sub> &minus; <span class="math-var">U&#772;</span><sub>i</sub> = 0. That is the whole trick: the confounder does not need to be measured, only stable.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The assumption</p>
+          <p>Fixed effects remove <em>time-invariant</em> confounding. They do not remove confounders that change over time, and they do not fix reverse causality.</p>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">What you lose</p>
+          <p>Any variable that does not change within person is collinear with the person dummies. Education, race, and ethnicity drop out of the entity fixed-effect model; their effects are not identified.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the intuition</p>
+          <p>Compare each man with himself five years earlier. The stable parts cancel; the change is what remains.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the cost</p>
+          <p>Only within-person variation identifies the effect. If nobody changes treatment, the model cannot learn anything.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 TOY BENCH -->
+  <section class="chapter-section sheet" id="toy-bench" data-section="toy-bench">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">the toy bench</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">A sign that flips</p>
+          <h2 class="section-title">Between cities<br>or within them?</h2>
+          <p class="section-deck">Pooling the cities gives a negative slope: marketing looks harmful. Adding city fixed effects gives a positive slope: within a city, more marketing means more purchases.</p>
+        </header>
+
+        <div class="prose">
+          <p>The toy data has four cities and four observations per city. The marketing department spends more in cities that already purchase less, so the pooled relationship is negative. City fixed effects compare marketing and purchases <em>within</em> each city, where that between-city selection is gone.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-toy" aria-labelledby="lab-toy-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-toy-title">The fixed-effect bench</h3>
+            </div>
+            <p class="lab-status mono" id="ch14-toy-status">city fixed effects &middot; +1.44</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch14-chart" id="ch14-toy-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="ch14-toy-label">City fixed effects</p>
+              <p class="readout-value" id="ch14-toy-slope">+1.44</p>
+              <p class="readout-sub">purchases per unit of marketing</p>
+              <p class="side-label mono ch14-side-label">What changed</p>
+              <p class="ch14-note" id="ch14-toy-note">the between-city level differences are absorbed.</p>
+              <dl class="mini-stats">
+                <div><dt>cities</dt><dd>4</dd></div>
+                <div><dt>observations</dt><dd>16</dd></div>
+                <div><dt>pooled slope</dt><dd>&minus;0.56</dd></div>
+              </dl>
+            </aside>
+          </div>
+          <div class="lab-controls ch14-controls">
+            <div class="ch14-presets" role="group" aria-label="Choose a model">
+              <button class="ch14-preset" type="button" data-model="pooled" aria-pressed="false">Pooled OLS</button>
+              <button class="ch14-preset is-active" type="button" data-model="fe" aria-pressed="true">City fixed effects</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The fixed-effect lines are parallel: one slope, four intercepts. The slope is the within-city effect; the intercepts absorb each city’s stable level.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the flip</p>
+          <p>Pooled: &minus;0.56. Within city: +1.44. Same data, different comparison. The pooled sign is selection, not causation.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the assumption</p>
+          <p>The FE slope is constant across cities. The book’s four separate city slopes actually differ; the model imposes one common slope.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 WAGE -->
+  <section class="chapter-section sheet" id="wage" data-section="wage">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">the wage panel</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Marriage and earnings</p>
+          <h2 class="section-title">Fourteen,<br>eleven, five.</h2>
+          <p class="section-deck">Three models, three assumptions. The marriage coefficient falls as the comparison becomes more local.</p>
+        </header>
+
+        <div class="prose">
+          <p><strong>Pooled OLS</strong> controls experience, union, hours, race, ethnicity, and education. It gives <strong>14.1%</strong>. <strong>Entity fixed effects</strong> add a dummy for each man, absorbing stable unobservables, and give <strong>11.5%</strong>. <strong>Entity plus time effects</strong> also absorb common year shocks such as inflation, and give <strong>4.8%</strong>.</p>
+          <p>The standard errors are clustered by person. That is not optional: repeated observations of the same man are not independent, and classical standard errors would be too small.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-wage" aria-labelledby="lab-wage-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 02</p>
+              <h3 class="lab-title" id="lab-wage-title">The marriage coefficient</h3>
+            </div>
+            <p class="lab-status mono" id="ch14-wage-status">entity FE &middot; +11.5%</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch14-chart" id="ch14-wage-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="ch14-wage-label">Entity fixed effects</p>
+              <p class="readout-value" id="ch14-wage-coef">+11.5%</p>
+              <p class="readout-sub">marriage coefficient</p>
+              <p class="side-label mono ch14-side-label">95% CI</p>
+              <p class="ch14-ci" id="ch14-wage-ci">(7.2%, 15.8%)</p>
+              <dl class="mini-stats">
+                <div><dt>person-years</dt><dd>4,360</dd></div>
+                <div><dt>men</dt><dd>545</dd></div>
+                <div><dt>years</dt><dd>8</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch14-wage-note">stable confounders are absorbed.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch14-controls">
+            <div class="ch14-presets" role="group" aria-label="Choose a model">
+              <button class="ch14-preset" type="button" data-model="pooled" aria-pressed="false">Pooled OLS</button>
+              <button class="ch14-preset is-active" type="button" data-model="entity" aria-pressed="true">Entity FE</button>
+              <button class="ch14-preset" type="button" data-model="twoway" aria-pressed="false">Entity + time</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> Each model removes more. The estimate shrinks because the comparison is increasingly local &mdash; and because time shocks affect both marriage and wages.</figcaption>
+        </figure>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The mediator trap</p>
+          <p>Occupation is plausibly a consequence of marriage, not a confounder. The book leaves it out. Conditioning on a mediator would block part of the effect you are trying to measure.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">clustered errors</p>
+          <p>The book’s entity-FE standard error is 0.0220, not the classical 0.017. Clustering by person accounts for the repeated observations.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the interpretation</p>
+          <p>11.5% is the within-person marriage premium for these men. It is not automatically the effect for never-married men or for other countries.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 LIMITS -->
+  <section class="chapter-section sheet" id="limits" data-section="limits">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">the limits</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">When panel data won't help</p>
+          <h2 class="section-title">Stable only<br>is not enough.</h2>
+          <p class="section-deck">Fixed effects remove what does not change. Two failure modes remain: confounders that move, and causality that runs backwards.</p>
+        </header>
+
+        <div class="prose">
+          <p><strong>A time-varying confounder.</strong> Suppose reading books raises intelligence, and intelligence raises both marriage prospects and wages. Intelligence changes over time, so the person dummy does not absorb it. The estimate remains biased.</p>
+          <p><strong>Reverse causality.</strong> Suppose higher earnings make marriage more likely, not the other way around. Both move together within person, and fixed effects cannot tell the direction. The model sees an association, not an arrow.</p>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">No panacea</p>
+          <p>Panel data is powerful because it removes stable unobservables without measuring them. It is not magic: the confounder has to be stable, and the treatment has to come first.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The honest sentence</p>
+          <p>&ldquo;Within person, marriage is associated with an 11.5% wage premium, after absorbing stable individual traits. If intelligence or health changes over time and affects both marriage and wages, the estimate is still biased.&rdquo;</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the check</p>
+          <p>Ask what changes within person. If the confounder is on that list, fixed effects will not remove it.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the arrow</p>
+          <p>Fixed effects do not establish time order. They only compare changes; the direction of causality is still an assumption.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>Panel data repeats the same unit.</strong> That structure lets each unit be its own control and removes any confounder that is stable over time.</li>
+          <li><strong>Demeaning is the fixed effect.</strong> Subtracting the unit mean wipes out time-invariant variables and the unobserved traits they carry.</li>
+          <li><strong>Time effects remove common shocks.</strong> Year dummies absorb inflation and business-cycle changes that hit everyone at once.</li>
+          <li><strong>The limits are real.</strong> Time-varying confounders and reverse causality survive fixed effects. Panel data is not a substitute for design.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The sentence to avoid</p>
+          <p>&ldquo;Fixed effects control for everything unobserved.&rdquo; They control for everything <em>stable</em>; that is a much narrower claim.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Fixed effects trade between-unit variation for within-unit variation. That trade buys credibility and costs sample size.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> What does a fixed effect control for?</summary>
+            <p>Anything that is constant within the unit over time: stable beauty, intelligence, family background, education, race. It does not control for time-varying confounders.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> Why does the pooled toy slope flip sign?</summary>
+            <p>Pooled OLS compares cities with different baseline purchase levels; marketing is targeted at low-purchase cities. City fixed effects compare marketing and purchases within each city, removing that selection.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> Why did the marriage coefficient fall from 14.1% to 4.8%?</summary>
+            <p>Pooled OLS leaves stable individual traits in the error. Entity FE removes them; time effects remove common shocks such as inflation. Each step makes the comparison more local and less confounded.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> When does fixed effects fail?</summary>
+            <p>When the confounder changes over time, or when causality runs from the outcome to the treatment. Fixed effects only remove stable confounders and do not establish time order.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next chapter</p>
+          <h3>Synthetic control</h3>
+          <p>When no single control unit follows the treated unit’s trend, build a synthetic one from many untreated units.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Ask what is stable within unit and what moves. Fixed effects handle the first list; the second is still your problem.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-ch14.js"></script>
+<script src="../assets/js/iv14.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: '14',
+    slug: '14-panel-fixed-effects',
+    title: 'Panel data and fixed effects',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/14-Panel-Data-and-Fixed-Effects.html',
+    sections: [
+      { id: 'panel', num: '01', label: 'The panel' },
+      { id: 'toy-bench', num: '02', label: 'The toy bench' },
+      { id: 'wage', num: '03', label: 'The wage panel' },
+      { id: 'limits', num: '04', label: 'The limits' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/ch14.js"></script>
+</body>
+</html>
