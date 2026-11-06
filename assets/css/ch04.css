@@ -1,0 +1,293 @@
+/* ============================================================
+   Chapter 04 â€” DAG grammar and workbench.
+   ============================================================ */
+
+.dag-node-label {
+  font-family: var(--serif);
+  font-size: 20px;
+  fill: var(--ink);
+}
+
+.dag-node-sub {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  fill: var(--ink-3);
+}
+
+.dag-path-label {
+  font-family: var(--hand);
+  font-size: 18px;
+  fill: var(--red);
+}
+
+.dag-grammar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 20px 0;
+}
+
+.dag-grammar article {
+  padding: 12px 13px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+}
+
+.dag-grammar .mono {
+  color: var(--red);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dag-grammar-graph {
+  margin: 8px 0 8px;
+  font-family: var(--mono);
+  font-size: 1rem;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.dag-grammar p:last-child {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+/* ---------------------------------------------------------- workbench */
+.dag-chart {
+  min-height: 310px;
+}
+
+.dag-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.dag-edge {
+  stroke: var(--ink-2);
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.dag-edge--backdoor {
+  stroke: var(--ink-2);
+}
+
+.dag-path-overlay {
+  fill: none;
+  stroke-width: 2.2;
+  stroke-dasharray: 6 4;
+}
+
+.dag-path-overlay--alert {
+  stroke: var(--red);
+}
+
+.dag-path-overlay--blocked {
+  stroke: var(--blue);
+}
+
+.dag-node-box {
+  fill: var(--paper);
+  stroke: var(--ink-2);
+  stroke-width: 1.2;
+  transition: fill 0.15s var(--ease), stroke 0.15s var(--ease);
+}
+
+.dag-node--conditionable {
+  cursor: pointer;
+}
+
+.dag-node--conditionable:hover .dag-node-box {
+  stroke: var(--ink);
+  fill: var(--paper-2);
+}
+
+.dag-node.is-conditioned .dag-node-box {
+  fill: var(--red-soft);
+  stroke: var(--red);
+  stroke-width: 1.7;
+}
+
+.dag-node.is-conditioned .dag-node-label {
+  fill: var(--red);
+}
+
+.dag-condition-mark {
+  fill: var(--paper);
+  stroke: var(--red);
+  stroke-width: 1.2;
+}
+
+.dag-condition-glyph {
+  font-family: var(--mono);
+  font-size: 11px;
+  fill: var(--red);
+  pointer-events: none;
+}
+
+.dag-node:focus-visible {
+  outline: none;
+}
+
+.dag-node:focus-visible .dag-node-box {
+  stroke: var(--red);
+  stroke-width: 2.2;
+}
+
+.dag-headline {
+  margin: 3px 0 5px;
+  font-family: var(--serif);
+  font-size: 1.55rem;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  color: var(--red);
+}
+
+.dag-headline.is-ok {
+  color: var(--blue);
+}
+
+.dag-headline.is-warn {
+  color: var(--accent);
+}
+
+.dag-body {
+  margin: 0 0 12px;
+  color: var(--ink-2);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.dag-conditioned-label {
+  margin-top: 10px;
+}
+
+.dag-conditioned {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink);
+}
+
+.dag-paths {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  border-top: 1px solid var(--rule);
+  padding-top: 8px;
+}
+
+.dag-path {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px dotted var(--rule);
+  padding-bottom: 4px;
+  font-family: var(--mono);
+  font-size: 8.5px;
+  color: var(--ink-2);
+}
+
+.dag-path span:last-child {
+  text-align: right;
+  color: var(--ink-3);
+}
+
+.dag-path.is-open span:last-child {
+  color: var(--red);
+}
+
+.dag-reset {
+  margin-top: 10px;
+}
+
+.dag-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.dag-tab {
+  padding: 7px 12px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.dag-tab:hover {
+  border-color: var(--ink-2);
+  color: var(--ink);
+}
+
+.dag-tab.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.dag-tab:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.dag-hint {
+  margin: 0 0 0 auto;
+  color: var(--ink-3);
+  font-size: 9px;
+}
+
+@media (max-width: 960px) {
+  .dag-grammar {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .dag-chart {
+    overflow: visible;
+  }
+
+  .dag-chart svg {
+    width: 100%;
+    max-width: none;
+  }
+
+  .dag-node-label {
+    font-size: 24px;
+  }
+
+  .dag-node-sub {
+    font-size: 13px;
+  }
+
+  .dag-condition-glyph {
+    font-size: 16px;
+  }
+
+  .dag-hint {
+    flex-basis: 100%;
+    margin-left: 0;
+  }
+}
+
+
+.lab--no-swipe .lab-head::after {
+  content: none;
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .dag-chart {
+    min-height: 210px;
+  }
+}

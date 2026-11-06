@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Graphical causal models &mdash; Causal Field Notes</title>
+  <meta name="description" content="Chapter 04: DAGs, the backdoor criterion, colliders, and mediators — draw the assumptions before you estimate.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/ch04.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the chapter</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Chapter 04</p>
+      <h1 class="hero-title hero-title--long">Draw the assumptions<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">before you fit anything &darr;</p>
+      <p class="hero-deck">A causal graph is a promise about how the world works.</p>
+      <p class="hero-sub">Nodes are variables. Arrows are causes. Before a regression, a match, or an instrument, the graph makes the identification argument visible &mdash; including the paths you must close and the ones you must leave alone.</p>
+      <div class="hero-meta mono">
+        <span>3 structures</span><span>1 backdoor</span><span>1 workbench</span><span>~15 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#workbench">Open the workbench <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/04-Graphical-Causal-Models.html" target="_blank" rel="noreferrer">Read the source chapter</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="A graph with a confounder X causing both treatment T and outcome Y, plus a direct arrow from T to Y.">
+        <g class="hero-paper">
+          <path d="M46 30h368v238H46z" fill="#fbf8f1" stroke="#ddd6c9"/>
+          <path d="M46 88h368" stroke="#ddd6c9" stroke-dasharray="2 4"/>
+        </g>
+        <defs>
+          <marker id="hero-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0 0L10 5L0 10z" fill="#2b2723"/>
+          </marker>
+        </defs>
+        <g class="hero-dag">
+          <rect x="184" y="56" width="92" height="38" rx="2" fill="#f6f3ec" stroke="#2b2723"/>
+          <text x="230" y="80" text-anchor="middle" class="dag-node-label">X</text>
+          <text x="230" y="46" text-anchor="middle" class="dag-node-sub">confounder</text>
+          <rect x="80" y="196" width="104" height="38" rx="2" fill="#f6f3ec" stroke="#2b2723"/>
+          <text x="132" y="220" text-anchor="middle" class="dag-node-label">T</text>
+          <text x="132" y="250" text-anchor="middle" class="dag-node-sub">treatment</text>
+          <rect x="280" y="196" width="104" height="38" rx="2" fill="#f6f3ec" stroke="#2b2723"/>
+          <text x="332" y="220" text-anchor="middle" class="dag-node-label">Y</text>
+          <text x="332" y="250" text-anchor="middle" class="dag-node-sub">outcome</text>
+          <path d="M212 94 L142 190" stroke="#2b2723" stroke-width="1.4" marker-end="url(#hero-arrow)"/>
+          <path d="M248 94 L322 190" stroke="#2b2723" stroke-width="1.4" marker-end="url(#hero-arrow)"/>
+          <path d="M184 215 L280 215" stroke="#a8283a" stroke-width="1.8" marker-end="url(#hero-arrow)"/>
+          <path d="M205 101 C 260 150, 300 170, 315 195" fill="none" stroke="#a8283a" stroke-width="1.3" stroke-dasharray="4 4"/>
+          <text x="230" y="148" text-anchor="middle" class="dag-path-label">backdoor</text>
+        </g>
+        <g class="hand">
+          <text x="64" y="286" fill="#2f5d8a" font-size="19">a graph is a causal argument</text>
+          <path d="M258 292c14 4 26 3 38-2" fill="none" stroke="#2f5d8a" stroke-width="1"/>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">A confounder X points to treatment T and outcome Y; treatment also points to outcome. The dashed path through X is the backdoor.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Structures</span>
+        <span class="hero-stat-value">3</span>
+        <span class="hero-stat-note">chain &middot; fork &middot; collider</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">The work</span>
+        <span class="hero-stat-value">1</span>
+        <span class="hero-stat-note">backdoor to close</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Free lunches</span>
+        <span class="hero-stat-value">0</span>
+        <span class="hero-stat-note">the graph is an assumption</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 LANGUAGE -->
+  <section class="chapter-section sheet" id="language" data-section="language">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">the language</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Nodes and arrows</p>
+          <h2 class="section-title">A picture<br>of the assumptions.</h2>
+          <p class="section-deck">Each node is a variable. Each arrow is a direct causal claim. The graph is not the world; it is the argument you are willing to defend.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">Causal inference starts with a conditional independence assumption: the potential outcomes are independent of treatment, given the right variables. A graph is a compact way to say which variables those are &mdash; and which ones will make things worse.</p>
+          <p>Dependence flows along paths. Three small structures are enough to read almost any argument:</p>
+        </div>
+
+        <div class="dag-grammar">
+          <article>
+            <p class="mono">Chain</p>
+            <p class="dag-grammar-graph">A &rarr; B &rarr; C</p>
+            <p>A and C are dependent. Condition on B and the path is blocked.</p>
+          </article>
+          <article>
+            <p class="mono">Fork</p>
+            <p class="dag-grammar-graph">A &larr; B &rarr; C</p>
+            <p>A and C are dependent through their common cause. Condition on B and the backdoor closes.</p>
+          </article>
+          <article>
+            <p class="mono">Collider</p>
+            <p class="dag-grammar-graph">A &rarr; B &larr; C</p>
+            <p>A and C are independent. Condition on B and the path opens &mdash; explaining away.</p>
+          </article>
+        </div>
+
+        <div class="formula" role="math" aria-label="Conditional independence of potential outcomes and treatment given X">
+          <span class="formula-label mono">the target</span>
+          <span class="formula-body">(<span class="math-var">Y<sub>0</sub></span>, <span class="math-var">Y<sub>1</sub></span>) &perp; <span class="math-var">T</span> | <span class="math-var">X</span></span>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The backdoor criterion</p>
+          <p>To identify the effect of T on Y, condition on a set X that blocks every path between T and Y that enters T through an arrow. Do not condition on colliders or mediators.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">read it aloud</p>
+          <p>&ldquo;Education and wage share a cause: intelligence.&rdquo; If you cannot say the graph in one sentence, you do not have a graph yet.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the hard part</p>
+          <p>The arrows are assumptions. The data can test implications, but they cannot prove the direction of an arrow.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 WORKBENCH -->
+  <section class="chapter-section sheet" id="workbench" data-section="workbench">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">the workbench</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Three structures, one graph</p>
+          <h2 class="section-title">Click a node.<br>Watch the path.</h2>
+          <p class="section-deck">Each scenario is a different way a comparison goes wrong. Click the conditionable node and see whether the path opens or closes.</p>
+        </header>
+
+        <div class="prose">
+          <p>Conditioning is not a neutral act. On a fork it closes a backdoor; on a collider it opens one; on a mediator it closes the effect you are trying to measure. The graph tells you which is which before you touch the data.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-dag" aria-labelledby="lab-dag-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-dag-title">The DAG workbench</h3>
+            </div>
+            <p class="lab-status mono" id="dag-status">confounding &middot; nothing conditioned</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart dag-chart" id="dag-chart"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="dag-scenario-label">Confounding</p>
+              <p class="dag-headline" id="dag-headline">Confounding bias.</p>
+              <p class="dag-body" id="dag-body" aria-live="polite">The path E &larr; I &rarr; W is open.</p>
+              <p class="side-label mono dag-conditioned-label">Conditioned on</p>
+              <p class="dag-conditioned" id="dag-conditioned">nothing</p>
+              <div class="dag-paths" id="dag-paths"></div>
+              <button class="btn btn--ghost btn--small dag-reset" type="button" id="dag-reset">Reset the graph</button>
+            </aside>
+          </div>
+          <div class="lab-controls">
+            <div class="dag-tabs" role="group" aria-label="Choose a graph structure">
+              <button class="dag-tab is-active" type="button" data-scenario="confounding" aria-pressed="true">Confounding</button>
+              <button class="dag-tab" type="button" data-scenario="collider" aria-pressed="false">Collider</button>
+              <button class="dag-tab" type="button" data-scenario="mediator" aria-pressed="false">Mediator</button>
+            </div>
+            <p class="dag-hint mono">click the + on a node to condition</p>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The same gesture &mdash; conditioning &mdash; can be right or wrong. The graph, not the p-value, tells you which paths you are opening and closing.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">try the three</p>
+          <p>Condition on Intelligence, then reset. Switch to Collider and condition on Investments. Then try the Mediator. The verdict changes every time.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the rule of thumb</p>
+          <p>If a variable is a common cause, control it. If it is a common effect, do not. If it is a channel, controlling it changes the question.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 CONFOUNDING -->
+  <section class="chapter-section sheet" id="confounding" data-section="confounding">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">confounding</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">The common cause</p>
+          <h2 class="section-title">Close every<br>backdoor.</h2>
+          <p class="section-deck">Confounding happens when treatment and outcome share a cause. The fix is to block every backdoor path &mdash; not to add every variable you can measure.</p>
+        </header>
+
+        <div class="prose">
+          <p>Education and wage share intelligence as a cause. More intelligent people tend to get more education and earn more, regardless of what schooling does. If we compare people with the same intelligence, the remaining difference in wages is more plausibly the effect of education.</p>
+          <p>Sometimes the common cause is unmeasured. The book&rsquo;s example uses intelligence, which is hard to measure directly, but has measurable proxies: SAT scores and family income. If intelligence affects education only through SAT, then conditioning on SAT blocks that path, even without measuring intelligence itself.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Conditioning on X blocks all backdoor paths between treatment and outcome">
+          <span class="formula-label mono">the backdoor criterion</span>
+          <span class="formula-body"><span class="math-var">X</span> blocks every path from <span class="math-var">T</span> to <span class="math-var">Y</span> that enters <span class="math-var">T</span> through an arrow &nbsp;&rArr;&nbsp; (<span class="math-var">Y<sub>0</sub></span>, <span class="math-var">Y<sub>1</sub></span>) &perp; <span class="math-var">T</span> | <span class="math-var">X</span></span>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The proxy is not the cause</p>
+          <p>Controlling for SAT can close a path, but it does not turn SAT into intelligence. If the proxy is a noisy measure, some bias remains. A graph tells you which path you closed; it does not promise the measurement is perfect.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the question</p>
+          <p>Which paths enter treatment through an arrow? Those are the backdoors. The causal path leaves treatment through an arrow; do not block it.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the limit</p>
+          <p>If an unmeasured confounder points directly at treatment and outcome, no measured proxy eliminates the bias. It can only reduce it.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 SELECTION -->
+  <section class="chapter-section sheet" id="selection" data-section="selection">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">selection bias</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">When controlling hurts</p>
+          <h2 class="section-title">Do not condition<br>on the effect.</h2>
+          <p class="section-deck">A collider is a common effect. Conditioning on it opens a path that was closed. A mediator is a channel. Conditioning on it closes the effect you want.</p>
+        </header>
+
+        <div class="prose">
+          <p>Imagine education is randomised, so the naive comparison is clean. Then someone insists on controlling for investments. Investments is caused by education and by wage: it is a collider. Among people who invest, the uneducated must be especially high-earning to invest; the educated can invest for other reasons. Conditioning on investments makes education and wage dependent for a reason that has nothing to do with the effect.</p>
+          <p>The same logic applies to a mediator. Education raises wages partly by making white-collar jobs more likely. If we control for white-collar status, we close that channel and estimate only the part of the effect that does not run through it. The total effect looks weaker &mdash; or disappears.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The paradox</p>
+          <p>Selection bias can be fixed by doing nothing. When a variable is a common effect or a channel, adding it to the regression is not caution; it is a new assumption with a new bias.</p>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The kitchen-sink regression</p>
+          <p>&ldquo;Control for everything&rdquo; is not a design. It can open colliders, block mediators, and make a randomized experiment look broken. Start with the graph.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">one test</p>
+          <p>Ask of every control: is it a cause of treatment, an effect of treatment, or both? The answer decides whether it belongs on the right-hand side.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the honest sentence</p>
+          <p>&ldquo;We condition on intelligence to close the backdoor; we deliberately do not condition on investments or white-collar work.&rdquo;</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>A graph is a set of assumptions.</strong> Drawing it makes the identification argument inspectable before the estimate exists.</li>
+          <li><strong>Block every backdoor.</strong> Condition on common causes; do not condition on the causal path.</li>
+          <li><strong>Colliders are traps.</strong> Conditioning on a common effect opens a path that was closed. Selection bias is often self-inflicted.</li>
+          <li><strong>Mediators change the question.</strong> Controlling a channel estimates a partial effect, not the total effect.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The most common mistake</p>
+          <p>Adding a variable because it is available. Availability is not a causal argument. The graph decides.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Draw the graph before you write the regression. Then write the regression that matches the graph.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> What is the difference between a fork and a collider?</summary>
+            <p>A fork has a common cause: A &larr; C &rarr; B. A and B are dependent, and conditioning on C blocks the path. A collider has a common effect: A &rarr; C &larr; B. A and B are independent, and conditioning on C opens the path.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> Why can conditioning on a collider create bias?</summary>
+            <p>Conditioning on a common effect restricts the sample to one value of the effect. Within that group, the causes become negatively associated: if one cause is absent, the other must be present to produce the effect. That association is not causal.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> What does the backdoor criterion require?</summary>
+            <p>A set X that blocks every path between treatment and outcome that enters treatment through an arrow, while leaving the causal path out of treatment open. If X does that, the potential outcomes are conditionally independent of treatment given X.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> Why can controlling for a mediator make an effect look weaker?</summary>
+            <p>A mediator is part of the causal channel. Conditioning on it compares units at the same mediator value, which removes the part of the effect that operates through the mediator. The remaining estimate is a partial effect, not the total effect.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next chapter</p>
+          <h3>Linear regression</h3>
+          <p>Once the graph says which variables belong, regression gives them weights. The next chapter asks what those weights mean.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Sketch the graph, name the backdoors, then choose the controls. If you cannot draw it, you cannot defend it.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/dag.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: '04',
+    slug: '04-graphical-causal-models',
+    title: 'Graphical causal models',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/04-Graphical-Causal-Models.html',
+    sections: [
+      { id: 'language', num: '01', label: 'The language' },
+      { id: 'workbench', num: '02', label: 'The workbench' },
+      { id: 'confounding', num: '03', label: 'Confounding' },
+      { id: 'selection', num: '04', label: 'Selection bias' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/ch04.js"></script>
+</body>
+</html>

@@ -293,3 +293,14 @@ body {
     padding-top: max(clamp(54px, 8vh, 110px), calc(var(--topbar) + 20px));
   }
 }
+
+.hero-title--long {
+  font-size: clamp(3.1rem, 6.2vw, 6rem);
+  line-height: 0.9;
+}
+
+@media (max-width: 720px) {
+  .hero-title--long {
+    font-size: clamp(2.6rem, 12vw, 4.3rem);
+  }
+}
