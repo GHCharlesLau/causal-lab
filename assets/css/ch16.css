@@ -1,0 +1,233 @@
+/* ============================================================
+   Chapter 16 — RD hero, sharp fit, fuzzy fit, McCrary density.
+   ============================================================ */
+
+.rdd-axis,
+.rdd-jump,
+.rdd-threshold {
+  font-family: var(--mono);
+}
+
+.rdd-axis {
+  font-size: 9px;
+  fill: var(--ink-3);
+}
+
+.rdd-jump {
+  font-size: 10px;
+  fill: var(--red);
+}
+
+.rdd-threshold {
+  font-size: 8px;
+  fill: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rdd-hand {
+  font-family: var(--hand);
+  font-size: 18px;
+  fill: var(--blue);
+}
+
+/* ---------------------------------------------------------- charts */
+.ch16-chart {
+  min-height: 290px;
+}
+
+.ch16-chart svg,
+.mccrary-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ch16-tick {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-3);
+}
+
+.ch16-axis-title {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  fill: var(--ink-2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.rdd-dot {
+  fill: var(--blue);
+  opacity: 0.45;
+}
+
+.rdd-line-below {
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+
+.rdd-line-above {
+  stroke: var(--red);
+  stroke-width: 2;
+}
+
+.rdd-threshold-line {
+  stroke: var(--red);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+
+.rdd-jump-bracket {
+  stroke: var(--red);
+  stroke-width: 1.4;
+}
+
+.rdd-jump-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  fill: var(--red);
+}
+
+.rdd-legend {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-2);
+}
+
+.ch16-mode {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+
+.ch16-wald {
+  margin: 0 0 4px;
+  font-family: var(--mono);
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+
+.ch16-ci {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 8.5px;
+  color: var(--ink-2);
+}
+
+.ch16-side-label {
+  margin-top: 8px;
+}
+
+/* ---------------------------------------------------------- McCrary */
+.mccrary-figure {
+  margin: 18px 0;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  padding: 10px;
+}
+
+.mccrary-figure figcaption {
+  padding: 8px 6px 4px;
+  color: var(--ink-2);
+  font-size: 0.84rem;
+}
+
+.mccrary-figure figcaption .mono {
+  color: var(--red);
+  font-size: 8px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.mccrary-bar {
+  fill: var(--blue);
+  opacity: 0.45;
+}
+
+.mccrary-threshold {
+  stroke: var(--red);
+  stroke-width: 1.4;
+  stroke-dasharray: 3 3;
+}
+
+/* ---------------------------------------------------------- controls */
+.ch16-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ch16-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.ch16-preset {
+  padding: 7px 11px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.ch16-preset:hover {
+  border-color: var(--ink-2);
+  color: var(--ink);
+}
+
+.ch16-preset.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.ch16-preset:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.lab--no-swipe .lab-head::after {
+  content: none;
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .lab-body {
+    grid-template-columns: 1fr;
+  }
+
+  .ch16-chart {
+    overflow: visible;
+    min-height: 210px;
+  }
+
+  .ch16-chart svg,
+  .mccrary-figure svg {
+    width: 100%;
+    max-width: none;
+  }
+
+  .ch16-tick,
+  .ch16-axis-title,
+  .rdd-legend,
+  .rdd-jump-label,
+  .ch16-mode,
+  .ch16-ci {
+    font-size: 15px;
+  }
+
+  .ch16-preset {
+    flex: 1 1 100%;
+    text-align: left;
+  }
+
+  .mccrary-figure {
+    overflow: visible;
+  }
+}

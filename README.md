@@ -8,14 +8,14 @@ and arguments you can defend.
 It is a local, static website: no backend, no build step, no tracking. Open `index.html`
 for the landing page, or serve the folder over HTTP.
 
-**Status: 15 of 30 pages live.** Chapters 01 (Introduction to causality), 02 (Randomised
+**Status: 16 of 30 pages live.** Chapters 01 (Introduction to causality), 02 (Randomised
 experiments), 03 (Stats review), 04 (Graphical causal models), 05 (Linear regression),
 06 (Grouped and dummy regression), 07 (Beyond confounders), 08 (Instrumental variables),
 09 (Non-compliance and LATE), 10 (Matching), 11 (Propensity score), 12 (Doubly robust
-estimation), 13 (Difference-in-differences), 14 (Panel data and fixed effects), and
-15 (Synthetic control) are complete. The other 15 pages are scaffolded in the course
-manifest and marked as planned; they are added one at a time, with numbers checked against
-the book's notebooks.
+estimation), 13 (Difference-in-differences), 14 (Panel data and fixed effects),
+15 (Synthetic control), and 16 (Regression discontinuity) are complete. The other 14 pages
+are scaffolded in the course manifest and marked as planned; they are added one at a time,
+with numbers checked against the book's notebooks.
 
 ---
 
@@ -151,6 +151,14 @@ the pre-1988 path and estimates a −24.8-pack effect by 2000. The placebo distr
 p ≈ 0.057. The page is explicit that this is a permutation tail probability, not a
 conventional standard error, and that the book's narrative rounds the same result to 1/35.
 
+### 16 — Regression discontinuity
+
+At 21, all-cause mortality jumps by 7.66 points (8.2%), car accidents by 15.1%, and
+suicide by 15.4%. A triangular kernel widens the all-cause jump to 10.4%. The fuzzy sheepskin
+case gives a 27.7-point diploma first stage, a −97.76 earnings jump, and a Wald estimate of
+−352.8 with an interval from −3235 to 1383: no sheepskin effect. The McCrary density is
+smooth at the cutoff.
+
 ### What is in each chapter
 
 - A story with the decision, the failure of the naive comparison, and the identification
@@ -212,6 +220,8 @@ point here is to let you see estimator bias separately from confounding bias.
 
 ![Chapter 15, the synthetic counterfactual](assets/img/screenshots/ch15-path.png)
 
+![Chapter 16, the sharp RD bench](assets/img/screenshots/ch16-sharp.png)
+
 ![The Matching chapter](assets/img/screenshots/matching.png)
 
 ---
@@ -227,9 +237,10 @@ Open `index.html` in Chrome or Edge. It is the landing page. The live chapters a
 `chapters/07-beyond-confounders.html`, `chapters/08-instrumental-variables.html`,
 `chapters/09-non-compliance.html`, `chapters/10-matching.html`,
 `chapters/11-propensity-score.html`, `chapters/12-doubly-robust.html`,
-`chapters/13-difference-in-differences.html`, `chapters/14-panel-fixed-effects.html`, and
-`chapters/15-synthetic-control.html`. Everything needed is local: CSS, JS, data, fonts, the
-poster, and the rendered opener at `assets/video/matching-opener.mp4`.
+`chapters/13-difference-in-differences.html`, `chapters/14-panel-fixed-effects.html`,
+`chapters/15-synthetic-control.html`, and `chapters/16-regression-discontinuity.html`.
+Everything needed is local: CSS, JS, data, fonts, the poster, and the rendered opener at
+`assets/video/matching-opener.mp4`.
 
 ### Option 2: local server
 
@@ -336,9 +347,9 @@ Reference, chapter, and manifest tests (Node 24, no packages):
 The suite checks the Matching book numbers, the k-curve, severity-band checkpoints, the
 oracle, the k-d tree, the OLS toy regression, the Chapter 01 potential-outcomes arithmetic
 (ATE −50, ATT −75, naive +125, bias +200), the Chapter 02 group means and missing-data
-balance, the Chapter 03 standard errors, interval, z, and p-values, the Chapter 04 DAG path logic, the Chapter 05 OLS/control path, the Chapter 06 weighted/dummy regression, the Chapter 07 control models, the Chapter 08 IV constants, the Chapter 09 compliance matrix, the Chapter 11 propensity score, the Chapter 12 doubly robust grid, the Chapter 13 difference-in-differences, the Chapter 15 synthetic control, and the site manifest
+balance, the Chapter 03 standard errors, interval, z, and p-values, the Chapter 04 DAG path logic, the Chapter 05 OLS/control path, the Chapter 06 weighted/dummy regression, the Chapter 07 control models, the Chapter 08 IV constants, the Chapter 09 compliance matrix, the Chapter 11 propensity score, the Chapter 12 doubly robust grid, the Chapter 13 difference-in-differences, the Chapter 15 synthetic control, the Chapter 16 RD constants, and the site manifest
 (30 pages, unique slugs, every live page exists, the shared reading scale is loaded).
-79 tests in total.
+83 tests in total.
 
 Browser smoke tests use Chrome DevTools Protocol through Node's built-in WebSocket (no
 Playwright/Puppeteer). Matching-specific scripts default to
@@ -362,6 +373,7 @@ to test a different page.
 & "...\node.exe" tools/cdp-ch13.mjs   # Chapter 13: DiD comparisons
 & "...\node.exe" tools/cdp-ch14.mjs   # Chapter 14: toy FE and wage models
 & "...\node.exe" tools/cdp-ch15.mjs   # Chapter 15: synthetic path and placebos
+& "...\node.exe" tools/cdp-ch16.mjs   # Chapter 16: sharp RD and fuzzy RD
 & "...\node.exe" tools/cdp-a11y.mjs
 & "...\node.exe" tools/cdp-reduced.mjs
 & "...\node.exe" tools/cdp-film.mjs
@@ -386,7 +398,8 @@ practice mode, and the course map. It prints the observed values and any console
 `cdp-ch12.mjs` checks the robustness grid and the interval chart;
 `cdp-ch13.mjs` checks the before/after, cross-section, and DiD readouts;
 `cdp-ch14.mjs` checks the toy fixed-effect flip and the three wage models;
-`cdp-ch15.mjs` checks the levels/gap switch and the placebo chart.
+`cdp-ch15.mjs` checks the levels/gap switch and the placebo chart;
+`cdp-ch16.mjs` checks the sharp outcomes, bandwidths, and fuzzy views.
 `cdp-a11y.mjs` checks button names, input labels, duplicate IDs, and heading structure;
 `cdp-reduced.mjs` verifies that reduced motion lands on final states; `cdp-film.mjs`
 checks the rendered video’s metadata and dialog; `cdp-persist.mjs` reloads after scoring
@@ -414,6 +427,7 @@ chapters/
   13-difference-in-differences.html live chapter: billboards and parallel trends
   14-panel-fixed-effects.html live chapter: within-person comparisons
   15-synthetic-control.html live chapter: synthetic California and placebos
+  16-regression-discontinuity.html live chapter: sharp and fuzzy RD
 assets/css/
   tokens.css               paper/ink/pencil tokens, type scale
   base.css                 reset, type, focus, grain, toast
@@ -437,6 +451,7 @@ assets/css/
   ch13.css                 chapter 13 trend chart and comparison cards
   ch14.css                 chapter 14 FE hero, toy panel, wage chart
   ch15.css                 chapter 15 synthetic paths, weights, placebos
+  ch16.css                 chapter 16 RD fits, jumps, McCrary density
   print.css                readable paper version
 assets/js/
   chapters.js              the manifest: 25 chapters + 5 notes, live/planned
@@ -452,6 +467,7 @@ assets/js/
   data-ch13.js             billboard group means and OLS
   data-ch14.js             toy panel and wage-panel year means
   data-ch15.js             California synthetic series and placebo effects
+  data-ch16.js             drinking and sheepskin RD payloads
   iv.js                    the book's quarter-of-birth IV constants
   iv09.js                  the book's OLS/ITT/LATE constants
   iv11.js                  the book's propensity-score constants
@@ -459,6 +475,7 @@ assets/js/
   iv13.js                  the book's DiD constants
   iv14.js                  the book's fixed-effect constants
   iv15.js                  the book's synthetic-control constants
+  iv16.js                  the book's RD constants
   dag.js                   chapter 04 graph definitions + path verdicts
   regression.js            OLS/WLS engine + classical SEs
   labs/ch01.js             the counterfactual lens
@@ -475,6 +492,7 @@ assets/js/
   labs/ch13.js             the DiD comparison chart and readout
   labs/ch14.js             the toy FE chart and wage coefficient chart
   labs/ch15.js             the synthetic path, weights, and placebo chart
+  labs/ch16.js             the sharp RD, fuzzy RD, and McCrary charts
   data.js                  matching payload (20k patients)
   reference.js             generated book numbers
   stats.js                 mean/sd/OLS, k-d tree, k-NN matching, correction
@@ -532,8 +550,9 @@ The site is built to grow by one chapter at a time. To add one:
 5. Add a browser test (the `tools/cdp-ch01.mjs` pattern) and a Node arithmetic test.
 6. Update this README's live list and screenshots.
 
-The next build is **Chapter 16 — Regression discontinuity**: compare units just above and
-just below a treatment threshold. After that, Part II 17–25, then the five technical notes.
+The next build is **Chapter 17 — Predictive models**: when the goal is a forecast rather
+than a causal effect, the tools and the checks change. After that, Part II 18–25, then the
+five technical notes.
 
 ---
 
@@ -588,7 +607,7 @@ source is still valid and can be rendered later.
 ## Credits
 
 - **Book & data:** Matheus Facure Alves, *Causal Inference for the Brave and True*,
-  chapters 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, and 15, MIT-licensed repository.
+  chapters 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15, and 16, MIT-licensed repository.
   Chapter 01's four-school table and its arithmetic are the book's example; Chapter 02's
   online-classroom data comes from Alpert, Couch & Harmon (2016) via the book repository.
   Chapter 03's sampling simulation uses the book's true mean 74 and standard deviation 2.
@@ -596,12 +615,12 @@ source is still valid and can be rendered later.
   06 use the book's `wage.csv`; Chapter 07 uses the book's collections-email and
   hospital-treatment data; Chapter 08 uses the book's `ak91.csv` and its seed-12 IV
   simulation; Chapter 09 uses the book's push-engagement data; Chapters 11 and 12 use the
-  book's `learning_mindset.csv`; Chapter 13 uses the book's `billboard_impact.csv`; Chapter 14 uses the wage panel distributed with linearmodels; Chapter 15 uses the book's `smoking.csv`. The prose
+  book's `learning_mindset.csv`; Chapter 13 uses the book's `billboard_impact.csv`; Chapter 14 uses the wage panel distributed with linearmodels; Chapter 15 uses the book's `smoking.csv`; Chapter 16 uses the book's `drinking.csv` and `sheepskin.csv`. The prose
   is adapted and shortened, and the counterfactual lens, three-classroom dot strip,
   sample-size dial, interval ruler, DAG workbench, control dial, weighting bench, dummy
   staircase, control labs, seasonal panel, IV ratio, weak-instrument dial, compliance
   matrix, estimator chart, score histogram, rate strip, robustness grid, interval chart,
-  comparison cards, trend bench, fixed-effect hero, toy panel, wage chart, synthetic path, and placebo chart are new.
+  comparison cards, trend bench, fixed-effect hero, toy panel, wage chart, synthetic path, placebo chart, RD fits, and McCrary density are new.
 - **Visual language:** adapted from the **Data Storytelling** style in
   [Lemo-Opuscar](https://github.com/lemomo-ai/lemo-opuscar) by Lemomo (MIT). The charts,
   copy, and motion here are original; no demo assets or story are reused.

@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Regression discontinuity &mdash; Causal Field Notes</title>
+  <meta name="description" content="Chapter 16: regression discontinuity — the drinking age, kernel weighting, the sheepskin effect, fuzzy RD, and the McCrary test.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/ch16.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the chapter</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Chapter 16</p>
+      <h1 class="hero-title">At the cutoff<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">just above vs just below &darr;</p>
+      <p class="hero-deck">Regression discontinuity compares units on either side of a threshold.</p>
+      <p class="hero-sub">At 21, the legal drinking age jumps. Mortality jumps with it: all causes by 8.2%, car accidents by 15.1%, suicide by 15.4%. Just below and just above 21, everything else is smooth.</p>
+      <div class="hero-meta mono">
+        <span>48 age cells</span><span>46 score cells</span><span>2 labs</span><span>~20 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#sharp-bench">Open the cutoff bench <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/16-Regression-Discontinuity-Design.html" target="_blank" rel="noreferrer">Read the source chapter</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="Mortality against age, centered at 21. Deaths jump at the legal drinking age and then decline.">
+        <g class="hero-paper">
+          <path d="M24 28h412v244H24z" fill="#fbf8f1" stroke="#ddd6c9"/>
+        </g>
+        <g class="rdd-hero">
+          <line x1="54" y1="228" x2="416" y2="228" stroke="#bdb4a5"/>
+          <line x1="54" y1="54" x2="54" y2="228" stroke="#bdb4a5"/>
+          <text x="54" y="246" text-anchor="middle" class="rdd-axis">19</text>
+          <text x="232" y="246" text-anchor="middle" class="rdd-axis">21</text>
+          <text x="416" y="246" text-anchor="middle" class="rdd-axis">23</text>
+          <text x="44" y="62" text-anchor="end" class="rdd-axis">110</text>
+          <text x="44" y="228" text-anchor="end" class="rdd-axis">85</text>
+          <path d="M54 150 L232 140" fill="none" stroke="#2f5d8a" stroke-width="2"/>
+          <path d="M232 100 L416 118" fill="none" stroke="#2f5d8a" stroke-width="2"/>
+          <line x1="232" y1="54" x2="232" y2="228" stroke="#a8283a" stroke-width="1" stroke-dasharray="3 4"/>
+          <circle cx="232" cy="140" r="4" fill="#fbf8f1" stroke="#2f5d8a" stroke-width="1.6"/>
+          <circle cx="232" cy="100" r="4" fill="#a8283a"/>
+          <text x="238" y="92" class="rdd-jump">+7.66</text>
+          <text x="238" y="222" class="rdd-threshold">age 21</text>
+          <text x="68" y="278" class="hand rdd-hand">the jump is the effect at 21</text>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">Mortality is smooth in age except at 21, where it jumps by 7.66 deaths per 100,000.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">All causes</span>
+        <span class="hero-stat-value">+8.2%</span>
+        <span class="hero-stat-note">at the 21 cutoff</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Car accidents</span>
+        <span class="hero-stat-value">+15.1%</span>
+        <span class="hero-stat-note">at the cutoff</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Suicide</span>
+        <span class="hero-stat-value">+15.4%</span>
+        <span class="hero-stat-note">at the cutoff</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 THRESHOLD -->
+  <section class="chapter-section sheet" id="threshold" data-section="threshold">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">the threshold</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">A jump in nature</p>
+          <h2 class="section-title">One birthday,<br>one discontinuity.</h2>
+          <p class="section-deck">Treatment is a step function of an observed running variable. At the cutoff, the people just above and just below are nearly identical.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">Let <span class="math-var">R</span> be the running variable and <span class="math-var">c</span> the cutoff. Treatment switches on when <span class="math-var">R</span> &gt; <span class="math-var">c</span>. In a sharp design, it switches from 0 to 1. In a fuzzy design, the probability of treatment jumps, but not all the way.</p>
+          <p>The identifying assumption is smoothness: the potential outcomes would have continued smoothly through the cutoff. If so, any jump in the outcome at <span class="math-var">c</span> is the treatment effect for the units at the cutoff.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Sharp regression discontinuity estimator">
+          <span class="formula-label mono">sharp RD</span>
+          <span class="formula-body"><span class="math-var">&tau;</span> = lim<sub><span class="math-var">r</span>&darr;<span class="math-var">c</span></sub> E[<span class="math-var">Y</span> | <span class="math-var">R</span>=<span class="math-var">r</span>] &minus; lim<sub><span class="math-var">r</span>&uarr;<span class="math-var">c</span></sub> E[<span class="math-var">Y</span> | <span class="math-var">R</span>=<span class="math-var">r</span>]</span>
+        </div>
+
+        <div class="prose">
+          <p>With a running variable centered at zero, regress the outcome on the running variable, a treatment dummy, and their interaction. The coefficient on the treatment dummy is the jump at the cutoff.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">Local, not global</p>
+          <p>RD identifies the effect at the cutoff. It does not tell you what would happen if everyone in the population were treated. The estimate is local in the running variable &mdash; and, in a fuzzy design, local to compliers as well.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">almost random</p>
+          <p>At 21, whether you are a day above or below is essentially random. That is the source of the design's credibility.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the caveat</p>
+          <p>If units can manipulate the running variable to land on the right side, the comparison breaks. The McCrary test is the diagnostic.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 SHARP -->
+  <section class="chapter-section sheet" id="sharp-bench" data-section="sharp-bench">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">the sharp bench</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">The drinking age</p>
+          <h2 class="section-title">A jump at 21.</h2>
+          <p class="section-deck">All causes, car accidents, and suicide all jump at the legal drinking age. The local kernel makes the jump bigger for all causes and car accidents.</p>
+        </header>
+
+        <div class="prose">
+          <p>The full-sample fit gives a <strong>7.66</strong> jump in all-cause deaths, or <strong>8.2%</strong>. With a triangular kernel of bandwidth 1 &mdash; only ages 20 to 22 &mdash; the jump is <strong>9.70</strong>, or <strong>10.4%</strong>. Car accidents jump by 15.1% in the full sample and 17.4% with the kernel.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-sharp" aria-labelledby="lab-sharp-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-sharp-title">The cutoff bench</h3>
+            </div>
+            <p class="lab-status mono" id="ch16-sharp-status">all causes &middot; full sample</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch16-chart" id="ch16-sharp-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="ch16-sharp-label">Jump at 21</p>
+              <p class="readout-value" id="ch16-sharp-jump">+7.66</p>
+              <p class="readout-sub" id="ch16-sharp-sub">8.2% of the below-cutoff mean</p>
+              <p class="side-label mono ch16-side-label">Fit</p>
+              <p class="ch16-mode" id="ch16-sharp-mode">full sample</p>
+              <dl class="mini-stats">
+                <div><dt>age cells</dt><dd>48</dd></div>
+                <div><dt>cutoff</dt><dd>21</dd></div>
+                <div><dt>bandwidth</dt><dd id="ch16-sharp-bandwidth">all</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch16-sharp-note">the jump is the effect at the cutoff.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch16-controls">
+            <div class="ch16-presets" role="group" aria-label="Choose an outcome">
+              <button class="ch16-preset is-active" type="button" data-outcome="all" aria-pressed="true">All causes</button>
+              <button class="ch16-preset" type="button" data-outcome="mva" aria-pressed="false">Car accidents</button>
+              <button class="ch16-preset" type="button" data-outcome="suicide" aria-pressed="false">Suicide</button>
+            </div>
+            <div class="ch16-presets" role="group" aria-label="Choose a bandwidth">
+              <button class="ch16-preset is-active" type="button" data-bandwidth="full" aria-pressed="true">Full sample</button>
+              <button class="ch16-preset" type="button" data-bandwidth="local" aria-pressed="false">Kernel h=1</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The two fitted lines meet at the cutoff with a gap. That gap is the RD estimate; the kernel gives more weight to the points closest to it.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the kernel</p>
+          <p>Triangular weights fall linearly to zero at bandwidth h. Points outside the window get zero weight; points at the cutoff get the most.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the trade-off</p>
+          <p>A smaller bandwidth means a more local comparison but fewer points and wider uncertainty. There is no free bandwidth.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 FUZZY -->
+  <section class="chapter-section sheet" id="fuzzy" data-section="fuzzy">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">the fuzzy bench</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">The sheepskin effect</p>
+          <h2 class="section-title">A diploma<br>that barely jumps.</h2>
+          <p class="section-deck">Passing a last-chance exam raises the probability of a diploma, but not to one. The earnings jump is scaled by the diploma jump.</p>
+        </header>
+
+        <div class="prose">
+          <p>The sheepskin hypothesis says a diploma is a signal, so barely passing should raise earnings. The data covers 46 score cells. The first stage is real: crossing the cutoff raises the diploma probability by <strong>27.7 percentage points</strong>. But average earnings do not jump: the reduced-form estimate is <strong>&minus;97.76</strong>.</p>
+          <p>The Wald estimator divides the earnings jump by the diploma jump: <strong>&minus;352.8</strong>, with a bootstrap interval of roughly <strong>(&minus;3235, 1383)</strong>. It is not statistically distinguishable from zero.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-fuzzy" aria-labelledby="lab-fuzzy-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 02</p>
+              <h3 class="lab-title" id="lab-fuzzy-title">The fuzzy bench</h3>
+            </div>
+            <p class="lab-status mono" id="ch16-fuzzy-status">first stage &middot; +27.7 pp</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch16-chart" id="ch16-fuzzy-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="ch16-fuzzy-label">Diploma jump</p>
+              <p class="readout-value" id="ch16-fuzzy-value">+27.7 pp</p>
+              <p class="readout-sub" id="ch16-fuzzy-sub">first stage at the cutoff</p>
+              <p class="side-label mono ch16-side-label">Wald estimate</p>
+              <p class="ch16-wald" id="ch16-fuzzy-wald">&minus;352.8</p>
+              <p class="ch16-ci" id="ch16-fuzzy-ci">95% CI (&minus;3235, 1383)</p>
+              <dl class="mini-stats">
+                <div><dt>score cells</dt><dd>46</dd></div>
+                <div><dt>numerator</dt><dd>&minus;97.8</dd></div>
+                <div><dt>denominator</dt><dd>0.277</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch16-fuzzy-note">the earnings jump is not significant.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch16-controls">
+            <div class="ch16-presets" role="group" aria-label="Choose a view">
+              <button class="ch16-preset is-active" type="button" data-view="first" aria-pressed="true">First stage</button>
+              <button class="ch16-preset" type="button" data-view="earnings" aria-pressed="false">Earnings</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The diploma probability jumps at the cutoff; earnings do not. The Wald ratio is large and negative, but its interval is enormous.</figcaption>
+        </figure>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">No sheepskin effect here</p>
+          <p>The book concludes that education raises earnings by increasing productivity, not merely by signaling a diploma. The earnings line is continuous at the diploma cutoff.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the denominator</p>
+          <p>Only 27.7% of the cutoff jump is compliers. The rest are always takers or never takers, so the earnings jump must be scaled up.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the interval</p>
+          <p>The Wald estimate is unstable because the denominator is small and the numerator is noisy. A large point estimate with a huge interval is not strong evidence.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 DIAGNOSTICS -->
+  <section class="chapter-section sheet" id="diagnostics" data-section="diagnostics">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">diagnostics</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">The McCrary test</p>
+          <h2 class="section-title">No bunching,<br>no manipulation.</h2>
+          <p class="section-deck">If students could nudge their score just above the cutoff, the density would spike there. The data show no such spike.</p>
+        </header>
+
+        <div class="prose">
+          <p>The density of the running variable should be smooth through the cutoff. A spike just above the threshold is evidence of manipulation: units sorting into treatment. The sheepskin data show a smooth density, so the RD comparison is credible on this dimension.</p>
+        </div>
+
+        <figure class="mccrary-figure" aria-labelledby="mccrary-cap">
+          <div id="ch16-mccrary" aria-hidden="true"></div>
+          <figcaption id="mccrary-cap"><span class="mono">The diagnostic</span> Cell sizes by score, centered at the cutoff. No spike at zero; the density is smooth enough to trust the comparison.</figcaption>
+        </figure>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The limits</p>
+          <p>RD is local: it identifies the effect at the cutoff, not for the whole population. It also requires no manipulation of the running variable. A smooth density is necessary, not sufficient.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The honest sentence</p>
+          <p>&ldquo;At the 21 cutoff, all-cause mortality is 7.66 points higher, about 8.2%. This is a local effect for people at the threshold, not the effect of raising the drinking age for everyone.&rdquo;</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the density</p>
+          <p>Use the cell counts, not the outcome, to test for sorting. A jump in treatment probability is expected; a jump in density is a warning.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the external validity</p>
+          <p>People just above and below 21 are not the whole population. The estimate does not automatically generalize to other ages or countries.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>RD is a local randomized trial.</strong> Units just above and just below the cutoff are comparable; the running variable is the assignment mechanism.</li>
+          <li><strong>The estimate is a jump.</strong> Fit separate lines on each side; the discontinuity at the cutoff is the effect.</li>
+          <li><strong>Kernel weighting makes it local.</strong> Triangular weights emphasize points near the cutoff; bandwidth trades bias for variance.</li>
+          <li><strong>Fuzzy RD is IV at the cutoff.</strong> Divide the outcome jump by the treatment-probability jump; the result is local to compliers.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The sentence to avoid</p>
+          <p>&ldquo;Drinking causes an 8% increase in mortality for everyone.&rdquo; The estimate is at age 21, for the people near the cutoff, not for the whole population.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Plot the running variable. Plot the outcome. Check the density. Then fit the jump.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> What is the identifying assumption in RD?</summary>
+            <p>The potential outcomes are smooth at the cutoff. If they are, the only reason for a jump in the outcome is the treatment.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> Why does the kernel bandwidth matter?</summary>
+            <p>A smaller bandwidth focuses on units closer to the cutoff, reducing bias from distant points but increasing variance. The choice is a trade-off, not a free parameter.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> How does fuzzy RD differ from sharp RD?</summary>
+            <p>Treatment probability jumps but not from 0 to 1. The outcome jump is divided by the treatment-probability jump, giving a Wald estimate local to compliers.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> What does the McCrary test check?</summary>
+            <p>Whether the density of the running variable is smooth at the cutoff. A spike suggests manipulation and undermines the RD comparison.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next chapter</p>
+          <h3>Predictive models</h3>
+          <p>Move from identification to prediction: when the goal is a forecast rather than a causal effect, the tools and the checks change.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Check the density, plot both sides, and report the local estimand. The jump is only as credible as the smoothness assumption.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-ch16.js"></script>
+<script src="../assets/js/iv16.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: '16',
+    slug: '16-regression-discontinuity',
+    title: 'Regression discontinuity',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/16-Regression-Discontinuity-Design.html',
+    sections: [
+      { id: 'threshold', num: '01', label: 'The threshold' },
+      { id: 'sharp-bench', num: '02', label: 'The sharp bench' },
+      { id: 'fuzzy', num: '03', label: 'The fuzzy bench' },
+      { id: 'diagnostics', num: '04', label: 'Diagnostics' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/ch16.js"></script>
+</body>
+</html>
