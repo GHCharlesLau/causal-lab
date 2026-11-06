@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Heterogeneity and nonlinearity &mdash; Causal Field Notes</title>
+  <meta name="description" content="Chapter 23: effect heterogeneity and nonlinearity — binary outcomes, S-shaped conversion, cumulative effect curves, and price ranges that change the ranking.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/ch23.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the chapter</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Chapter 23</p>
+      <h1 class="hero-title hero-title--long">The curve <br>bites back<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">bounded outcomes bend the effect &darr;</p>
+      <p class="hero-deck">When the outcome is binary, the treatment effect is not linear. The slope depends on where you already are.</p>
+      <p class="hero-sub">A nudge raises a latent outcome by 1.40 points for everyone. But conversion is bounded at 0 and 1, so the measured effect on conversion is only 0.395 &mdash; and it varies with baseline conversion even when the latent effect is constant.</p>
+      <div class="hero-meta mono">
+        <span>100,000 simulated customers</span><span>4 outcome views</span><span>2 labs</span><span>~18 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#conversion-bench">Open the conversion bench <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/23-Challenges-with-Effect-Heterogeneity-and-Nonlinearity.html" target="_blank" rel="noreferrer">Read the source chapter</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="An S-shaped conversion curve; the slope is steep in the middle and flat at both ends.">
+        <g class="hero-paper">
+          <path d="M24 28h412v244H24z" fill="#fbf8f1" stroke="#ddd6c9"/>
+        </g>
+        <g class="s-curve">
+          <line x1="54" y1="222" x2="416" y2="222" stroke="#bdb4a5"/>
+          <line x1="54" y1="58" x2="54" y2="222" stroke="#bdb4a5"/>
+          <path d="M54 222 C 140 220, 180 180, 235 140 S 330 72, 416 64" fill="none" stroke="#2b2723" stroke-width="2.2"/>
+          <line x1="235" y1="140" x2="300" y2="108" stroke="#a8283a" stroke-width="1.6"/>
+          <line x1="100" y1="218" x2="160" y2="206" stroke="#2f5d8a" stroke-width="1.6"/>
+          <line x1="350" y1="70" x2="410" y2="66" stroke="#2f5d8a" stroke-width="1.6"/>
+          <text x="86" y="248" class="s-label">low</text>
+          <text x="222" y="248" class="s-label">50%</text>
+          <text x="388" y="248" class="s-label">high</text>
+          <text x="270" y="126" class="s-note s-note--red">steep</text>
+          <text x="92" y="196" class="s-note">flat</text>
+          <text x="348" y="56" class="s-note">flat</text>
+          <text x="64" y="278" class="hand s-hand">the derivative is the treatment effect</text>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">An S-shaped conversion curve with a steep slope near 50% and flat slopes at low and high baseline conversion.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Latent ATE</span>
+        <span class="hero-stat-value">1.402</span>
+        <span class="hero-stat-note">points</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Conversion ATE</span>
+        <span class="hero-stat-value">0.395</span>
+        <span class="hero-stat-note">percentage points</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Low base</span>
+        <span class="hero-stat-value">12.1%</span>
+        <span class="hero-stat-note">average conversion</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 BINARY -->
+  <section class="chapter-section sheet" id="binary" data-section="binary">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">binary outcomes</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Bounded at 0 and 1</p>
+          <h2 class="section-title">A constant nudge,<br>a moving slope.</h2>
+          <p class="section-deck">The treatment effect on the latent scale is constant. The treatment effect on conversion is not.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">A randomized nudge raises a latent outcome by an average of <strong>1.402</strong> points. But we only observe conversion: whether the latent outcome crosses a threshold. Conversion is bounded between 0 and 1, so the same nudge cannot keep adding 1.4 points of probability forever.</p>
+          <p>At an average conversion of <strong>51.8%</strong>, the measured ATE is <strong>0.395</strong>. At low baseline conversion it is <strong>0.170</strong>; at high baseline conversion it is <strong>0.118</strong>. The latent effect is unchanged; the conversion effect is compressed.</p>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-block">
+            <span class="mono">Latent outcome</span>
+            <strong>+1.402</strong>
+            <p>the effect we simulated</p>
+          </div>
+          <div class="stat-block">
+            <span class="mono">Conversion at 50%</span>
+            <strong>+0.395</strong>
+            <p>bounded by 0 and 1</p>
+          </div>
+          <div class="stat-block">
+            <span class="mono">Low / high base</span>
+            <strong>12.1% / 92.8%</strong>
+            <p>the S-curve’s ends</p>
+          </div>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The mechanism</p>
+          <p>Conversion is an S-shaped function of the latent outcome. The treatment effect on conversion is the derivative of that S-curve, so it is highest near 50% and lower at both ends.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the data</p>
+          <p>100,000 simulated customers, randomized nudge, age and income drawn from gamma distributions. Income predicts conversion but does not change the latent effect.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the consequence</p>
+          <p>A CATE model trained on conversion may rank income as a strong personalization variable, even though the latent effect does not depend on income.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 CONVERSION BENCH -->
+  <section class="chapter-section sheet" id="conversion-bench" data-section="conversion-bench">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">cumulative effect</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">The conversion bench</p>
+          <h2 class="section-title">Who looks<br>responsive?</h2>
+          <p class="section-deck">Sort customers by age or income, then estimate the treatment effect in the top share. The curves tell different stories.</p>
+        </header>
+
+        <div class="prose">
+          <p>On the latent outcome, age produces a steep curve and income is flat: age modifies the effect, income does not. On conversion at 50%, income produces a curve that starts at zero, overshoots the ATE, then converges &mdash; even though income does not modify the latent effect.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-binary" aria-labelledby="lab-binary-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-binary-title">The cumulative effect bench</h3>
+            </div>
+            <p class="lab-status mono" id="ch23-status">conversion &middot; 50%</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch23-chart" id="ch23-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="ch23-label">Effect on conversion</p>
+              <p class="readout-value" id="ch23-ate">+0.395</p>
+              <p class="readout-sub">average treatment effect</p>
+              <p class="side-label mono ch23-side-label">Top-decile effect</p>
+              <p class="ch23-top" id="ch23-top">age +0.61 &middot; income +0.39</p>
+              <dl class="mini-stats">
+                <div><dt>customers</dt><dd>100,000</dd></div>
+                <div><dt>curves</dt><dd>2</dd></div>
+                <div><dt>baseline</dt><dd id="ch23-base">51.8%</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch23-note">income looks heterogeneous; the latent effect is not.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch23-controls">
+            <div class="ch23-presets" role="group" aria-label="Choose an outcome view">
+              <button class="ch23-preset" type="button" data-view="latent" aria-pressed="false">Latent</button>
+              <button class="ch23-preset is-active" type="button" data-view="conversion" aria-pressed="true">50%</button>
+              <button class="ch23-preset" type="button" data-view="low" aria-pressed="false">Low</button>
+              <button class="ch23-preset" type="button" data-view="high" aria-pressed="false">High</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The income curve is not flat once the outcome is binary. The curvature creates apparent heterogeneity even when the latent effect is constant.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the red curve</p>
+          <p>Age is a true effect modifier: the latent model has nudge × age. Its curve separates from the ATE in every conversion view.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the blue curve</p>
+          <p>Income is a predictor, not a modifier. Its curve should be flat; on conversion it is not, because conversion is nonlinear.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 TARGETING -->
+  <section class="chapter-section sheet" id="targeting" data-section="targeting">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">targeting rule</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Low vs high baseline</p>
+          <h2 class="section-title">Aim for<br>the middle.</h2>
+          <p class="section-deck">When average conversion is low, high-baseline customers respond more. When it is high, low-baseline customers respond more.</p>
+        </header>
+
+        <div class="prose">
+          <p>The conversion curve is steepest near 50%. If your customers are bunched on the left side, moving them toward the middle raises the effect; if they are bunched on the right, moving them back toward the middle does the same. The target is whoever is closest to 50%.</p>
+          <p>This is why the low and high views reverse the ranking. At a 12.1% base rate, high-income customers convert more and respond more. At a 92.8% base rate, high-income customers have little room to convert, so low-income customers respond more.</p>
+        </div>
+
+        <div class="targeting-grid">
+          <div class="target-card target-card--low">
+            <p class="mono">Low base &middot; 12.1%</p>
+            <h3>Target the likely</h3>
+            <p>High-baseline customers are near the steep part of the curve. The effect rises with baseline conversion.</p>
+          </div>
+          <div class="target-card target-card--high">
+            <p class="mono">High base &middot; 92.8%</p>
+            <h3>Target the unlikely</h3>
+            <p>High-baseline customers are saturating. The effect is larger for those with room to convert.</p>
+          </div>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The simple rule</p>
+          <p>Target customers whose baseline conversion is closest to 50%. It is the point where the S-curve is steepest, and it is also the marketing rule of avoiding sure wins and lost bets.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the caveat</p>
+          <p>Real conversion rarely spans the whole curve. If everyone is at 80%, the middle is not available; the local derivative at 80% is what matters.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the lesson</p>
+          <p>A CATE model on a bounded outcome can rank a variable as heterogeneous when the latent effect is constant. Check the outcome scale.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 PRICING -->
+  <section class="chapter-section sheet" id="pricing" data-section="pricing">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">continuous treatment</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Price is not binary</p>
+          <h2 class="section-title">The ranking<br>moves with the range.</h2>
+          <p class="section-deck">When the treatment is continuous, the effect depends on both the segment and where in the price range you compare.</p>
+        </header>
+
+        <div class="prose">
+          <p>Two segments, four prices. On the full range, segment B falls faster at the low end; segment A has a larger jump from 15 to 10. The ranking of “who is more price-sensitive” is not a single number.</p>
+          <p>If the experiment only tests low prices for B and high prices for A, the comparison is biased by the price range. B looks less sensitive only because it was never tested at high prices.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-price" aria-labelledby="lab-price-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 02</p>
+              <h3 class="lab-title" id="lab-price-title">Price range and sensitivity</h3>
+            </div>
+            <p class="lab-status mono" id="ch23-price-status">full range</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch23-price-chart" id="ch23-price-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono">Segment B &middot; 5 &rarr; 10</p>
+              <p class="readout-value" id="ch23-b-increment">&minus;100</p>
+              <p class="readout-sub">sales units</p>
+              <p class="side-label mono ch23-side-label">Segment A &middot; 15 &rarr; 10</p>
+              <p class="ch23-top" id="ch23-a-increment">+300</p>
+              <dl class="mini-stats">
+                <div><dt>prices</dt><dd>5 / 10 / 15 / 20</dd></div>
+                <div><dt>segments</dt><dd>A / B</dd></div>
+                <div><dt>range</dt><dd id="ch23-range">all prices</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch23-price-note">B is only tested at low prices in the truncated view.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch23-controls">
+            <div class="ch23-presets" role="group" aria-label="Choose a price range">
+              <button class="ch23-preset is-active" type="button" data-range="full" aria-pressed="true">Full range</button>
+              <button class="ch23-preset" type="button" data-range="truncated" aria-pressed="false">Truncated</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The truncated view makes B look less price-sensitive, but B was never tested above 10. The comparison is confounded by the price range.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the ranking</p>
+          <p>On the full curve, B’s drop from 5 to 10 is smaller than A’s drop from 15 to 10. There is no single “more sensitive” segment without a price range.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the fix</p>
+          <p>Compare segments over the same treatment distribution, or model the response curve and interpolate. Do not extrapolate beyond tested prices.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>Bounded outcomes bend effects.</strong> A constant latent effect becomes a varying conversion effect because the outcome is nonlinear.</li>
+          <li><strong>Predictors can masquerade as modifiers.</strong> Income predicts conversion without changing the latent effect; the S-curve turns it into apparent heterogeneity.</li>
+          <li><strong>Target near 50%.</strong> The derivative of the conversion curve is highest near the middle, so that is where the nudge has the most room to move the outcome.</li>
+          <li><strong>Continuous effects depend on the range.</strong> Comparing segments at different treatment levels confounds sensitivity with the curvature of the response.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The sentence to avoid</p>
+          <p>&ldquo;Income is the best personalization variable because its CATE curve is steep.&rdquo; On the latent scale it does not modify the effect; the steepness comes from the conversion transform.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Ask whether the effect is on the scale you care about. A model on conversion is not a model on the latent outcome.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> Why is the conversion ATE smaller than the latent ATE?</summary>
+            <p>Conversion is bounded between 0 and 1. A constant latent increase cannot translate into a constant probability increase, especially near the boundaries.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> Why does income look heterogeneous on conversion?</summary>
+            <p>Income predicts baseline conversion. Because the conversion curve is S-shaped, customers at different income levels sit at different slopes, even though the latent effect is constant.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> When should you target high-baseline customers?</summary>
+            <p>When average conversion is low, so high-baseline customers are near the steep middle of the S-curve. When average conversion is high, target lower-baseline customers instead.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> Why can the price experiment’s segment ranking reverse?</summary>
+            <p>The treatment effect depends on the price level. If one segment is only tested at low prices and the other at high prices, the comparison reflects the curve, not a stable sensitivity difference.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next chapter</p>
+          <h3>The difference-in-differences saga</h3>
+          <p>Staggered adoption, negative weights, and the estimators that repair the two-way fixed-effects DiD.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Plot the response curve, not only the CATE. The shape explains why the ranking moves.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-ch23.js"></script>
+<script src="../assets/js/iv23.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: '23',
+    slug: '23-heterogeneity-nonlinearity',
+    title: 'Heterogeneity and nonlinearity',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/23-Challenges-with-Effect-Heterogeneity-and-Nonlinearity.html',
+    sections: [
+      { id: 'binary', num: '01', label: 'Binary outcomes' },
+      { id: 'conversion-bench', num: '02', label: 'The conversion bench' },
+      { id: 'targeting', num: '03', label: 'Targeting rule' },
+      { id: 'pricing', num: '04', label: 'Continuous treatment' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/ch23.js"></script>
+</body>
+</html>
