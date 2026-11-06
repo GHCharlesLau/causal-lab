@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Difference-in-differences &mdash; Causal Field Notes</title>
+  <meta name="description" content="Chapter 13: difference-in-differences — the billboard campaign in Porto Alegre, parallel trends, and the regression behind the estimate.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/ch13.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the chapter</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Chapter 13</p>
+      <h1 class="hero-title">Borrow the trend<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">change against change &darr;</p>
+      <p class="hero-deck">Difference-in-differences compares the change in a treated unit with the change in a control.</p>
+      <p class="hero-sub">Three billboards went up in Porto Alegre for June. Deposits rose by R$ 41.05. But Florianópolis also rose, by R$ 34.52. The campaign’s estimated effect is the difference between those changes: R$ 6.52.</p>
+      <div class="hero-meta mono">
+        <span>4,600 customers</span><span>2 cities</span><span>2 periods</span><span>~18 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#did-bench">Open the DiD bench <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/13-Difference-in-Differences.html" target="_blank" rel="noreferrer">Read the source chapter</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="Florianopolis and Porto Alegre both rise from May to July; the counterfactual for Porto Alegre is its baseline plus the Florianopolis trend.">
+        <g class="hero-paper">
+          <path d="M30 30h400v238H30z" fill="#fbf8f1" stroke="#ddd6c9"/>
+        </g>
+        <g class="did-hero">
+          <line x1="66" y1="230" x2="404" y2="230" stroke="#bdb4a5"/>
+          <line x1="66" y1="58" x2="66" y2="230" stroke="#bdb4a5"/>
+          <text x="46" y="234" text-anchor="end" class="did-axis">0</text>
+          <text x="66" y="248" text-anchor="middle" class="did-axis">May</text>
+          <text x="404" y="248" text-anchor="middle" class="did-axis">Jul</text>
+          <path d="M80 94 L390 76" fill="none" stroke="#2f5d8a" stroke-width="2.4"/>
+          <circle cx="80" cy="94" r="4" fill="#2f5d8a"/>
+          <circle cx="390" cy="76" r="4" fill="#2f5d8a"/>
+          <text x="80" y="82" text-anchor="middle" class="did-value">171.6</text>
+          <text x="390" y="64" text-anchor="middle" class="did-value">206.2</text>
+          <text x="38" y="88" class="did-city did-city--fl">FL</text>
+          <path d="M80 190 L390 158" fill="none" stroke="#a8283a" stroke-width="2.4"/>
+          <circle cx="80" cy="190" r="4" fill="#a8283a"/>
+          <circle cx="390" cy="158" r="4" fill="#a8283a"/>
+          <text x="80" y="178" text-anchor="middle" class="did-value">46.0</text>
+          <text x="390" y="146" text-anchor="middle" class="did-value">87.1</text>
+          <text x="26" y="196" class="did-city did-city--poa">POA</text>
+          <path d="M80 190 L390 166" fill="none" stroke="#2f5d8a" stroke-width="1.4" stroke-dasharray="5 4"/>
+          <circle cx="390" cy="166" r="3.5" fill="#fbf8f1" stroke="#2f5d8a" stroke-width="1.5"/>
+
+
+          <path d="M80 268c14 4 26 3 38-2" fill="none" stroke="#2f5d8a" stroke-width="1"/>
+          <text x="42" y="280" class="hand did-hand">the same trend, projected</text>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">Florianopolis rises from 171.6 to 206.2; Porto Alegre rises from 46.0 to 87.1; the projected counterfactual is 80.5, leaving a 6.52 gap.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Porto Alegre</span>
+        <span class="hero-stat-value">+41.05</span>
+        <span class="hero-stat-note">before to after</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">vs</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Florianópolis</span>
+        <span class="hero-stat-value">+34.52</span>
+        <span class="hero-stat-note">the control trend</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&rarr;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Difference</span>
+        <span class="hero-stat-value">+6.52</span>
+        <span class="hero-stat-note">the DiD estimate</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 BILLBOARDS -->
+  <section class="chapter-section sheet" id="billboards" data-section="billboards">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">the billboards</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Three billboards in the south of Brazil</p>
+          <h2 class="section-title">Both cities<br>grew.</h2>
+          <p class="section-deck">The campaign ran in Porto Alegre for June. Florianópolis, a nearby capital with no campaign, provides the trend Porto Alegre would have followed.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">Deposits in Porto Alegre rose from <strong>46.02</strong> in May to <strong>87.06</strong> in July: a gain of <strong>41.05</strong>. That looks like a success. But Florianópolis rose from <strong>171.64</strong> to <strong>206.17</strong>, a gain of <strong>34.52</strong>, without any billboards.</p>
+          <p>Subtract the control trend from the treated change and the campaign’s estimated effect is <strong>6.52</strong> reais per customer. The before-and-after number is too optimistic; comparing the cities after the campaign is too pessimistic, because Porto Alegre started at a much lower level.</p>
+        </div>
+
+        <div class="compare-grid">
+          <div class="compare-card">
+            <p class="mono">Before / after</p>
+            <p class="compare-value">+41.05</p>
+            <p>Assumes Porto Alegre would not have changed without the campaign.</p>
+          </div>
+          <div class="compare-card">
+            <p class="mono">After, cross-section</p>
+            <p class="compare-value compare-value--negative">&minus;119.10</p>
+            <p>Assumes Porto Alegre and Florianópolis have the same level.</p>
+          </div>
+          <div class="compare-card compare-card--key">
+            <p class="mono">Difference in differences</p>
+            <p class="compare-value">+6.52</p>
+            <p>Assumes the two cities would have followed parallel trends.</p>
+          </div>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Difference-in-differences formula">
+          <span class="formula-label mono">DiD</span>
+          <span class="formula-body">(<span class="math-var">Y</span><sub>POA,Jul</sub> &minus; <span class="math-var">Y</span><sub>POA,May</sub>) &minus; (<span class="math-var">Y</span><sub>FL,Jul</sub> &minus; <span class="math-var">Y</span><sub>FL,May</sub>)</span>
+        </div>
+
+        <div class="prose">
+          <p>The estimator is a difference of two changes. It does not require the cities to have the same baseline, and it does not assume the outcome is flat. It requires the counterfactual change in Porto Alegre to equal the observed change in Florianópolis.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The parallel trends assumption</p>
+          <p>Without the campaign, Porto Alegre would have grown by the same amount as Florianópolis. That is an assumption about a counterfactual trend, not something the data can prove.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the arithmetic</p>
+          <p>41.05 &minus; 34.52 = 6.52. The treated change, minus the control change.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the scale</p>
+          <p>Porto Alegre’s baseline is less than a third of Florianópolis’s. Levels differ enormously; the DiD only uses changes.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 DID BENCH -->
+  <section class="chapter-section sheet" id="did-bench" data-section="did-bench">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">the DiD bench</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Change against change</p>
+          <h2 class="section-title">Pick the<br>comparison.</h2>
+          <p class="section-deck">The same four means support three very different claims. The choice of comparison is the causal assumption.</p>
+        </header>
+
+        <div class="prose">
+          <p>The four group means are the whole dataset in miniature. The before-and-after comparison uses only Porto Alegre; the cross-section uses only July; DiD uses all four cells.</p>
+        </div>
+
+        <table class="did-table">
+          <caption class="sr-only">Mean deposits by city and month</caption>
+          <thead>
+            <tr><th></th><th>May</th><th>July</th></tr>
+          </thead>
+          <tbody>
+            <tr><th>Florianópolis</th><td>171.64<span class="did-n">1,300</span></td><td>206.17<span class="did-n">2,000</span></td></tr>
+            <tr><th>Porto Alegre</th><td>46.02<span class="did-n">500</span></td><td>87.06<span class="did-n">800</span></td></tr>
+          </tbody>
+        </table>
+
+        <figure class="lab lab--no-swipe" id="lab-did" aria-labelledby="lab-did-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-did-title">The comparison bench</h3>
+            </div>
+            <p class="lab-status mono" id="ch13-status">DiD &middot; +6.52</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch13-chart" id="ch13-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="ch13-label">Difference in differences</p>
+              <p class="readout-value" id="ch13-value">+6.52</p>
+              <p class="readout-sub">reais per customer</p>
+              <p class="ch13-formula mono" id="ch13-formula">(87.06 − 46.02) − (206.17 − 171.64)</p>
+              <p class="side-note hand" id="ch13-note">the same trend, projected.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch13-controls">
+            <div class="ch13-presets" role="group" aria-label="Choose a comparison">
+              <button class="ch13-preset" type="button" data-compare="beforeAfter" aria-pressed="false">Before / after</button>
+              <button class="ch13-preset" type="button" data-compare="crossSection" aria-pressed="false">After only</button>
+              <button class="ch13-preset is-active" type="button" data-compare="did" aria-pressed="true">Difference in differences</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The counterfactual is Porto Alegre’s May level plus Florianópolis’s change. The gap at July is the DiD estimate.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">why change?</p>
+          <p>The cities are not comparable in levels. DiD compares their changes, which is a much weaker requirement.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">why not just July?</p>
+          <p>July alone says Porto Alegre is far below Florianópolis. That is a level difference, not a campaign effect.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 REGRESSION -->
+  <section class="chapter-section sheet" id="regression" data-section="regression">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">the regression</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">The interaction term</p>
+          <h2 class="section-title">The same number,<br>with an error bar.</h2>
+          <p class="section-deck">Run a regression with city, period, and their interaction. The interaction coefficient is the DiD estimate, and it comes with a standard error.</p>
+        </header>
+
+        <div class="prose">
+          <p>The regression is <span class="math-var">Y</span> = <span class="math-var">&beta;</span><sub>0</sub> + <span class="math-var">&beta;</span><sub>1</sub>POA + <span class="math-var">&beta;</span><sub>2</sub>Jul + <span class="math-var">&beta;</span><sub>3</sub>POA&times;Jul + <span class="math-var">e</span>. The interaction coefficient is exactly the difference-in-differences estimate: <strong>6.5246</strong>.</p>
+          <p>Its standard error is <strong>5.729</strong>, and the 95% interval is <strong>(&minus;4.706, 17.755)</strong>. The estimate is positive, but it is not statistically distinguishable from zero.</p>
+        </div>
+
+        <table class="reg-table">
+          <caption class="sr-only">OLS regression of deposits on city, month, and their interaction</caption>
+          <thead>
+            <tr><th>Term</th><th>Estimate</th><th>Std. error</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Intercept</td><td>171.642</td><td>2.363</td></tr>
+            <tr><td>Porto Alegre</td><td>&minus;125.626</td><td>4.484</td></tr>
+            <tr><td>July</td><td>34.523</td><td>3.036</td></tr>
+            <tr class="is-key"><td>Porto Alegre &times; July</td><td>6.525</td><td>5.729</td></tr>
+          </tbody>
+        </table>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">Read the interval, not just the point</p>
+          <p>A 6.52 estimate with an interval that includes zero is not evidence of no effect; it is evidence that this sample is too noisy to rule out zero. The confidence interval is wide because deposits vary enormously across customers.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The equivalence</p>
+          <p>The regression does not add a new causal assumption. It reproduces the 2&times;2 DiD and gives the standard error that the four means alone cannot provide.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the p-value</p>
+          <p>The book reports p = 0.255. The estimate is positive but compatible with zero at conventional levels.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the mistake</p>
+          <p>Do not call the campaign ineffective. The data are consistent with effects from &minus;4.7 to +17.8.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 PARALLEL -->
+  <section class="chapter-section sheet" id="parallel" data-section="parallel">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">the assumption</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Non-parallel trends</p>
+          <h2 class="section-title">The lines<br>might not match.</h2>
+          <p class="section-deck">DiD is only as credible as the parallel trends assumption. Pre-period data can show whether the two cities were already diverging.</p>
+        </header>
+
+        <div class="prose">
+          <p>Suppose Porto Alegre was falling before the campaign while Florianópolis was rising. Then the treated city’s counterfactual trend would be downward, and DiD would overstate the campaign. The book’s illustrative history makes exactly that point: the pre-periods can reveal a violation that the two-period comparison hides.</p>
+        </div>
+
+        <figure class="pretrend-figure" aria-labelledby="pretrend-cap">
+          <svg viewBox="0 0 640 280" role="img" aria-label="Pre-period trends: Florianopolis rises from 120 to 150, while Porto Alegre falls from 60 to 50, so the parallel trends assumption is doubtful.">
+            <line x1="56" y1="228" x2="600" y2="228" stroke="#bdb4a5"/>
+            <line x1="56" y1="36" x2="56" y2="228" stroke="#bdb4a5"/>
+            <text x="56" y="248" text-anchor="middle" class="pretrend-axis">Jan</text>
+            <text x="200" y="248" text-anchor="middle" class="pretrend-axis">Mar</text>
+            <text x="344" y="248" text-anchor="middle" class="pretrend-axis">May</text>
+            <text x="520" y="248" text-anchor="middle" class="pretrend-axis">Jul</text>
+            <path d="M56 120 L200 96 L344 84 L520 64" fill="none" stroke="#2f5d8a" stroke-width="2.2"/>
+            <circle cx="56" cy="120" r="3.5" fill="#2f5d8a"/>
+            <circle cx="200" cy="96" r="3.5" fill="#2f5d8a"/>
+            <circle cx="344" cy="84" r="3.5" fill="#2f5d8a"/>
+            <circle cx="520" cy="64" r="3.5" fill="#2f5d8a"/>
+            <text x="56" y="108" text-anchor="middle" class="pretrend-value">120</text>
+            <text x="200" y="84" text-anchor="middle" class="pretrend-value">150</text>
+            <text x="344" y="72" text-anchor="middle" class="pretrend-value">172</text>
+            <text x="520" y="52" text-anchor="middle" class="pretrend-value">206</text>
+            <text x="536" y="68" class="pretrend-city pretrend-city--fl">FL</text>
+            <path d="M56 184 L200 192 L344 196 L520 160" fill="none" stroke="#a8283a" stroke-width="2.2"/>
+            <circle cx="56" cy="184" r="3.5" fill="#a8283a"/>
+            <circle cx="200" cy="192" r="3.5" fill="#a8283a"/>
+            <circle cx="344" cy="196" r="3.5" fill="#a8283a"/>
+            <circle cx="520" cy="160" r="3.5" fill="#a8283a"/>
+            <text x="56" y="174" text-anchor="middle" class="pretrend-value">60</text>
+            <text x="200" y="182" text-anchor="middle" class="pretrend-value">50</text>
+            <text x="344" y="186" text-anchor="middle" class="pretrend-value">46</text>
+            <text x="520" y="150" text-anchor="middle" class="pretrend-value">87</text>
+            <text x="536" y="174" class="pretrend-city pretrend-city--poa">POA</text>
+            <path d="M344 196 L520 180" fill="none" stroke="#2f5d8a" stroke-width="1.2" stroke-dasharray="4 4"/>
+            <text x="390" y="214" class="pretrend-note">counterfactual if the pre-trends were parallel?</text>
+            <text x="66" y="272" class="hand pretrend-hand">the pre-periods already disagree</text>
+          </svg>
+          <figcaption id="pretrend-cap"><span class="mono">The diagnostic</span> A pre-trend chart cannot prove parallel trends, but divergence before treatment is a warning that DiD may not be credible.</figcaption>
+        </figure>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">Aggregated data</p>
+          <p>With only the four group means, you can still compute the DiD estimate, but not its standard error. Aggregation squashes the customer-level variation that the regression uses.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the test that isn't</p>
+          <p>Parallel trends is about the counterfactual. Pre-trends are a diagnostic, not a proof; a flat pre-period does not guarantee a parallel post-period.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the alternative</p>
+          <p>When trends differ, synthetic control builds a comparison from many untreated units. That is the next chapter.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>DiD is a difference of changes.</strong> Treated change minus control change; it does not compare levels and does not assume a flat trend.</li>
+          <li><strong>Parallel trends is the assumption.</strong> The control trend stands in for the treated counterfactual. Pre-periods can make that assumption more or less credible.</li>
+          <li><strong>The regression is the same estimator.</strong> The interaction coefficient equals the 2&times;2 DiD and adds the standard error.</li>
+          <li><strong>Noise can dominate.</strong> A 6.52 estimate with a CI from &minus;4.7 to 17.8 is not evidence of no effect; it is a wide interval.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The sentence to avoid</p>
+          <p>&ldquo;Deposits rose 41 reais, so the billboards worked.&rdquo; Deposits rose in both cities. The DiD estimate is the part beyond the common trend.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Plot the trends before you trust the estimate. If the pre-periods already diverge, DiD is borrowing a trend that may not exist.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> Why is before-and-after not enough?</summary>
+            <p>It assumes the outcome would not have changed without the campaign. If deposits are trending up for everyone, the before-after comparison attributes the trend to the campaign.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> Why is the post cross-section not enough?</summary>
+            <p>It compares Porto Alegre and Florianópolis after the campaign, but the cities have very different baseline levels. The level difference is not a treatment effect.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> What is the parallel trends assumption?</summary>
+            <p>Without treatment, the treated unit would have followed the same trend as the control. It is an assumption about a counterfactual trend, not a testable fact.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> What does the regression interaction add?</summary>
+            <p>The same DiD point estimate plus a standard error. It uses the customer-level variation that the four aggregated means discard.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next chapter</p>
+          <h3>Panel data and fixed effects</h3>
+          <p>When the same units are observed repeatedly, within-unit comparisons can remove stable confounders. The next chapter moves to panel designs.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Draw the four means. Draw the trends. Then choose the comparison. The estimate is the last thing you read.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-ch13.js"></script>
+<script src="../assets/js/iv13.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: '13',
+    slug: '13-difference-in-differences',
+    title: 'Difference-in-differences',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/13-Difference-in-Differences.html',
+    sections: [
+      { id: 'billboards', num: '01', label: 'The billboards' },
+      { id: 'did-bench', num: '02', label: 'The DiD bench' },
+      { id: 'regression', num: '03', label: 'The regression' },
+      { id: 'parallel', num: '04', label: 'The assumption' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/ch13.js"></script>
+</body>
+</html>

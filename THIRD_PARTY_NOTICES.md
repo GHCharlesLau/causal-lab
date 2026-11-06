@@ -6,7 +6,7 @@ maintainers of the works below.
 ## Book and data
 
 **Causal Inference for the Brave and True** by Matheus Facure Alves.
-Chapters 01 (Introduction to Causality), 02 (Randomised Experiments), 03 (Stats Review), 04 (Graphical Causal Models), 05 (Linear Regression), 06 (Grouped and Dummy Regression), 07 (Beyond Confounders), 08 (Instrumental Variables), 09 (Non-Compliance and LATE), 10 (Matching), 11 (Propensity Score), and 12 (Doubly Robust Estimation):
+Chapters 01 (Introduction to Causality), 02 (Randomised Experiments), 03 (Stats Review), 04 (Graphical Causal Models), 05 (Linear Regression), 06 (Grouped and Dummy Regression), 07 (Beyond Confounders), 08 (Instrumental Variables), 09 (Non-Compliance and LATE), 10 (Matching), 11 (Propensity Score), 12 (Doubly Robust Estimation), and 13 (Difference-in-Differences):
 <https://matheusfacure.github.io/python-causality-handbook/01-Introduction-To-Causality.html>,
 <https://matheusfacure.github.io/python-causality-handbook/02-Randomised-Experiments.html>,
 <https://matheusfacure.github.io/python-causality-handbook/03-Stats-Review-The-Most-Dangerous-Equation.html>,
@@ -17,8 +17,9 @@ Chapters 01 (Introduction to Causality), 02 (Randomised Experiments), 03 (Stats 
 <https://matheusfacure.github.io/python-causality-handbook/08-Instrumental-Variables.html>,
 <https://matheusfacure.github.io/python-causality-handbook/09-Non-Compliance-and-LATE.html>,
 <https://matheusfacure.github.io/python-causality-handbook/10-Matching.html>,
-<https://matheusfacure.github.io/python-causality-handbook/11-Propensity-Score.html>, and
-<https://matheusfacure.github.io/python-causality-handbook/12-Doubly-Robust-Estimation.html>
+<https://matheusfacure.github.io/python-causality-handbook/11-Propensity-Score.html>,
+<https://matheusfacure.github.io/python-causality-handbook/12-Doubly-Robust-Estimation.html>, and
+<https://matheusfacure.github.io/python-causality-handbook/13-Difference-in-Differences.html>
 
 Repository and data: <https://github.com/matheusfacure/python-causality-handbook>
 

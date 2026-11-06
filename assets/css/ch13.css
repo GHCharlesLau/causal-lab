@@ -1,0 +1,384 @@
+/* ============================================================
+   Chapter 13 — DiD hero, comparison cards, trend bench.
+   ============================================================ */
+
+.did-axis,
+.did-value,
+.did-city,
+.did-gap,
+.pretrend-axis,
+.pretrend-value,
+.pretrend-city,
+.pretrend-note {
+  font-family: var(--mono);
+}
+
+.did-axis,
+.pretrend-axis {
+  font-size: 10px;
+  fill: var(--ink-3);
+}
+
+.did-value,
+.pretrend-value {
+  font-size: 11px;
+  fill: var(--ink-2);
+}
+
+.did-city,
+.pretrend-city {
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.did-city--fl,
+.pretrend-city--fl {
+  fill: var(--blue);
+}
+
+.did-city--poa,
+.pretrend-city--poa {
+  fill: var(--red);
+}
+
+.did-city--cf {
+  fill: var(--blue);
+  opacity: 0.7;
+  font-size: 8px;
+}
+
+.did-gap {
+  font-size: 12px;
+  fill: var(--blue);
+}
+
+.did-hand,
+.pretrend-hand {
+  font-family: var(--hand);
+  font-size: 18px;
+  fill: var(--blue);
+}
+
+/* ---------------------------------------------------------- comparison cards */
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 18px 0;
+}
+
+.compare-card {
+  padding: 12px 14px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+}
+
+.compare-card--key {
+  border-color: var(--red);
+  background: var(--red-soft);
+}
+
+.compare-card .mono {
+  color: var(--ink-3);
+  font-size: 8px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.compare-value {
+  margin: 7px 0 5px;
+  font-family: var(--serif);
+  font-size: 1.7rem;
+  color: var(--ink);
+}
+
+.compare-value--negative {
+  color: var(--red);
+}
+
+.compare-card p:last-child {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+/* ---------------------------------------------------------- means table */
+.did-table,
+.reg-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 0.9rem;
+}
+
+.did-table th,
+.did-table td,
+.reg-table th,
+.reg-table td {
+  padding: 8px 9px;
+  border-bottom: 1px solid var(--rule);
+  text-align: right;
+}
+
+.did-table thead th:first-child,
+.did-table tbody th,
+.reg-table thead th:first-child,
+.reg-table tbody td:first-child {
+  text-align: left;
+}
+
+.did-table thead th,
+.reg-table thead th {
+  color: var(--ink-3);
+  font-family: var(--mono);
+  font-size: 8.5px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.did-table tbody th {
+  font-weight: 400;
+  color: var(--ink-2);
+}
+
+.did-n {
+  display: block;
+  color: var(--ink-3);
+  font-family: var(--mono);
+  font-size: 8px;
+}
+
+.reg-table tbody td {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+}
+
+.reg-table tr.is-key td {
+  color: var(--red);
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------- trend chart */
+.ch13-chart {
+  min-height: 300px;
+}
+
+.ch13-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ch13-tick {
+  font-family: var(--mono);
+  font-size: 10px;
+  fill: var(--ink-3);
+}
+
+.ch13-axis-title {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  fill: var(--ink-2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ch13-line-fl {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 2;
+  transition: stroke-width 0.15s var(--ease);
+}
+
+.ch13-line-poa {
+  fill: none;
+  stroke: var(--red);
+  stroke-width: 2;
+  transition: stroke-width 0.15s var(--ease);
+}
+
+.ch13-line-cf {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 1.4;
+  stroke-dasharray: 5 4;
+  opacity: 0.7;
+}
+
+.ch13-dot-fl {
+  fill: var(--paper);
+  stroke: var(--blue);
+  stroke-width: 1.6;
+}
+
+.ch13-dot-poa {
+  fill: var(--paper);
+  stroke: var(--red);
+  stroke-width: 1.6;
+}
+
+.ch13-value {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-2);
+}
+
+.ch13-legend {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-2);
+}
+
+.ch13-annotation {
+  stroke: var(--ink);
+  stroke-width: 1.2;
+}
+
+.ch13-annotation-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  fill: var(--ink);
+}
+
+.ch13-formula {
+  margin: 4px 0 10px;
+  font-size: 8.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.ch13-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ch13-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.ch13-preset {
+  padding: 7px 11px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.ch13-preset:hover {
+  border-color: var(--ink-2);
+  color: var(--ink);
+}
+
+.ch13-preset.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.ch13-preset:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------- pre-trend figure */
+.pretrend-figure {
+  margin: 18px 0;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  padding: 10px;
+}
+
+.pretrend-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.pretrend-figure figcaption {
+  padding: 8px 6px 4px;
+  color: var(--ink-2);
+  font-size: 0.84rem;
+}
+
+.pretrend-figure figcaption .mono {
+  color: var(--red);
+  font-size: 8px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.lab--no-swipe .lab-head::after {
+  content: none;
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .compare-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lab-body {
+    grid-template-columns: 1fr;
+  }
+
+  .ch13-chart {
+    overflow: visible;
+    min-height: 210px;
+  }
+
+  .ch13-chart svg {
+    width: 100%;
+    max-width: none;
+  }
+
+  .ch13-tick,
+  .ch13-axis-title,
+  .ch13-legend,
+  .ch13-value,
+  .ch13-annotation-label {
+    font-size: 16px;
+  }
+
+  .did-table,
+  .reg-table {
+    font-size: 0.8rem;
+  }
+
+  .did-table th,
+  .did-table td,
+  .reg-table th,
+  .reg-table td {
+    padding: 5px 4px;
+  }
+
+  .ch13-preset {
+    flex: 1 1 100%;
+    text-align: left;
+  }
+
+  .pretrend-figure {
+    overflow: visible;
+  }
+
+  .pretrend-figure svg {
+    width: 100%;
+    max-width: none;
+  }
+
+  .pretrend-axis,
+  .pretrend-value,
+  .pretrend-city,
+  .pretrend-note,
+  .pretrend-hand {
+    font-size: 15px;
+  }
+}

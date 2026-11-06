@@ -8,13 +8,13 @@ and arguments you can defend.
 It is a local, static website: no backend, no build step, no tracking. Open `index.html`
 for the landing page, or serve the folder over HTTP.
 
-**Status: 12 of 30 pages live.** Chapters 01 (Introduction to causality), 02 (Randomised
+**Status: 13 of 30 pages live.** Chapters 01 (Introduction to causality), 02 (Randomised
 experiments), 03 (Stats review), 04 (Graphical causal models), 05 (Linear regression),
 06 (Grouped and dummy regression), 07 (Beyond confounders), 08 (Instrumental variables),
-09 (Non-compliance and LATE), 10 (Matching), 11 (Propensity score), and 12 (Doubly robust
-estimation) are complete. The other 18 pages are scaffolded in the course manifest and
-marked as planned; they are added one at a time, with numbers checked against the book's
-notebooks.
+09 (Non-compliance and LATE), 10 (Matching), 11 (Propensity score), 12 (Doubly robust
+estimation), and 13 (Difference-in-differences) are complete. The other 17 pages are
+scaffolded in the course manifest and marked as planned; they are added one at a time, with
+numbers checked against the book's notebooks.
 
 ---
 
@@ -128,6 +128,14 @@ A grid replaces one model at a time with random noise: wrong propensity gives 0.
 wrong outcome 0.3981, and both wrong has no guarantee. The page shows the estimates and
 intervals together and is clear that robustness is not precision.
 
+### 13 — Difference-in-differences
+
+Three billboards in Porto Alegre, with Florianópolis as the control. Deposits rose 41.05 in
+Porto Alegre and 34.52 in Florianópolis, so the DiD estimate is 6.52. The regression
+interaction gives the same number, with a standard error of 5.729 and an interval that
+includes zero. The page makes parallel trends the central assumption and shows pre-trends
+that would undermine it.
+
 ### What is in each chapter
 
 - A story with the decision, the failure of the naive comparison, and the identification
@@ -183,6 +191,8 @@ point here is to let you see estimator bias separately from confounding bias.
 
 ![Chapter 12, the robustness grid](assets/img/screenshots/ch12-grid.png)
 
+![Chapter 13, the DiD comparison bench](assets/img/screenshots/ch13-did.png)
+
 ![The Matching chapter](assets/img/screenshots/matching.png)
 
 ---
@@ -197,9 +207,9 @@ Open `index.html` in Chrome or Edge. It is the landing page. The live chapters a
 `chapters/05-linear-regression.html`, `chapters/06-grouped-regression.html`,
 `chapters/07-beyond-confounders.html`, `chapters/08-instrumental-variables.html`,
 `chapters/09-non-compliance.html`, `chapters/10-matching.html`,
-`chapters/11-propensity-score.html`, and `chapters/12-doubly-robust.html`. Everything
-needed is local: CSS, JS, data, fonts, the poster, and the rendered opener at
-`assets/video/matching-opener.mp4`.
+`chapters/11-propensity-score.html`, `chapters/12-doubly-robust.html`, and
+`chapters/13-difference-in-differences.html`. Everything needed is local: CSS, JS, data,
+fonts, the poster, and the rendered opener at `assets/video/matching-opener.mp4`.
 
 ### Option 2: local server
 
@@ -306,9 +316,9 @@ Reference, chapter, and manifest tests (Node 24, no packages):
 The suite checks the Matching book numbers, the k-curve, severity-band checkpoints, the
 oracle, the k-d tree, the OLS toy regression, the Chapter 01 potential-outcomes arithmetic
 (ATE −50, ATT −75, naive +125, bias +200), the Chapter 02 group means and missing-data
-balance, the Chapter 03 standard errors, interval, z, and p-values, the Chapter 04 DAG path logic, the Chapter 05 OLS/control path, the Chapter 06 weighted/dummy regression, the Chapter 07 control models, the Chapter 08 IV constants, the Chapter 09 compliance matrix, the Chapter 11 propensity score, the Chapter 12 doubly robust grid, and the site manifest
+balance, the Chapter 03 standard errors, interval, z, and p-values, the Chapter 04 DAG path logic, the Chapter 05 OLS/control path, the Chapter 06 weighted/dummy regression, the Chapter 07 control models, the Chapter 08 IV constants, the Chapter 09 compliance matrix, the Chapter 11 propensity score, the Chapter 12 doubly robust grid, the Chapter 13 difference-in-differences, and the site manifest
 (30 pages, unique slugs, every live page exists, the shared reading scale is loaded).
-67 tests in total.
+75 tests in total.
 
 Browser smoke tests use Chrome DevTools Protocol through Node's built-in WebSocket (no
 Playwright/Puppeteer). Matching-specific scripts default to
@@ -329,6 +339,7 @@ to test a different page.
 & "...\node.exe" tools/cdp-ch09.mjs   # Chapter 09: compliance matrix, LATE
 & "...\node.exe" tools/cdp-ch11.mjs   # Chapter 11: propensity score, estimators
 & "...\node.exe" tools/cdp-ch12.mjs   # Chapter 12: doubly robust grid
+& "...\node.exe" tools/cdp-ch13.mjs   # Chapter 13: DiD comparisons
 & "...\node.exe" tools/cdp-a11y.mjs
 & "...\node.exe" tools/cdp-reduced.mjs
 & "...\node.exe" tools/cdp-film.mjs
@@ -350,7 +361,8 @@ practice mode, and the course map. It prints the observed values and any console
 `cdp-ch08.mjs` checks the IV ratio and the weak-instrument dial;
 `cdp-ch09.mjs` checks the compliance matrix and the three estimates;
 `cdp-ch11.mjs` checks the score distribution and the four propensity estimates;
-`cdp-ch12.mjs` checks the robustness grid and the interval chart.
+`cdp-ch12.mjs` checks the robustness grid and the interval chart;
+`cdp-ch13.mjs` checks the before/after, cross-section, and DiD readouts.
 `cdp-a11y.mjs` checks button names, input labels, duplicate IDs, and heading structure;
 `cdp-reduced.mjs` verifies that reduced motion lands on final states; `cdp-film.mjs`
 checks the rendered video’s metadata and dialog; `cdp-persist.mjs` reloads after scoring
@@ -375,6 +387,7 @@ chapters/
   10-matching.html         live chapter: the matching bench
   11-propensity-score.html live chapter: the score, weighting, matching
   12-doubly-robust.html    live chapter: two models, two chances
+  13-difference-in-differences.html live chapter: billboards and parallel trends
 assets/css/
   tokens.css               paper/ink/pencil tokens, type scale
   base.css                 reset, type, focus, grain, toast
@@ -395,6 +408,7 @@ assets/css/
   ch09.css                 chapter 09 compliance matrix and estimator rows
   ch11.css                 chapter 11 score histogram and estimator rows
   ch12.css                 chapter 12 robustness grid and intervals
+  ch13.css                 chapter 13 trend chart and comparison cards
   print.css                readable paper version
 assets/js/
   chapters.js              the manifest: 25 chapters + 5 notes, live/planned
@@ -407,10 +421,12 @@ assets/js/
   data-ch08.js             AK91 seasonal groups + weak-IV simulation
   data-ch09.js             push compliance counts and means
   data-ch11.js             learning-mindset PS and outcome payload
+  data-ch13.js             billboard group means and OLS
   iv.js                    the book's quarter-of-birth IV constants
   iv09.js                  the book's OLS/ITT/LATE constants
   iv11.js                  the book's propensity-score constants
   iv12.js                  the book's doubly robust constants
+  iv13.js                  the book's DiD constants
   dag.js                   chapter 04 graph definitions + path verdicts
   regression.js            OLS/WLS engine + classical SEs
   labs/ch01.js             the counterfactual lens
@@ -424,6 +440,7 @@ assets/js/
   labs/ch09.js             the compliance matrix and estimator chart
   labs/ch11.js             the score histogram, rate strip, and estimators
   labs/ch12.js             the robustness grid and interval chart
+  labs/ch13.js             the DiD comparison chart and readout
   data.js                  matching payload (20k patients)
   reference.js             generated book numbers
   stats.js                 mean/sd/OLS, k-d tree, k-NN matching, correction
@@ -481,8 +498,8 @@ The site is built to grow by one chapter at a time. To add one:
 5. Add a browser test (the `tools/cdp-ch01.mjs` pattern) and a Node arithmetic test.
 6. Update this README's live list and screenshots.
 
-The next build is **Chapter 13 — Fixed effects and panel data**: within-unit comparisons
-that remove stable confounders. After that, the plan is 14–16, then Part II 17–25, then the
+The next build is **Chapter 14 — Panel data and fixed effects**: within-unit comparisons
+that remove stable confounders. After that, the plan is 15–16, then Part II 17–25, then the
 five technical notes.
 
 ---
@@ -538,7 +555,7 @@ source is still valid and can be rendered later.
 ## Credits
 
 - **Book & data:** Matheus Facure Alves, *Causal Inference for the Brave and True*,
-  chapters 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, and 12, MIT-licensed repository.
+  chapters 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, and 13, MIT-licensed repository.
   Chapter 01's four-school table and its arithmetic are the book's example; Chapter 02's
   online-classroom data comes from Alpert, Couch & Harmon (2016) via the book repository.
   Chapter 03's sampling simulation uses the book's true mean 74 and standard deviation 2.
@@ -546,11 +563,12 @@ source is still valid and can be rendered later.
   06 use the book's `wage.csv`; Chapter 07 uses the book's collections-email and
   hospital-treatment data; Chapter 08 uses the book's `ak91.csv` and its seed-12 IV
   simulation; Chapter 09 uses the book's push-engagement data; Chapters 11 and 12 use the
-  book's `learning_mindset.csv`. The prose is adapted and shortened, and the counterfactual
-  lens, three-classroom dot strip, sample-size dial, interval ruler, DAG workbench, control
-  dial, weighting bench, dummy staircase, control labs, seasonal panel, IV ratio,
-  weak-instrument dial, compliance matrix, estimator chart, score histogram, rate strip,
-  robustness grid, and interval chart are new.
+  book's `learning_mindset.csv`; Chapter 13 uses the book's `billboard_impact.csv`. The prose
+  is adapted and shortened, and the counterfactual lens, three-classroom dot strip,
+  sample-size dial, interval ruler, DAG workbench, control dial, weighting bench, dummy
+  staircase, control labs, seasonal panel, IV ratio, weak-instrument dial, compliance
+  matrix, estimator chart, score histogram, rate strip, robustness grid, interval chart,
+  comparison cards, and trend bench are new.
 - **Visual language:** adapted from the **Data Storytelling** style in
   [Lemo-Opuscar](https://github.com/lemomo-ai/lemo-opuscar) by Lemomo (MIT). The charts,
   copy, and motion here are original; no demo assets or story are reused.
