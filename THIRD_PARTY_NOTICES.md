@@ -6,7 +6,7 @@ maintainers of the works below.
 ## Book and data
 
 **Causal Inference for the Brave and True** by Matheus Facure Alves.
-Chapters 01 (Introduction to Causality), 02 (Randomised Experiments), 03 (Stats Review), 04 (Graphical Causal Models), 05 (Linear Regression), 06 (Grouped and Dummy Regression), 07 (Beyond Confounders), 08 (Instrumental Variables), 09 (Non-Compliance and LATE), 10 (Matching), 11 (Propensity Score), 12 (Doubly Robust Estimation), 13 (Difference-in-Differences), 14 (Panel Data and Fixed Effects), 15 (Synthetic Control), 16 (Regression Discontinuity Design), 17 (Predictive Models 101), 18 (Heterogeneous Treatment Effects and Personalization), 19 (Evaluating Causal Models), 20 (Plug-and-Play Estimators), 21 (Meta-Learners), 22 (Debiased/Orthogonal Machine Learning), 23 (Challenges with Effect Heterogeneity and Nonlinearity), 24 (The Difference-in-Differences Saga), and 25 (Synthetic Difference-in-Differences), plus technical notes A1 (Debiasing with Orthogonalization), A2 (Debiasing with Propensity Score), A3 (When Prediction Fails), and A4 (Why Prediction Metrics are Dangerous for Causal Models):
+Chapters 01 (Introduction to Causality), 02 (Randomised Experiments), 03 (Stats Review), 04 (Graphical Causal Models), 05 (Linear Regression), 06 (Grouped and Dummy Regression), 07 (Beyond Confounders), 08 (Instrumental Variables), 09 (Non-Compliance and LATE), 10 (Matching), 11 (Propensity Score), 12 (Doubly Robust Estimation), 13 (Difference-in-Differences), 14 (Panel Data and Fixed Effects), 15 (Synthetic Control), 16 (Regression Discontinuity Design), 17 (Predictive Models 101), 18 (Heterogeneous Treatment Effects and Personalization), 19 (Evaluating Causal Models), 20 (Plug-and-Play Estimators), 21 (Meta-Learners), 22 (Debiased/Orthogonal Machine Learning), 23 (Challenges with Effect Heterogeneity and Nonlinearity), 24 (The Difference-in-Differences Saga), and 25 (Synthetic Difference-in-Differences), plus technical notes A1 (Debiasing with Orthogonalization), A2 (Debiasing with Propensity Score), A3 (When Prediction Fails), A4 (Why Prediction Metrics are Dangerous for Causal Models), and A5 (Conformal Inference for Synthetic Controls):
 <https://matheusfacure.github.io/python-causality-handbook/01-Introduction-To-Causality.html>,
 <https://matheusfacure.github.io/python-causality-handbook/02-Randomised-Experiments.html>,
 <https://matheusfacure.github.io/python-causality-handbook/03-Stats-Review-The-Most-Dangerous-Equation.html>,
@@ -34,8 +34,9 @@ Chapters 01 (Introduction to Causality), 02 (Randomised Experiments), 03 (Stats 
 <https://matheusfacure.github.io/python-causality-handbook/25-Synthetic-Diff-in-Diff.html>,
 <https://matheusfacure.github.io/python-causality-handbook/Debiasing-with-Orthogonalization.html>,
 <https://matheusfacure.github.io/python-causality-handbook/Debiasing-with-Propensity-Score.html>,
-<https://matheusfacure.github.io/python-causality-handbook/When-Prediction-Fails.html>, and
-<https://matheusfacure.github.io/python-causality-handbook/Prediction-Metrics-For-Causal-Models.html>
+<https://matheusfacure.github.io/python-causality-handbook/When-Prediction-Fails.html>,
+<https://matheusfacure.github.io/python-causality-handbook/Prediction-Metrics-For-Causal-Models.html>, and
+<https://matheusfacure.github.io/python-causality-handbook/Conformal-Inference-for-Synthetic-Control.html>
 
 Repository and data: <https://github.com/matheusfacure/python-causality-handbook>
 

@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conformal inference for synthetic control &mdash; Causal Field Notes</title>
+  <meta name="description" content="Technical note A5: conformal inference for synthetic control — block-permuted residuals, test statistics, p-values, and a 90% confidence interval for California's Proposition 99 effect.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/a5.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the note</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Technical Note A5</p>
+      <h1 class="hero-title hero-title--long">An honest <br>interval<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">permute the residuals, not the units &darr;</p>
+      <p class="hero-deck">A synthetic control gives a gap. Conformal inference gives the gap a distribution-free interval.</p>
+      <p class="hero-sub">For 1988, the 90% interval is [−12.32, 8.69], which contains zero. By 1991 it is [−19.60, −5.86], and by 2000 it is [−51.11, −17.98]. The effect grows more negative as the policy bites.</p>
+      <div class="hero-meta mono">
+        <span>31 years</span><span>39 states</span><span>1 treated unit</span><span>~16 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#interval-bench">Open the interval bench <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/Conformal-Inference-for-Synthetic-Control.html" target="_blank" rel="noreferrer">Read the source note</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="The effect path turns negative after 1988, with a confidence band that widens over time.">
+        <g class="hero-paper">
+          <path d="M24 28h412v244H24z" fill="#fbf8f1" stroke="#ddd6c9"/>
+        </g>
+        <g class="ci-figure">
+          <line x1="54" y1="206" x2="416" y2="206" stroke="#bdb4a5"/>
+          <line x1="54" y1="54" x2="54" y2="206" stroke="#bdb4a5"/>
+          <line x1="198" y1="54" x2="198" y2="206" stroke="#2b2723" stroke-width="1" stroke-dasharray="3 3"/>
+          <path d="M58 128 C 120 116, 170 120, 198 122 C 240 130, 280 156, 330 176 S 392 198, 414 202" fill="none" stroke="#a8283a" stroke-width="2.2"/>
+          <path d="M198 116 C 250 120, 310 142, 414 158 L 414 220 C 330 210, 250 188, 198 146 Z" fill="#2f5d8a" opacity="0.14"/>
+          <line x1="198" y1="116" x2="414" y2="158" stroke="#2f5d8a" stroke-dasharray="3 3"/>
+          <line x1="198" y1="146" x2="414" y2="220" stroke="#2f5d8a" stroke-dasharray="3 3"/>
+          <text x="204" y="72" class="ci-note">90% band</text>
+          <text x="204" y="230" class="ci-label">1988</text>
+          <text x="390" y="230" class="ci-label">2000</text>
+          <text x="70" y="278" class="hand ci-hand">wide at the start, negative later</text>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">The estimated effect path turns negative after 1988; a blue band widens around it in later years.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">p-value</span>
+        <span class="hero-stat-value">0.161</span>
+        <span class="hero-stat-note">H&#8320;: no effect</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">1988 CI</span>
+        <span class="hero-stat-value">[&minus;12.3, 8.7]</span>
+        <span class="hero-stat-note">contains zero</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">2000 CI</span>
+        <span class="hero-stat-value">[&minus;51.1, &minus;18.0]</span>
+        <span class="hero-stat-note">fully negative</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 REFRESHER -->
+  <section class="chapter-section sheet" id="refresher" data-section="refresher">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">synthetic control</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">One treated, many controls</p>
+          <h2 class="section-title">Build the<br>counterfactual.</h2>
+          <p class="section-deck">Use the untreated states to construct a synthetic California that matches its pre-1988 cigarette sales.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">Synthetic control fits non-negative weights on the control states so their weighted sum tracks California before Proposition 99. After 1988, the gap between California and its synthetic twin is the estimated effect.</p>
+          <p>The estimate is a path, not a single number: the gap is about −1.87 in 1988 and −26.60 by 2000. A path needs a path-valued inference procedure.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Synthetic control gap">
+          <span class="formula-label mono">SC gap</span>
+          <span class="formula-body"><span class="math-var">&tau;</span><sub>t</sub> = <span class="math-var">Y</span><sub>CA,t</sub> &minus; &sum;<sub>j</sub> <span class="w">w</span><sub>j</sub><span class="math-var">Y</span><sub>j,t</sub></span>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-block">
+            <span class="mono">1988 effect</span>
+            <strong>&minus;1.87</strong>
+            <p>just after the policy</p>
+          </div>
+          <div class="stat-block">
+            <span class="mono">2000 effect</span>
+            <strong>&minus;26.60</strong>
+            <p>the end of the window</p>
+          </div>
+          <div class="stat-block">
+            <span class="mono">States</span>
+            <strong>39</strong>
+            <p>one treated, 38 donors</p>
+          </div>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The inferential problem</p>
+          <p>There is one treated unit. The usual standard error is not available. The placebo test compares California’s gap with the gaps of untreated states, but it assumes random assignment of the intervention.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the fit</p>
+          <p>The SC weights minimize squared pre-treatment error, sum to one, and are non-negative. The fit is good enough that the pre-period gap is small.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the weakness</p>
+          <p>A single post-period number hides the path. Inference should respect the dependence across years.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 CONFORMAL -->
+  <section class="chapter-section sheet" id="conformal" data-section="conformal">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">conformal residuals</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Test a null trajectory</p>
+          <h2 class="section-title">Shift the data,<br>refit, compare.</h2>
+          <p class="section-deck">Under a null, subtract it from the post-period outcomes, refit the SC on all years, and measure the post-period residuals.</p>
+        </header>
+
+        <div class="prose">
+          <p>For <span class="math-var">H</span><sub>0</sub>: no effect, the counterfactual equals the observed California path. Fit the SC on the whole null series and compute residuals. Large negative post-period residuals are evidence against the null.</p>
+          <p>The test statistic is the mean absolute post-period residual: <strong>12.60</strong>. To calibrate it, block-permute the residual series and recompute the statistic on the post-period block. The p-value is the share of permutations at least as extreme: <strong>0.161</strong>.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Conformal p-value">
+          <span class="formula-label mono">p-value</span>
+          <span class="formula-body"><span class="math-var">p</span> = (1/<span class="math-var">T</span>) &sum;<sub>k</sub> 1{<span class="math-var">S</span>(<span class="math-var">u</span><sup>(k)</sup>) &ge; <span class="math-var">S</span>(<span class="math-var">u</span>)}</span>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">Not significant at 10%</p>
+          <p>The p-value for the no-effect null is 0.161. At &alpha; = 0.1, we do not reject the hypothesis that Proposition 99 had no effect on the whole trajectory — even though the point estimates look large.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the statistic</p>
+          <p>The book uses q = 1: the mean absolute residual in the post period. The mean, not the sum, because the window length varies across tests.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the block</p>
+          <p>Rolling the residual series preserves its dependence. Permuting individual years would break the serial correlation and overstate significance.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 INTERVAL BENCH -->
+  <section class="chapter-section sheet" id="interval-bench" data-section="interval-bench">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">the interval bench</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Year by year</p>
+          <h2 class="section-title">The band<br>widens.</h2>
+          <p class="section-deck">Invert the test for a grid of null effects at each post-period year. The 90% interval is the set of nulls that survive.</p>
+        </header>
+
+        <figure class="lab lab--no-swipe" id="lab-interval" aria-labelledby="lab-interval-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-interval-title">The conformal interval bench</h3>
+            </div>
+            <p class="lab-status mono" id="a5-status">2000 &middot; [&minus;51.11, &minus;17.98]</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart a5-chart" id="a5-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="a5-label">2000 &middot; 90% interval</p>
+              <p class="readout-value" id="a5-ci">&minus;51.1 / &minus;18.0</p>
+              <p class="readout-sub">lower / upper bound</p>
+              <p class="side-label mono a5-side-label">Point estimate</p>
+              <p class="a5-effect" id="a5-effect">&minus;26.60</p>
+              <dl class="mini-stats">
+                <div><dt>null grid</dt><dd>100 values</dd></div>
+                <div><dt>&alpha;</dt><dd>0.10</dd></div>
+                <div><dt>window</dt><dd>1988&ndash;2000</dd></div>
+              </dl>
+              <p class="side-note hand" id="a5-note">by 2000, every plausible null is negative.</p>
+            </aside>
+          </div>
+          <div class="lab-controls a5-controls">
+            <div class="a5-presets" role="group" aria-label="Choose a year">
+              <button class="a5-preset" type="button" data-year="1988" aria-pressed="false">1988</button>
+              <button class="a5-preset" type="button" data-year="1995" aria-pressed="false">1995</button>
+              <button class="a5-preset is-active" type="button" data-year="2000" aria-pressed="true">2000</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> In 1988 the interval contains zero. By 1991 it is entirely below zero, and it keeps widening as the effect grows.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the inversion</p>
+          <p>For each candidate null, compute the conformal p-value. Keep the nulls with p &ge; 0.1; their range is the 90% interval.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the reading</p>
+          <p>In 1988 the data are compatible with no effect. By 1991 they are not. The interval is a statement about each year, not a simultaneous band.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 READING -->
+  <section class="chapter-section sheet" id="reading" data-section="reading">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">reading the result</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">What the interval says</p>
+          <h2 class="section-title">A slow<br>policy.</h2>
+          <p class="section-deck">The effect is not distinguishable from zero in the first years. It becomes clearly negative later, and larger in magnitude.</p>
+        </header>
+
+        <div class="ci-table" id="a5-table">
+          <div class="ci-row ci-row--head"><span>Year</span><span>Effect</span><span>90% CI</span></div>
+        </div>
+
+        <div class="prose">
+          <p>This is more honest than a single “significant” star. A policy can take years to change behavior, and the interval shows when the data start to rule out no effect.</p>
+          <p>The conformal guarantee is finite-sample and distribution-free, but it is conditional on the SC model being the right counterfactual model. It does not fix a bad pre-treatment fit.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The correct sentence</p>
+          <p>&ldquo;The 90% interval excludes zero from 1991 onward; the 1988 interval includes zero.&rdquo; That is a statement about each year, supported by the conformal inversion.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the assumption</p>
+          <p>The procedure assumes exchangeability of the residual blocks, which is plausible if the SC model is stable and the errors are stationary.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the limit</p>
+          <p>Conformal inference does not rescue a counterfactual model that misses a structural break. It prices the uncertainty; it does not remove the bias.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>Refit under the null.</strong> Subtract the hypothesized effect from the post period, fit the SC on the whole null series, and keep the residuals.</li>
+          <li><strong>Block-permute, not unit-permute.</strong> Rolling the residual series preserves serial dependence and calibrates the test statistic.</li>
+          <li><strong>Invert the test for an interval.</strong> Keep the nulls with p &ge; &alpha;; their range is the confidence interval for that year.</li>
+          <li><strong>The interval changes the story.</strong> The 1988 interval contains zero; the 2000 interval does not. Report the path, not just the endpoint.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The sentence to avoid</p>
+          <p>&ldquo;The SC effect is −26.6, so Proposition 99 worked.&rdquo; The effect is a path with uncertainty; in 1988 the data cannot distinguish it from zero.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Conformal inference gives a p-value and an interval without a parametric likelihood. The price is the exchangeability assumption.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> Why refit the SC under the null?</summary>
+            <p>The null determines the counterfactual series. Refitting under that series gives residuals that are comparable across the null grid, avoiding huge post-period residuals from a pre-fit model.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> Why block-permute residuals?</summary>
+            <p>Residuals are serially correlated. Permuting individual years breaks that dependence; rolling the whole series preserves it and calibrates the statistic correctly.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> How is the confidence interval built?</summary>
+            <p>For each candidate null effect, compute the conformal p-value. The interval is the set of nulls that are not rejected at the chosen alpha.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> What does the 1988 interval mean?</summary>
+            <p>The data are compatible with effects from −12.3 to 8.7, including zero. We cannot rule out no effect in the first year.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">End of the notes</p>
+          <h3>Back to the course map</h3>
+          <p>Thirty pages: twenty-five chapters and five technical notes. The field guide is complete.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>When the interval includes zero early and excludes it later, the effect is a trajectory, not a switch.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-a5.js"></script>
+<script src="../assets/js/iv-a5.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: 'A5',
+    slug: 'a5-conformal-synthetic-control',
+    title: 'Conformal inference for synthetic control',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/Conformal-Inference-for-Synthetic-Control.html',
+    sections: [
+      { id: 'refresher', num: '01', label: 'Synthetic control' },
+      { id: 'conformal', num: '02', label: 'Conformal residuals' },
+      { id: 'interval-bench', num: '03', label: 'The interval bench' },
+      { id: 'reading', num: '04', label: 'Reading the result' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/a5.js"></script>
+</body>
+</html>

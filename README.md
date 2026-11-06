@@ -8,16 +8,17 @@ and arguments you can defend.
 It is a local, static website: no backend, no build step, no tracking. Open `index.html`
 for the landing page, or serve the folder over HTTP.
 
-**Status: 25 of 25 chapters live; 4 of 5 technical notes live.** All 25 chapters are
-complete: 01 Introduction, 02 Randomised experiments, 03 Stats review, 04 Graphical causal
-models, 05 Linear regression, 06 Grouped and dummy regression, 07 Beyond confounders,
-08 Instrumental variables, 09 Non-compliance and LATE, 10 Matching, 11 Propensity score,
-12 Doubly robust estimation, 13 Difference-in-differences, 14 Panel data and fixed effects,
-15 Synthetic control, 16 Regression discontinuity, 17 Predictive models, 18 Heterogeneous
-effects, 19 Evaluating causal models, 20 Plug-and-play estimators, 21 Meta-learners,
-22 Orthogonal ML, 23 Heterogeneity and nonlinearity, 24 The DiD saga, and 25 Synthetic DiD.
-Technical notes A1 (orthogonalization), A2 (propensity score), A3 (when prediction fails),
-and A4 (prediction metrics) are also live; A5 remains and is added next.
+**Status: 30 of 30 pages live.** All 25 chapters are complete: 01 Introduction, 02 Randomised
+experiments, 03 Stats review, 04 Graphical causal models, 05 Linear regression, 06 Grouped
+and dummy regression, 07 Beyond confounders, 08 Instrumental variables, 09 Non-compliance
+and LATE, 10 Matching, 11 Propensity score, 12 Doubly robust estimation,
+13 Difference-in-differences, 14 Panel data and fixed effects, 15 Synthetic control,
+16 Regression discontinuity, 17 Predictive models, 18 Heterogeneous effects,
+19 Evaluating causal models, 20 Plug-and-play estimators, 21 Meta-learners, 22 Orthogonal
+ML, 23 Heterogeneity and nonlinearity, 24 The DiD saga, and 25 Synthetic DiD. Technical
+notes A1 (orthogonalization), A2 (propensity score), A3 (when prediction fails), A4
+(prediction metrics), and A5 (conformal synthetic control) are also live. The site is
+complete and ready to deploy as a static folder.
 
 ---
 
@@ -267,6 +268,14 @@ quartile is 5.68 vs M1’s 2.92. After denoising, both R² values go negative: �
 −24.0. The note includes the cumulative-elasticity curve lab and explains why a low R² can
 be the better causal model.
 
+### A5 — Conformal inference for synthetic control
+
+The final note. California’s synthetic-control gap is −1.87 in 1988 and −26.60 in 2000.
+Conformal residuals give a no-effect p-value of 0.161 and test statistic 12.60. The 90%
+interval is [−12.32, 8.69] in 1988 and [−51.11, −17.98] in 2000; the note includes a
+year-by-year interval lab, the full 13-row interval table, and the block-permutation
+explanation.
+
 ### What is in each chapter
 
 - A story with the decision, the failure of the naive comparison, and the identification
@@ -356,6 +365,8 @@ point here is to let you see estimator bias separately from confounding bias.
 
 ![A4, the metric bench](assets/img/screenshots/a4-curve.png)
 
+![A5, the conformal interval bench](assets/img/screenshots/a5-interval.png)
+
 ![The Matching chapter](assets/img/screenshots/matching.png)
 
 ---
@@ -379,8 +390,9 @@ Open `index.html` in Chrome or Edge. It is the landing page. The live chapters a
 `chapters/23-heterogeneity-nonlinearity.html`, `chapters/24-did-saga.html`,
 `chapters/25-synthetic-did.html`, `chapters/a1-debiasing-orthogonalization.html`,
 `chapters/a2-debiasing-propensity-score.html`, `chapters/a3-when-prediction-fails.html`,
-and `chapters/a4-prediction-metrics.html`. Everything needed is local: CSS, JS, data,
-fonts, the poster, and the rendered opener at `assets/video/matching-opener.mp4`.
+`chapters/a4-prediction-metrics.html`, and `chapters/a5-conformal-synthetic-control.html`.
+Everything needed is local: CSS, JS, data, fonts, the poster, and the rendered opener at
+`assets/video/matching-opener.mp4`.
 
 ### Option 2: local server
 
@@ -470,11 +482,11 @@ Before a page is marked `live` in `assets/js/chapters.js`:
    table in Chapter 01 is the worked example: ATE −50, ATT −75, naive +125, bias +200.
 3. A Node test guards the arithmetic (`tests/*.test.mjs`).
 4. A CDP test exercises the actual interaction and checks the DOM (`tools/cdp-ch01.mjs`).
-5. Only then does the manifest status change to `live`. Planned pages are never linked as
-   finished content.
+5. Only then does the manifest status change to `live`. No page is linked before its checks
+   pass.
 
 The 30 briefs live in `reference/chapter-briefs/`; the index lists the code-cell and data
-counts for every chapter, which is also the roadmap for the remaining pages.
+counts for every chapter, which is also the coverage map.
 
 ## Tests
 
@@ -487,9 +499,9 @@ Reference, chapter, and manifest tests (Node 24, no packages):
 The suite checks the Matching book numbers, the k-curve, severity-band checkpoints, the
 oracle, the k-d tree, the OLS toy regression, the Chapter 01 potential-outcomes arithmetic
 (ATE −50, ATT −75, naive +125, bias +200), the Chapter 02 group means and missing-data
-balance, the Chapter 03 standard errors, interval, z, and p-values, the Chapter 04 DAG path logic, the Chapter 05 OLS/control path, the Chapter 06 weighted/dummy regression, the Chapter 07 control models, the Chapter 08 IV constants, the Chapter 09 compliance matrix, the Chapter 11 propensity score, the Chapter 12 doubly robust grid, the Chapter 13 difference-in-differences, the Chapter 15 synthetic control, the Chapter 16 RD constants, the Chapter 17 policy arithmetic, the Chapter 18 CATE bands, the Chapter 19 gain curves, the Chapter 20 target transforms, the Chapter 21 meta-learner curves, the Chapter 22 orthogonal slopes, the Chapter 23 conversion curves, the Chapter 24 TWFE paths, the Chapter 25 SDID estimates, the A1 residual slopes, the A2 balance weights, the A3 policy gains, the A4 cumulative curves, and the site manifest
+balance, the Chapter 03 standard errors, interval, z, and p-values, the Chapter 04 DAG path logic, the Chapter 05 OLS/control path, the Chapter 06 weighted/dummy regression, the Chapter 07 control models, the Chapter 08 IV constants, the Chapter 09 compliance matrix, the Chapter 11 propensity score, the Chapter 12 doubly robust grid, the Chapter 13 difference-in-differences, the Chapter 15 synthetic control, the Chapter 16 RD constants, the Chapter 17 policy arithmetic, the Chapter 18 CATE bands, the Chapter 19 gain curves, the Chapter 20 target transforms, the Chapter 21 meta-learner curves, the Chapter 22 orthogonal slopes, the Chapter 23 conversion curves, the Chapter 24 TWFE paths, the Chapter 25 SDID estimates, the A1 residual slopes, the A2 balance weights, the A3 policy gains, the A4 cumulative curves, the A5 confidence intervals, and the site manifest
 (30 pages, unique slugs, every live page exists, the shared reading scale is loaded).
-135 tests in total.
+139 tests in total.
 
 Browser smoke tests use Chrome DevTools Protocol through Node's built-in WebSocket (no
 Playwright/Puppeteer). Matching-specific scripts default to
@@ -527,6 +539,9 @@ to test a different page.
 & "...\node.exe" tools/cdp-a2.mjs     # A2: balance and positivity
 & "...\node.exe" tools/cdp-a3.mjs     # A3: coupon policy comparison
 & "...\node.exe" tools/cdp-a4.mjs     # A4: cumulative elasticity models
+& "...\node.exe" tools/cdp-a5.mjs     # A5: conformal interval years
+& "...\node.exe" tools/check-paths.mjs
+& "...\node.exe" tools/cdp-audit.mjs "http://127.0.0.1:4173/chapters/" 1440 900
 & "...\node.exe" tools/cdp-a11y.mjs
 & "...\node.exe" tools/cdp-reduced.mjs
 & "...\node.exe" tools/cdp-film.mjs
@@ -565,7 +580,8 @@ practice mode, and the course map. It prints the observed values and any console
 `cdp-a1.mjs` checks the raw/residual scatter and both gain curves;
 `cdp-a2.mjs` checks raw/weighted balance and email 1 vs 3 positivity;
 `cdp-a3.mjs` checks the simple/model policy toggle and band choices;
-`cdp-a4.mjs` checks the M1/M2 cumulative-elasticity toggle.
+`cdp-a4.mjs` checks the M1/M2 cumulative-elasticity toggle;
+`cdp-a5.mjs` checks the 1988/1995/2000 conformal intervals.
 `cdp-a11y.mjs` checks button names, input labels, duplicate IDs, and heading structure;
 `cdp-reduced.mjs` verifies that reduced motion lands on final states; `cdp-film.mjs`
 checks the rendered video’s metadata and dialog; `cdp-persist.mjs` reloads after scoring
@@ -607,6 +623,7 @@ chapters/
   a2-debiasing-propensity-score.html live note: balance and positivity
   a3-when-prediction-fails.html live note: coupon policy comparison
   a4-prediction-metrics.html live note: cumulative elasticity metric
+  a5-conformal-synthetic-control.html live note: conformal interval bench
 assets/css/
   tokens.css               paper/ink/pencil tokens, type scale
   base.css                 reset, type, focus, grain, toast
@@ -644,9 +661,10 @@ assets/css/
   a2.css                   note A2 balance bars and positivity histogram
   a3.css                   note A3 policy bars and band choices
   a4.css                   note A4 metric curves and score table
+  a5.css                   note A5 conformal band and interval table
   print.css                readable paper version
 assets/js/
-  chapters.js              the manifest: 25 chapters + 5 notes, live/planned
+  chapters.js              the manifest: 25 chapters + 5 notes, all live
   site.js                  chapter shell: top bar, rail, course map, pager
   landing.js               landing course-map renderer + visit state
   data-ch02.js             online-classroom payload (323 students)
@@ -673,6 +691,7 @@ assets/js/
   data-a2.js               correlations and propensity histograms
   data-a3.js               coupon policy gains and band choices
   data-a4.js               simulated R2 and cumulative curves
+  data-a5.js               California gap and conformal intervals
   iv.js                    the book's quarter-of-birth IV constants
   iv09.js                  the book's OLS/ITT/LATE constants
   iv11.js                  the book's propensity-score constants
@@ -694,6 +713,7 @@ assets/js/
   iv-a2.js                 the book's propensity score constants
   iv-a3.js                 the book's prediction-failure constants
   iv-a4.js                 the book's prediction-metric constants
+  iv-a5.js                 the book's conformal constants
   dag.js                   chapter 04 graph definitions + path verdicts
   regression.js            OLS/WLS engine + classical SEs
   labs/ch01.js             the counterfactual lens
@@ -724,6 +744,7 @@ assets/js/
   labs/a2.js               the balance and positivity charts
   labs/a3.js               the policy comparison and band chart
   labs/a4.js               the cumulative-elasticity curve bench
+  labs/a5.js               the conformal interval bench
   data.js                  matching payload (20k patients)
   reference.js             generated book numbers
   stats.js                 mean/sd/OLS, k-d tree, k-NN matching, correction
@@ -781,8 +802,9 @@ The site is built to grow by one chapter at a time. To add one:
 5. Add a browser test (the `tools/cdp-ch01.mjs` pattern) and a Node arithmetic test.
 6. Update this README's live list and screenshots.
 
-Notes A1–A4 are live. The next build is **A5 — Conformal inference for synthetic
-control**, the final page; after that the site is complete.
+**All 30 pages are live.** The next step is the final deployability pass: re-check relative
+paths, the landing page count, the sitemap, and the whole-site HTTP/`file://` run before
+publishing.
 
 ---
 
@@ -826,7 +848,7 @@ source is still valid and can be rendered later.
 - English-only in this version.
 - The medicine data is simulated; the truth line is a teaching device.
 - The whole-book build is in progress. Only pages marked **live** in the course manifest
-  claim to be complete; planned pages are labelled and never linked as finished content.
+  claim to be complete; every live page is checked against its source before release.
 - The page is an independent learning project, not affiliated with the book's author,
   Lemomo, or HeyGen.
 - Matching estimates are design-dependent. The page shows the design choices; it does not
@@ -837,7 +859,7 @@ source is still valid and can be rendered later.
 ## Credits
 
 - **Book & data:** Matheus Facure Alves, *Causal Inference for the Brave and True*,
-  chapters 01–25 plus technical notes A1–A4, MIT-licensed repository.
+  chapters 01–25 plus technical notes A1–A5, MIT-licensed repository.
   Chapter 01's four-school table and its arithmetic are the book's example; Chapter 02's
   online-classroom data comes from Alpert, Couch & Harmon (2016) via the book repository.
   Chapter 03's sampling simulation uses the book's true mean 74 and standard deviation 2.
@@ -845,12 +867,12 @@ source is still valid and can be rendered later.
   06 use the book's `wage.csv`; Chapter 07 uses the book's collections-email and
   hospital-treatment data; Chapter 08 uses the book's `ak91.csv` and its seed-12 IV
   simulation; Chapter 09 uses the book's push-engagement data; Chapters 11 and 12 use the
-  book's `learning_mindset.csv`; Chapter 13 uses the book's `billboard_impact.csv`; Chapter 14 uses the wage panel distributed with linearmodels; Chapter 15 uses the book's `smoking.csv`; Chapter 16 uses the book's `drinking.csv` and `sheepskin.csv`; Chapter 17 uses the book's customer transaction and feature files; Chapter 18 uses the book's `ice_cream_sales_rnd.csv`; Chapter 19 uses both ice-cream sales files; Chapter 20 uses `invest_email_rnd.csv` and the randomized ice-cream file; Chapter 21 uses the biased and randomized email files; Chapter 22 uses the non-random and randomized ice-cream files; Chapter 23 uses a seeded simulation described on the page; Chapter 24 uses a seeded staggered-rollout simulation; Chapter 25 uses the book's `smoking.csv` panel; note A1 uses the non-random ice-cream file; note A2 uses the book's `invest_email.csv`; note A3 uses the book's coupon simulation values; note A4 uses the book's seeded simulation. The prose
+  book's `learning_mindset.csv`; Chapter 13 uses the book's `billboard_impact.csv`; Chapter 14 uses the wage panel distributed with linearmodels; Chapter 15 uses the book's `smoking.csv`; Chapter 16 uses the book's `drinking.csv` and `sheepskin.csv`; Chapter 17 uses the book's customer transaction and feature files; Chapter 18 uses the book's `ice_cream_sales_rnd.csv`; Chapter 19 uses both ice-cream sales files; Chapter 20 uses `invest_email_rnd.csv` and the randomized ice-cream file; Chapter 21 uses the biased and randomized email files; Chapter 22 uses the non-random and randomized ice-cream files; Chapter 23 uses a seeded simulation described on the page; Chapter 24 uses a seeded staggered-rollout simulation; Chapter 25 uses the book's `smoking.csv` panel; note A1 uses the non-random ice-cream file; note A2 uses the book's `invest_email.csv`; note A3 uses the book's coupon simulation values; note A4 uses the book's seeded simulation; note A5 uses `smoking.csv` and the book's conformal intervals. The prose
   is adapted and shortened, and the counterfactual lens, three-classroom dot strip,
   sample-size dial, interval ruler, DAG workbench, control dial, weighting bench, dummy
   staircase, control labs, seasonal panel, IV ratio, weak-instrument dial, compliance
   matrix, estimator chart, score histogram, rate strip, robustness grid, interval chart,
-  comparison cards, trend bench, fixed-effect hero, toy panel, wage chart, synthetic path, placebo chart, RD fits, McCrary density, policy slider, policy bars, CATE bench, slope contrast, gain bench, band chart, transformation diagram, target-transform benches, meta-learner diagrams, learner bench, residual scatter, S-curve hero, conversion bench, price-range lab, DiD cohort-path bench, SDID estimator bench, A1 residual bench, A2 balance/positivity charts, A3 policy bench, and A4 metric bench are new.
+  comparison cards, trend bench, fixed-effect hero, toy panel, wage chart, synthetic path, placebo chart, RD fits, McCrary density, policy slider, policy bars, CATE bench, slope contrast, gain bench, band chart, transformation diagram, target-transform benches, meta-learner diagrams, learner bench, residual scatter, S-curve hero, conversion bench, price-range lab, DiD cohort-path bench, SDID estimator bench, A1 residual bench, A2 balance/positivity charts, A3 policy bench, A4 metric bench, and A5 interval bench are new.
 - **Visual language:** adapted from the **Data Storytelling** style in
   [Lemo-Opuscar](https://github.com/lemomo-ai/lemo-opuscar) by Lemomo (MIT). The charts,
   copy, and motion here are original; no demo assets or story are reused.
