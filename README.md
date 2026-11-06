@@ -8,15 +8,15 @@ and arguments you can defend.
 It is a local, static website: no backend, no build step, no tracking. Open `index.html`
 for the landing page, or serve the folder over HTTP.
 
-**Status: 20 of 30 pages live.** Chapters 01 (Introduction to causality), 02 (Randomised
+**Status: 21 of 30 pages live.** Chapters 01 (Introduction to causality), 02 (Randomised
 experiments), 03 (Stats review), 04 (Graphical causal models), 05 (Linear regression),
 06 (Grouped and dummy regression), 07 (Beyond confounders), 08 (Instrumental variables),
 09 (Non-compliance and LATE), 10 (Matching), 11 (Propensity score), 12 (Doubly robust
 estimation), 13 (Difference-in-differences), 14 (Panel data and fixed effects),
 15 (Synthetic control), 16 (Regression discontinuity), 17 (Predictive models),
-18 (Heterogeneous effects), 19 (Evaluating causal models), and 20 (Plug-and-play
-estimators) are complete. The other 10 pages are scaffolded in the course manifest and
-marked as planned; they are added one at a time, with numbers checked against the book's
+18 (Heterogeneous effects), 19 (Evaluating causal models), 20 (Plug-and-play estimators),
+and 21 (Meta-learners) are complete. The other 9 pages are scaffolded in the course manifest
+and marked as planned; they are added one at a time, with numbers checked against the book's
 notebooks.
 
 ---
@@ -192,6 +192,14 @@ prices it is (Y−Ȳ)(T−T̄)/Var(T). A small LightGBM model fits each target. 
 CATE range is −0.141 to 0.386, with a top-decile gain of 1.4% against a 6.5% overall effect.
 The price test top-decile gain is 0.273 against a −2.46 slope.
 
+### 21 — Meta-learners
+
+Train on 15,000 biased email customers (22.5% treated), test on 15,000 randomized ones
+(50.4% treated). The S-learner puts treatment in one model; the T-learner fits one model
+per treatment; the X-learner imputes effects and weights second-stage models by propensity.
+The test CATE ranges are [0.006, 0.312] for S, [−0.133, 0.374] for T, and [−0.094, 0.418]
+for X. Top-decile gains are 1.5%, 1.2%, and 1.9%; all converge to the 6.85% overall effect.
+
 ### What is in each chapter
 
 - A story with the decision, the failure of the naive comparison, and the identification
@@ -263,6 +271,8 @@ point here is to let you see estimator bias separately from confounding bias.
 
 ![Chapter 20, the binary target-transformation bench](assets/img/screenshots/ch20-binary.png)
 
+![Chapter 21, the meta-learner bench](assets/img/screenshots/ch21-learners.png)
+
 ![The Matching chapter](assets/img/screenshots/matching.png)
 
 ---
@@ -281,9 +291,9 @@ Open `index.html` in Chrome or Edge. It is the landing page. The live chapters a
 `chapters/13-difference-in-differences.html`, `chapters/14-panel-fixed-effects.html`,
 `chapters/15-synthetic-control.html`, `chapters/16-regression-discontinuity.html`,
 `chapters/17-predictive-models.html`, `chapters/18-heterogeneous-effects.html`,
-`chapters/19-evaluating-causal-models.html`, and `chapters/20-plug-and-play.html`.
-Everything needed is local: CSS, JS, data, fonts, the poster, and the rendered opener at
-`assets/video/matching-opener.mp4`.
+`chapters/19-evaluating-causal-models.html`, `chapters/20-plug-and-play.html`, and
+`chapters/21-meta-learners.html`. Everything needed is local: CSS, JS, data, fonts, the
+poster, and the rendered opener at `assets/video/matching-opener.mp4`.
 
 ### Option 2: local server
 
@@ -390,9 +400,9 @@ Reference, chapter, and manifest tests (Node 24, no packages):
 The suite checks the Matching book numbers, the k-curve, severity-band checkpoints, the
 oracle, the k-d tree, the OLS toy regression, the Chapter 01 potential-outcomes arithmetic
 (ATE −50, ATT −75, naive +125, bias +200), the Chapter 02 group means and missing-data
-balance, the Chapter 03 standard errors, interval, z, and p-values, the Chapter 04 DAG path logic, the Chapter 05 OLS/control path, the Chapter 06 weighted/dummy regression, the Chapter 07 control models, the Chapter 08 IV constants, the Chapter 09 compliance matrix, the Chapter 11 propensity score, the Chapter 12 doubly robust grid, the Chapter 13 difference-in-differences, the Chapter 15 synthetic control, the Chapter 16 RD constants, the Chapter 17 policy arithmetic, the Chapter 18 CATE bands, the Chapter 19 gain curves, the Chapter 20 target transforms, and the site manifest
+balance, the Chapter 03 standard errors, interval, z, and p-values, the Chapter 04 DAG path logic, the Chapter 05 OLS/control path, the Chapter 06 weighted/dummy regression, the Chapter 07 control models, the Chapter 08 IV constants, the Chapter 09 compliance matrix, the Chapter 11 propensity score, the Chapter 12 doubly robust grid, the Chapter 13 difference-in-differences, the Chapter 15 synthetic control, the Chapter 16 RD constants, the Chapter 17 policy arithmetic, the Chapter 18 CATE bands, the Chapter 19 gain curves, the Chapter 20 target transforms, the Chapter 21 meta-learner curves, and the site manifest
 (30 pages, unique slugs, every live page exists, the shared reading scale is loaded).
-99 tests in total.
+103 tests in total.
 
 Browser smoke tests use Chrome DevTools Protocol through Node's built-in WebSocket (no
 Playwright/Puppeteer). Matching-specific scripts default to
@@ -421,6 +431,7 @@ to test a different page.
 & "...\node.exe" tools/cdp-ch18.mjs   # Chapter 18: CATE sensitivity bands
 & "...\node.exe" tools/cdp-ch19.mjs   # Chapter 19: cumulative gain models
 & "...\node.exe" tools/cdp-ch20.mjs   # Chapter 20: target transformation splits
+& "...\node.exe" tools/cdp-ch21.mjs   # Chapter 21: meta-learner comparison
 & "...\node.exe" tools/cdp-a11y.mjs
 & "...\node.exe" tools/cdp-reduced.mjs
 & "...\node.exe" tools/cdp-film.mjs
@@ -450,7 +461,8 @@ practice mode, and the course map. It prints the observed values and any console
 `cdp-ch17.mjs` checks the policy slider at several confidence cutoffs;
 `cdp-ch18.mjs` checks the ATE and both sensitivity bands;
 `cdp-ch19.mjs` checks the three cumulative-gain models;
-`cdp-ch20.mjs` checks both target-transformation benches.
+`cdp-ch20.mjs` checks both target-transformation benches;
+`cdp-ch21.mjs` checks the S-, T-, and X-learner curves.
 `cdp-a11y.mjs` checks button names, input labels, duplicate IDs, and heading structure;
 `cdp-reduced.mjs` verifies that reduced motion lands on final states; `cdp-film.mjs`
 checks the rendered video’s metadata and dialog; `cdp-persist.mjs` reloads after scoring
@@ -483,6 +495,7 @@ chapters/
   18-heterogeneous-effects.html live chapter: CATE and sensitivity bands
   19-evaluating-causal-models.html live chapter: gain curves and bands
   20-plug-and-play.html live chapter: target transformation benches
+  21-meta-learners.html live chapter: S/T/X learner comparison
 assets/css/
   tokens.css               paper/ink/pencil tokens, type scale
   base.css                 reset, type, focus, grain, toast
@@ -511,6 +524,7 @@ assets/css/
   ch18.css                 chapter 18 CATE hero, scatter, slope contrast
   ch19.css                 chapter 19 gain curves and band chart
   ch20.css                 chapter 20 transformation diagram and gain curves
+  ch21.css                 chapter 21 meta-learner diagrams and comparison chart
   print.css                readable paper version
 assets/js/
   chapters.js              the manifest: 25 chapters + 5 notes, live/planned
@@ -531,6 +545,7 @@ assets/js/
   data-ch18.js             ice-cream test rows and sensitivity bands
   data-ch19.js             gain curves and band slopes
   data-ch20.js             binary and continuous target-transform curves
+  data-ch21.js             S/T/X learner gain curves and CATE ranges
   iv.js                    the book's quarter-of-birth IV constants
   iv09.js                  the book's OLS/ITT/LATE constants
   iv11.js                  the book's propensity-score constants
@@ -543,6 +558,7 @@ assets/js/
   iv18.js                  the book's CATE constants
   iv19.js                  the book's evaluation constants
   iv20.js                  the book's plug-and-play constants
+  iv21.js                  the book's meta-learner constants
   dag.js                   chapter 04 graph definitions + path verdicts
   regression.js            OLS/WLS engine + classical SEs
   labs/ch01.js             the counterfactual lens
@@ -564,6 +580,7 @@ assets/js/
   labs/ch18.js             the sensitivity band chart and readout
   labs/ch19.js             the cumulative gain chart and band chart
   labs/ch20.js             the binary and continuous gain curves
+  labs/ch21.js             the S/T/X learner gain comparison
   data.js                  matching payload (20k patients)
   reference.js             generated book numbers
   stats.js                 mean/sd/OLS, k-d tree, k-NN matching, correction
@@ -621,9 +638,9 @@ The site is built to grow by one chapter at a time. To add one:
 5. Add a browser test (the `tools/cdp-ch01.mjs` pattern) and a Node arithmetic test.
 6. Update this README's live list and screenshots.
 
-The next build is **Chapter 21 — Meta-learners**: S-, T-, X-, and R-learners, and how they
-combine outcome and treatment models. After that, Part II 22–25, then the five technical
-notes.
+The next build is **Chapter 22 — Orthogonal machine learning**: residualization and
+cross-fitting for causal parameters with flexible models. After that, Part II 23–25, then
+the five technical notes.
 
 ---
 
@@ -678,7 +695,7 @@ source is still valid and can be rendered later.
 ## Credits
 
 - **Book & data:** Matheus Facure Alves, *Causal Inference for the Brave and True*,
-  chapters 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, and 20, MIT-licensed repository.
+  chapters 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, and 21, MIT-licensed repository.
   Chapter 01's four-school table and its arithmetic are the book's example; Chapter 02's
   online-classroom data comes from Alpert, Couch & Harmon (2016) via the book repository.
   Chapter 03's sampling simulation uses the book's true mean 74 and standard deviation 2.
@@ -686,12 +703,12 @@ source is still valid and can be rendered later.
   06 use the book's `wage.csv`; Chapter 07 uses the book's collections-email and
   hospital-treatment data; Chapter 08 uses the book's `ak91.csv` and its seed-12 IV
   simulation; Chapter 09 uses the book's push-engagement data; Chapters 11 and 12 use the
-  book's `learning_mindset.csv`; Chapter 13 uses the book's `billboard_impact.csv`; Chapter 14 uses the wage panel distributed with linearmodels; Chapter 15 uses the book's `smoking.csv`; Chapter 16 uses the book's `drinking.csv` and `sheepskin.csv`; Chapter 17 uses the book's customer transaction and feature files; Chapter 18 uses the book's `ice_cream_sales_rnd.csv`; Chapter 19 uses both ice-cream sales files; Chapter 20 uses `invest_email_rnd.csv` and the randomized ice-cream file. The prose
+  book's `learning_mindset.csv`; Chapter 13 uses the book's `billboard_impact.csv`; Chapter 14 uses the wage panel distributed with linearmodels; Chapter 15 uses the book's `smoking.csv`; Chapter 16 uses the book's `drinking.csv` and `sheepskin.csv`; Chapter 17 uses the book's customer transaction and feature files; Chapter 18 uses the book's `ice_cream_sales_rnd.csv`; Chapter 19 uses both ice-cream sales files; Chapter 20 uses `invest_email_rnd.csv` and the randomized ice-cream file; Chapter 21 uses the biased and randomized email files. The prose
   is adapted and shortened, and the counterfactual lens, three-classroom dot strip,
   sample-size dial, interval ruler, DAG workbench, control dial, weighting bench, dummy
   staircase, control labs, seasonal panel, IV ratio, weak-instrument dial, compliance
   matrix, estimator chart, score histogram, rate strip, robustness grid, interval chart,
-  comparison cards, trend bench, fixed-effect hero, toy panel, wage chart, synthetic path, placebo chart, RD fits, McCrary density, policy slider, policy bars, CATE bench, slope contrast, gain bench, band chart, transformation diagram, and target-transform benches are new.
+  comparison cards, trend bench, fixed-effect hero, toy panel, wage chart, synthetic path, placebo chart, RD fits, McCrary density, policy slider, policy bars, CATE bench, slope contrast, gain bench, band chart, transformation diagram, target-transform benches, meta-learner diagrams, and learner bench are new.
 - **Visual language:** adapted from the **Data Storytelling** style in
   [Lemo-Opuscar](https://github.com/lemomo-ai/lemo-opuscar) by Lemomo (MIT). The charts,
   copy, and motion here are original; no demo assets or story are reused.

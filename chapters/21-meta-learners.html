@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Meta-learners &mdash; Causal Field Notes</title>
+  <meta name="description" content="Chapter 21: meta-learners — S-, T-, and X-learners for heterogeneous treatment effects, trained on biased email data and tested on randomized data.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/ch21.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the chapter</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Chapter 21</p>
+      <h1 class="hero-title hero-title--long">Three ways <br>to learn who<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">split the model, not just the data &darr;</p>
+      <p class="hero-deck">Same data, three ways to combine outcome and treatment models.</p>
+      <p class="hero-sub">The training set is biased: only 22.5% of customers got the email. The test set is randomized: 50.4% treated. The S-, T-, and X-learners all estimate who responds, but they handle the imbalance differently.</p>
+      <div class="hero-meta mono">
+        <span>15,000 biased</span><span>15,000 random</span><span>3 learners</span><span>~20 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#compare-bench">Open the learner bench <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/21-Meta-Learners.html" target="_blank" rel="noreferrer">Read the source chapter</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 470 300" role="img" aria-label="Three learner diagrams: one model with treatment as a feature; two models split by treatment; two stages with a propensity score.">
+        <g class="hero-paper">
+          <path d="M24 28h422v244H24z" fill="#fbf8f1" stroke="#ddd6c9"/>
+        </g>
+        <g class="meta-figure">
+          <text x="96" y="58" text-anchor="middle" class="meta-title">S</text>
+          <rect x="42" y="78" width="106" height="28" fill="none" stroke="#bdb4a5"/>
+          <text x="95" y="97" text-anchor="middle" class="meta-node">X + T</text>
+          <path d="M95 106 L95 128" stroke="#2b2723" stroke-width="1.2"/>
+          <rect x="52" y="128" width="86" height="30" fill="#f6f3ec" stroke="#2b2723"/>
+          <text x="95" y="148" text-anchor="middle" class="meta-node">one M</text>
+          <path d="M95 158 L95 178" stroke="#2b2723" stroke-width="1.2"/>
+          <text x="95" y="196" text-anchor="middle" class="meta-sub">M(X,1) &minus; M(X,0)</text>
+
+          <text x="235" y="58" text-anchor="middle" class="meta-title">T</text>
+          <rect x="182" y="78" width="106" height="28" fill="none" stroke="#bdb4a5"/>
+          <text x="235" y="97" text-anchor="middle" class="meta-node">X | T=0 / T=1</text>
+          <path d="M210 106 L195 128" stroke="#2b2723" stroke-width="1.2"/>
+          <path d="M260 106 L275 128" stroke="#2b2723" stroke-width="1.2"/>
+          <rect x="168" y="128" width="56" height="30" fill="#f6f3ec" stroke="#2b2723"/>
+          <text x="196" y="148" text-anchor="middle" class="meta-node">M0</text>
+          <rect x="246" y="128" width="56" height="30" fill="#f6f3ec" stroke="#2b2723"/>
+          <text x="274" y="148" text-anchor="middle" class="meta-node">M1</text>
+          <path d="M196 158 L218 178" stroke="#2b2723" stroke-width="1.2"/>
+          <path d="M274 158 L252 178" stroke="#2b2723" stroke-width="1.2"/>
+          <text x="235" y="196" text-anchor="middle" class="meta-sub">M1(X) &minus; M0(X)</text>
+
+          <text x="374" y="58" text-anchor="middle" class="meta-title">X</text>
+          <rect x="322" y="78" width="106" height="28" fill="none" stroke="#bdb4a5"/>
+          <text x="375" y="97" text-anchor="middle" class="meta-node">X | T=0 / T=1</text>
+          <path d="M350 106 L340 122" stroke="#2b2723" stroke-width="1.2"/>
+          <path d="M400 106 L410 122" stroke="#2b2723" stroke-width="1.2"/>
+          <rect x="314" y="122" width="50" height="26" fill="#f6f3ec" stroke="#2b2723"/>
+          <text x="339" y="140" text-anchor="middle" class="meta-node">M0</text>
+          <rect x="386" y="122" width="50" height="26" fill="#f6f3ec" stroke="#2b2723"/>
+          <text x="411" y="140" text-anchor="middle" class="meta-node">M1</text>
+          <path d="M339 148 L358 164" stroke="#2b2723" stroke-width="1.2"/>
+          <path d="M411 148 L392 164" stroke="#2b2723" stroke-width="1.2"/>
+          <rect x="330" y="164" width="90" height="26" fill="#e4ecf3" stroke="#2f5d8a"/>
+          <text x="375" y="181" text-anchor="middle" class="meta-node">e(X) weight</text>
+          <text x="375" y="208" text-anchor="middle" class="meta-sub">e&middot;M&tau;0 + (1&minus;e)&middot;M&tau;1</text>
+
+          <line x1="42" y1="236" x2="428" y2="236" stroke="#ddd6c9"/>
+          <text x="40" y="262" class="hand meta-hand">one model</text>
+          <text x="186" y="262" class="hand meta-hand">two models</text>
+          <text x="330" y="262" class="hand meta-hand">two stages</text>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">Three diagrams: the S-learner uses one model with treatment as a feature; the T-learner uses one model per treatment; the X-learner imputes effects and combines two second-stage models with propensity weights.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Biased train</span>
+        <span class="hero-stat-value">22.5%</span>
+        <span class="hero-stat-note">treated share</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Random test</span>
+        <span class="hero-stat-value">50.4%</span>
+        <span class="hero-stat-note">treated share</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">X top 10%</span>
+        <span class="hero-stat-value">1.9%</span>
+        <span class="hero-stat-note">test gain</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 SETUP -->
+  <section class="chapter-section sheet" id="setup" data-section="setup">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">the setup</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Debias and estimate</p>
+          <h2 class="section-title">Two jobs<br>at once.</h2>
+          <p class="section-deck">Meta-learners are off-the-shelf ML models arranged to estimate a CATE. Here they must also undo the selection in the training data.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">The training data is not randomized: only <strong>22.5%</strong> of customers received email 1, and the treated look different from the control. The randomized test set has a <strong>50.4%</strong> treated share, which makes it a clean evaluation sample.</p>
+          <p>Every learner predicts a CATE, then the test gain curve checks whether the ranking finds the responsive customers. The train curves are shown only as an overfitting check; they are computed on a biased sample.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The family</p>
+          <p><strong>S</strong> uses one model; <strong>T</strong> uses one model per treatment; <strong>X</strong> imputes effects, fits second-stage models, and weights them by propensity. All three are built from ordinary supervised learners.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the test</p>
+          <p>Randomized data is the referee. Without it, a learner could fit the selection and look good on its own training set.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the trade</p>
+          <p>More structure can reduce bias, but it can also add variance. There is no free lunch; the gain curve is the judge.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 S -->
+  <section class="chapter-section sheet" id="s-learner" data-section="s-learner">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">s-learner</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">One model</p>
+          <h2 class="section-title">The treatment<br>as a feature.</h2>
+          <p class="section-deck">Fit one model of the outcome with treatment included, then difference the predictions at T = 1 and T = 0.</p>
+        </header>
+
+        <div class="prose">
+          <p>The S-learner is the simplest: a single model <span class="math-var">M</span>(<span class="math-var">X</span>, <span class="math-var">T</span>). Its CATE prediction is <span class="math-var">M</span>(<span class="math-var">X</span>,1) &minus; <span class="math-var">M</span>(<span class="math-var">X</span>,0). It handles continuous and discrete treatments and is a sensible first bet.</p>
+          <p>Its weakness is regularization: if the treatment is a weak predictor, the model may shrink its coefficient toward zero. Here, the S-learner’s test CATE never goes below <strong>+0.006</strong> &mdash; it cannot find a single negative responder, even though other learners do.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="S-learner CATE">
+          <span class="formula-label mono">s-learner</span>
+          <span class="formula-body"><span class="math-var">&tau;</span>(<span class="math-var">x</span>) = <span class="math-var">M</span>(<span class="math-var">x</span>, 1) &minus; <span class="math-var">M</span>(<span class="math-var">x</span>, 0)</span>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The zero-bias trap</p>
+          <p>The S-learner can shrink the treatment effect toward zero, or drop the treatment entirely. Greater regularization makes it worse.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">when it wins</p>
+          <p>When the treatment is strong and the data is plentiful. Simplicity is an advantage when the alternative is overfitting.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the evidence</p>
+          <p>Minimum predicted CATE is +0.006, not negative. That is the shrinkage signature, not proof that no customer is harmed.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 T -->
+  <section class="chapter-section sheet" id="t-learner" data-section="t-learner">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">t-learner</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">One model per treatment</p>
+          <h2 class="section-title">Split by<br>the switch.</h2>
+          <p class="section-deck">Fit a model for the treated and a model for the control, then subtract their predictions.</p>
+        </header>
+
+        <div class="prose">
+          <p>The T-learner forces the treatment into the structure: <span class="math-var">M</span><sub>0</sub>(<span class="math-var">X</span>) for the control and <span class="math-var">M</span><sub>1</sub>(<span class="math-var">X</span>) for the treated. The CATE is their difference. It avoids dropping a weak treatment variable.</p>
+          <p>But each model sees only part of the data. When one group is much smaller, that model is heavily regularized, and the difference can be biased. Here the treated share is only 22.5%, so this is a real risk.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="T-learner CATE">
+          <span class="formula-label mono">t-learner</span>
+          <span class="formula-body"><span class="math-var">&tau;</span>(<span class="math-var">x</span>) = <span class="math-var">M</span><sub>1</sub>(<span class="math-var">x</span>) &minus; <span class="math-var">M</span><sub>0</sub>(<span class="math-var">x</span>)</span>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The imbalance trap</p>
+          <p>If one treatment group has few observations, its model is simple while the other is flexible. The difference then invents heterogeneity that is not there.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the range</p>
+          <p>T-learner test CATE runs from &minus;0.133 to 0.374. It finds negative responders the S-learner misses.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the overfit</p>
+          <p>Train gain is much higher than test gain; fitting two models on halves of the data makes overfitting easier.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 X -->
+  <section class="chapter-section sheet" id="x-learner" data-section="x-learner">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">x-learner</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Two stages and a propensity</p>
+          <h2 class="section-title">Learn from<br>the imputation.</h2>
+          <p class="section-deck">Use the first-stage models to impute effects, fit second-stage models on those imputations, and weight by propensity.</p>
+        </header>
+
+        <div class="prose">
+          <p>The X-learner starts like the T-learner: <span class="math-var">M</span><sub>0</sub> and <span class="math-var">M</span><sub>1</sub>. Then it imputes the effect for each unit using the model from the other group: for the control, <span class="math-var">M</span><sub>1</sub>(<span class="math-var">X</span>) &minus; <span class="math-var">Y</span>; for the treated, <span class="math-var">Y</span> &minus; <span class="math-var">M</span><sub>0</sub>(<span class="math-var">X</span>).</p>
+          <p>It fits <span class="math-var">M</span><sub>&tau;0</sub> and <span class="math-var">M</span><sub>&tau;1</sub> to those imputed effects, then combines them with the propensity score: <span class="math-var">&tau;</span> = <span class="math-var">e</span>(<span class="math-var">X</span>)<span class="math-var">M</span><sub>&tau;0</sub> + (1&minus;<span class="math-var">e</span>(<span class="math-var">X</span>))<span class="math-var">M</span><sub>&tau;1</sub>. The model trained where treatment was more likely gets more weight.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="X-learner CATE">
+          <span class="formula-label mono">x-learner</span>
+          <span class="formula-body"><span class="math-var">&tau;</span>(<span class="math-var">x</span>) = <span class="math-var">e</span>(<span class="math-var">x</span>)<span class="math-var">M</span><sub>&tau;0</sub>(<span class="math-var">x</span>) + (1 &minus; <span class="math-var">e</span>(<span class="math-var">x</span>))<span class="math-var">M</span><sub>&tau;1</sub>(<span class="math-var">x</span>)</span>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The fix</p>
+          <p>When treated units are scarce, the second stage can borrow strength from the large control group. The propensity weight favors the model estimated where treatment is common.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the result</p>
+          <p>X-learner test CATE runs from &minus;0.094 to 0.418 and has the highest top-decile gain, 1.9%.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the cost</p>
+          <p>More moving parts means more variance and more ways to misspecify. It is not automatically better.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 COMPARE -->
+  <section class="chapter-section sheet" id="compare-bench" data-section="compare-bench">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">the comparison</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Same test, three curves</p>
+          <h2 class="section-title">Close,<br>not identical.</h2>
+          <p class="section-deck">All three learners are evaluated on the randomized test set with the same gain curve.</p>
+        </header>
+
+        <div class="prose">
+          <p>The three curves are close. The X-learner has the highest top-decile gain at <strong>1.9%</strong>, the S-learner <strong>1.5%</strong>, and the T-learner <strong>1.2%</strong>. The overall effect is <strong>6.85%</strong>.</p>
+          <p>The differences are small. On another dataset or with different base learners, the ranking could flip. The lesson is the menu, not a universal winner.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-compare" aria-labelledby="lab-compare-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-compare-title">The learner bench</h3>
+            </div>
+            <p class="lab-status mono" id="ch21-status">x-learner &middot; top 10%</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch21-chart" id="ch21-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="ch21-label">X-learner</p>
+              <p class="readout-value" id="ch21-gain">+1.9%</p>
+              <p class="readout-sub">gain at the top 10%</p>
+              <p class="side-label mono ch21-side-label">Overall effect</p>
+              <p class="ch21-ate" id="ch21-ate">+6.9%</p>
+              <dl class="mini-stats">
+                <div><dt>test rows</dt><dd>15,000</dd></div>
+                <div><dt>learners</dt><dd>3</dd></div>
+                <div><dt>CATE range</dt><dd id="ch21-range">&minus;9% / 42%</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch21-note">imputed effects plus propensity.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch21-controls">
+            <div class="ch21-presets" role="group" aria-label="Choose a learner">
+              <button class="ch21-preset" type="button" data-learner="s" aria-pressed="false">S-learner</button>
+              <button class="ch21-preset" type="button" data-learner="t" aria-pressed="false">T-learner</button>
+              <button class="ch21-preset is-active" type="button" data-learner="x" aria-pressed="true">X-learner</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> All curves converge to the same overall effect. The differences are in the top decile, not the endpoint.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the book's reading</p>
+          <p>The book calls the three learners “pretty similar” on this dataset. Our reproduced curves agree; the X-learner's edge is small.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the warning</p>
+          <p>Do not pick a learner from one leaderboard. Base model, hyperparameters, and treatment imbalance all matter.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>S-learner: one model.</strong> Treatment is a feature; simple and general, but can shrink the effect toward zero or drop it.</li>
+          <li><strong>T-learner: two models.</strong> One per treatment level; avoids dropping the treatment but struggles when groups are imbalanced.</li>
+          <li><strong>X-learner: two stages.</strong> Impute effects, fit second-stage models, and weight by propensity; useful when one group is scarce.</li>
+          <li><strong>Evaluate on randomized data.</strong> The gain curve is the referee; the train curve on biased data is only an overfit alarm.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The sentence to avoid</p>
+          <p>&ldquo;The X-learner is the best meta-learner.&rdquo; It is one option in a menu; the right choice depends on the data, the treatment balance, and the base model.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Start simple. Try the S-learner, then check whether the treatment signal survives. Add structure only when the diagnosis calls for it.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 07 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">07</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> Why can the S-learner miss negative effects?</summary>
+            <p>Regularization shrinks the treatment coefficient toward zero. If the treatment is a weak predictor, the model may predict a nearly constant positive effect and never a negative one.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> When does the T-learner struggle?</summary>
+            <p>When one treatment group is much smaller. That group's model is heavily regularized, so the difference between the two models can be biased.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> What does the propensity score do in the X-learner?</summary>
+            <p>It weights the two second-stage models, favoring the one estimated in the group where treatment was more likely and data was more plentiful.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> Why evaluate on randomized data?</summary>
+            <p>On biased data, the group difference is confounded. Randomized treatment makes the gain curve a credible ranking test.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next chapter</p>
+          <h3>Orthogonal machine learning</h3>
+          <p>Double/debiased machine learning uses residualization and cross-fitting to estimate causal parameters with flexible models.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Three learners, one test set, one baseline. Compare the curves, not the anecdotes.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-ch21.js"></script>
+<script src="../assets/js/iv21.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: '21',
+    slug: '21-meta-learners',
+    title: 'Meta-learners',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/21-Meta-Learners.html',
+    sections: [
+      { id: 'setup', num: '01', label: 'The setup' },
+      { id: 's-learner', num: '02', label: 'S-learner' },
+      { id: 't-learner', num: '03', label: 'T-learner' },
+      { id: 'x-learner', num: '04', label: 'X-learner' },
+      { id: 'compare-bench', num: '05', label: 'The comparison' },
+      { id: 'key', num: '06', label: 'Key ideas' },
+      { id: 'practice', num: '07', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/ch21.js"></script>
+</body>
+</html>
