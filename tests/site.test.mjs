@@ -14,10 +14,10 @@ const chapters = sandbox.window.CAUSAL_CHAPTERS;
 test('manifest: 25 chapters + 5 technical notes', () => {
   assert.equal(parts.length, 3);
   assert.equal(chapters.length, 30);
-  assert.equal(chapters.filter((c) => c.status === 'live').length, 3);
+  assert.equal(chapters.filter((c) => c.status === 'live').length, 4);
   assert.equal(
     chapters.filter((c) => c.status === 'live').map((c) => c.slug).sort().join(','),
-    '01-introduction,02-randomised-experiments,10-matching'
+    '01-introduction,02-randomised-experiments,03-stats-review,10-matching'
   );
 });
 
@@ -52,4 +52,5 @@ test('landing and live pages load the shared reading scale', () => {
   assert.match(ch01, /\.\.\/assets\/js\/site\.js/);
   assert.match(ch01, /window\.CHAPTER/);
 });
+
 

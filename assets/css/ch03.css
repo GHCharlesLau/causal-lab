@@ -1,0 +1,271 @@
+/* ============================================================
+   Chapter 03 — standard errors, sampling, intervals, p-values.
+   ============================================================ */
+
+.bell-label,
+.bell-tag,
+.bell-axis {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-3);
+  letter-spacing: 0.03em;
+}
+
+.bell-tag {
+  fill: var(--accent);
+}
+
+.bell-tag--blue {
+  fill: var(--blue);
+}
+
+.bell-axis {
+  font-size: 8.5px;
+}
+
+/* ---------------------------------------------------------- standard errors */
+.se-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 20px 0;
+}
+
+.se-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 14px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+}
+
+.se-card .mono {
+  color: var(--ink-3);
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.se-card strong {
+  font-family: var(--serif);
+  font-size: 1.9rem;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--red);
+}
+
+.se-card span {
+  color: var(--ink-3);
+  font-family: var(--mono);
+  font-size: 8.5px;
+  line-height: 1.4;
+}
+
+.se-card--wide {
+  grid-column: 1 / -1;
+  background: var(--blue-soft);
+  border-color: rgba(47, 93, 138, 0.4);
+}
+
+.se-card--wide strong {
+  color: var(--blue);
+}
+
+/* ---------------------------------------------------------- sampling chart */
+.ch03-chart {
+  min-height: 300px;
+}
+
+.ch03-chart svg,
+.ch03-ci-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ch03-tick {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-3);
+}
+
+.ch03-axis-title {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  fill: var(--ink-2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ch03-bar {
+  fill: var(--blue);
+  opacity: 0.6;
+}
+
+.ch03-curve {
+  fill: none;
+  stroke: var(--red);
+  stroke-width: 1.6;
+}
+
+.ch03-true-line {
+  stroke: var(--red);
+  stroke-width: 1.4;
+  stroke-dasharray: 4 3;
+}
+
+.ch03-true-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--red);
+}
+
+/* ---------------------------------------------------------- controls */
+.ch03-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.ch03-controls .control {
+  flex: 1 1 280px;
+}
+
+.ch03-controls .btn {
+  flex: none;
+}
+
+/* ---------------------------------------------------------- CI chart */
+.ch03-ci-chart {
+  min-height: 190px;
+  padding: 6px 0 0;
+}
+
+.ch03-ci-axis {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-3);
+}
+
+.ch03-ci-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-2);
+}
+
+.ch03-ci-value {
+  font-family: var(--serif);
+  font-size: 16px;
+  fill: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.ch03-ci-band {
+  fill: var(--blue-soft);
+  stroke: rgba(47, 93, 138, 0.45);
+}
+
+.ch03-ci-zero {
+  stroke: var(--rule-strong);
+  stroke-width: 1.2;
+  stroke-dasharray: 3 3;
+}
+
+.ch03-ci-estimate {
+  fill: var(--red);
+  stroke: var(--ink);
+  stroke-width: 1;
+}
+
+.ch03-conf {
+  display: inline-flex;
+  border: 1px solid var(--rule-strong);
+}
+
+.ch03-conf-btn {
+  padding: 6px 11px;
+  border: 0;
+  border-right: 1px solid var(--rule);
+  background: var(--paper);
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.ch03-conf-btn:last-child {
+  border-right: 0;
+}
+
+.ch03-conf-btn.is-active {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.ch03-conf-btn:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.ch03-ci-readout {
+  flex: 1 1 260px;
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 10px;
+}
+
+.ch03-p-readout {
+  flex: 1 1 100%;
+  margin: 0;
+  color: var(--ink-3);
+  font-family: var(--mono);
+  font-size: 9px;
+}
+
+@media (max-width: 720px) {
+  .se-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .se-card--wide {
+    grid-column: auto;
+  }
+
+  .ch03-chart,
+  .ch03-ci-chart {
+    overflow-x: auto;
+  }
+
+  .ch03-chart svg,
+  .ch03-ci-chart svg {
+    width: 600px;
+    max-width: none;
+  }
+
+  .ch03-controls {
+    display: block;
+  }
+
+  .ch03-controls .control {
+    margin-bottom: 10px;
+  }
+
+  .ch03-conf {
+    margin-bottom: 8px;
+  }
+}
+
+.hero-title--long {
+  font-size: clamp(3.1rem, 6.2vw, 6rem);
+  line-height: 0.9;
+}
+
+@media (max-width: 720px) {
+  .hero-title--long {
+    font-size: clamp(2.6rem, 12vw, 4.3rem);
+  }
+}

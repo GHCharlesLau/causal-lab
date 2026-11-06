@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stats review &mdash; Causal Field Notes</title>
+  <meta name="description" content="Chapter 03: standard errors, confidence intervals, p-values, and why a 4.91-point gap needs an error bar.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/ch03.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the chapter</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Chapter 03</p>
+      <h1 class="hero-title hero-title--long">The most dangerous equation<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">n is in the denominator &darr;</p>
+      <p class="hero-deck">A difference of 4.91 points is an estimate. How much of it is noise?</p>
+      <p class="hero-sub">The standard error, the confidence interval, and the p-value are three ways of saying how sure we are. They are also the easiest things in this book to misuse.</p>
+      <div class="hero-meta mono">
+        <span>1 simulation</span><span>214 students</span><span>1 interval</span><span>~20 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#standard-error">Meet the error bar <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/03-Stats-Review-The-Most-Dangerous-Equation.html" target="_blank" rel="noreferrer">Read the source chapter</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="Two bell curves centered on the same true mean: a wide one for a small sample and a narrow one for a large sample.">
+        <g class="hero-paper">
+          <path d="M46 30h368v238H46z" fill="#fbf8f1" stroke="#ddd6c9"/>
+          <path d="M70 250h318" stroke="#bdb4a5"/>
+          <path d="M70 250V64" stroke="#bdb4a5"/>
+        </g>
+        <g class="bell-curves">
+          <path class="bell bell--wide" d="M86 250 C 150 250, 150 118, 228 118 C 306 118, 306 250, 370 250" fill="none" stroke="#a85a3c" stroke-width="1.8"/>
+          <path class="bell bell--narrow" d="M128 250 C 186 250, 198 76, 228 76 C 258 76, 270 250, 328 250" fill="none" stroke="#2f5d8a" stroke-width="2.2"/>
+          <line x1="228" y1="58" x2="228" y2="250" stroke="#a8283a" stroke-width="1.3" stroke-dasharray="4 4"/>
+          <circle cx="228" cy="250" r="3.5" fill="#a8283a"/>
+          <text x="228" y="48" text-anchor="middle" class="bell-label">true mean 74</text>
+          <text x="108" y="142" class="bell-tag">n = 10</text>
+          <text x="292" y="94" class="bell-tag bell-tag--blue">n = 500</text>
+          <text x="70" y="274" class="bell-axis">one experiment &rarr; one sample mean</text>
+        </g>
+        <g class="hand">
+          <text x="300" y="168" fill="#2f5d8a" font-size="20">more data,</text>
+          <text x="300" y="188" fill="#2f5d8a" font-size="20">less noise</text>
+          <path d="M338 198c10 5 18 4 26-1" fill="none" stroke="#2f5d8a" stroke-width="1"/>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">Two sampling distributions with the same true mean: a small sample produces a wide distribution of estimates; a large sample produces a narrow one.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Online standard error</span>
+        <span class="hero-stat-value">1.54</span>
+        <span class="hero-stat-note">exam points</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">95% interval on the gap</span>
+        <span class="hero-stat-value">&minus;8.38 to &minus;1.45</span>
+        <span class="hero-stat-note">online &minus; face-to-face</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">One-sided p</span>
+        <span class="hero-stat-value">0.0027</span>
+        <span class="hero-stat-note">as printed in the book</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 STANDARD ERROR -->
+  <section class="chapter-section sheet" id="standard-error" data-section="standard-error">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">the standard error</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">The error bar is not optional</p>
+          <h2 class="section-title">An estimate<br>has a spread.</h2>
+          <p class="section-deck">A sample mean is one draw from a distribution of possible sample means. Its standard deviation has a name: the standard error.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">The online group averages 73.64. If we reran the experiment with a new group of 94 students, we would not get exactly 73.64 again. The standard error answers: how much would the average move from sample to sample?</p>
+          <p>For a sample mean, the standard error is the sample standard deviation divided by the square root of the sample size:</p>
+        </div>
+
+        <div class="formula" role="math" aria-label="Standard error equals sample standard deviation divided by square root of n">
+          <span class="formula-label mono">the equation</span>
+          <span class="formula-body"><span class="math-var">SE</span> = <span class="frac"><span class="num">s</span><span class="den">&radic;<span class="math-var">n</span></span></span></span>
+        </div>
+
+        <div class="prose">
+          <p>The square root is what makes the equation dangerous. To halve the error, you need <strong>four times</strong> the data. Small samples do not just give noisy averages; they make extreme averages common.</p>
+          <p>In the online-classroom data, the standard error is <strong>1.54</strong> for online and <strong>0.87</strong> for face-to-face. The online group is smaller and more variable, so its mean is less precise.</p>
+        </div>
+
+        <div class="se-grid">
+          <div class="se-card">
+            <p class="mono">Online</p>
+            <strong>1.54</strong>
+            <span>s = 14.90 &middot; n = 94</span>
+          </div>
+          <div class="se-card">
+            <p class="mono">Face-to-face</p>
+            <strong>0.87</strong>
+            <span>s = 9.56 &middot; n = 120</span>
+          </div>
+          <div class="se-card se-card--wide">
+            <p class="mono">The gap</p>
+            <strong>1.77</strong>
+            <span>SE of the difference, &radic;(s<sub>1</sub><sup>2</sup>/n<sub>1</sub> + s<sub>0</sub><sup>2</sup>/n<sub>0</sub>)</span>
+          </div>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">What it is not</p>
+          <p>The standard error is not the standard deviation of the data. The data are spread around the mean; the standard error is the spread of the <em>mean itself</em> around the truth.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the dangerous part</p>
+          <p>Halve the sample, and the error grows by &radic;2 &asymp; 1.41. Quarter it, and the error doubles. Small samples are expensive in a way that is easy to miss.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">sanity check</p>
+          <p>The online group is smaller (94 vs. 120) and has a larger standard deviation (14.9 vs. 9.6). Both push its standard error up.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 SAMPLING LAB -->
+  <section class="chapter-section sheet" id="sampling" data-section="sampling">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">the sample-size dial</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">The most dangerous equation, in motion</p>
+          <h2 class="section-title">More data.<br>Less noise.</h2>
+          <p class="section-deck">A population with true mean 74 and standard deviation 2. Draw a sample, average it, repeat 400 times. Change n and watch the distribution of averages.</p>
+        </header>
+
+        <div class="prose">
+          <p>This is the book&rsquo;s simulation, made visible. At n = 10, one experiment can land far from 74. At n = 500, the averages pile up tightly around the truth. The true mean never moves; only the precision changes.</p>
+        </div>
+
+        <figure class="lab" id="lab-sampling" aria-labelledby="lab-sampling-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-sampling-title">The sample-size dial</h3>
+            </div>
+            <p class="lab-status mono" id="ch03-status">n = 50 &middot; 400 experiments</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch03-chart" id="ch03-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono">Theoretical SE</p>
+              <p class="readout-value" id="ch03-se">0.283</p>
+              <p class="readout-sub">2 / &radic;n</p>
+              <p class="side-label mono ch03-side-gap">Simulated SD of means</p>
+              <p class="readout-value readout-value--blue" id="ch03-sim-se">0.283</p>
+              <p class="readout-sub">400 draws</p>
+              <dl class="mini-stats">
+                <div><dt>n</dt><dd id="ch03-n">50</dd></div>
+                <div><dt>95% range</dt><dd id="ch03-range">73.44 to 74.56</dd></div>
+                <div><dt>true mean</dt><dd>74.00</dd></div>
+              </dl>
+              <p class="side-note hand">the denominator is the story.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch03-controls">
+            <label class="control control--wide" for="ch03-n-slider">
+              <span class="control-label">Sample size <span class="mono">n</span></span>
+              <input class="range" type="range" id="ch03-n-slider" min="10" max="1000" step="10" value="50">
+              <output class="control-value mono" id="ch03-n-out">50</output>
+            </label>
+            <button class="btn btn--small" type="button" id="ch03-run">Run again</button>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The histogram is the sampling distribution of the mean. Its width is the standard error. The bars do not get &ldquo;more accurate&rdquo; because we ran more experiments; they get narrower because each experiment used a larger n.</figcaption>
+        </figure>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The mistake the equation invites</p>
+          <p>A small school can top the league table by luck. A small treatment group can produce a dramatic effect by luck. Ranking by an estimate without its standard error is a machine for generating false stories.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">try it</p>
+          <p>Set n = 10, then n = 1000. Which readout changes faster: the true mean or the standard error?</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the fine print</p>
+          <p>This simulation knows the truth. In real data, the true mean is the thing we are trying to learn.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 CONFIDENCE -->
+  <section class="chapter-section sheet" id="confidence" data-section="confidence">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">confidence intervals</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">A range, not a guess</p>
+          <h2 class="section-title">The gap<br>has an interval.</h2>
+          <p class="section-deck">A 95% confidence interval is a procedure that captures the truth in 95% of repeated experiments. It is not a 95% probability that this particular interval contains the truth.</p>
+        </header>
+
+        <div class="prose">
+          <p>The online-minus-face-to-face gap is <strong>&minus;4.91</strong> points. Its standard error is <strong>1.77</strong>. A 95% interval uses 1.96 standard errors:</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Difference plus or minus 1.96 standard errors">
+          <span class="formula-label mono">the interval</span>
+          <span class="formula-body"><span class="math-var">estimate</span> &plusmn; <span class="math-var">z</span> &times; <span class="math-var">SE</span> &nbsp;&nbsp; &rArr; &nbsp;&nbsp; &minus;4.91 &plusmn; 1.96 &times; 1.77</span>
+        </div>
+
+        <div class="prose">
+          <p>That gives <strong>(&minus;8.38, &minus;1.45)</strong>. The interval excludes zero, so at the 95% level we reject &ldquo;no difference.&rdquo; But the interval is wide: the data are compatible with a 1.45-point loss and an 8.38-point loss.</p>
+        </div>
+
+        <figure class="lab" id="lab-ci" aria-labelledby="lab-ci-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 02</p>
+              <h3 class="lab-title" id="lab-ci-title">The interval ruler</h3>
+            </div>
+            <p class="lab-status mono" id="ch03-ci-status">95% interval</p>
+          </div>
+          <div class="lab-chart ch03-ci-chart" id="ch03-ci-chart" aria-hidden="true"></div>
+          <div class="lab-controls ch03-controls">
+            <div class="ch03-conf" role="group" aria-label="Choose a confidence level">
+              <button class="ch03-conf-btn" type="button" data-level="90">90%</button>
+              <button class="ch03-conf-btn is-active" type="button" data-level="95" aria-pressed="true">95%</button>
+              <button class="ch03-conf-btn" type="button" data-level="99">99%</button>
+            </div>
+            <p class="ch03-ci-readout" id="ch03-ci-readout">(&minus;8.38, &minus;1.45) &middot; excludes zero</p>
+            <p class="ch03-p-readout" id="ch03-p-readout">one-sided p = 0.0027 &middot; two-sided = 0.0054</p>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The point estimate never moves. Changing the confidence level changes only the width of the interval &mdash; and the claim you are entitled to make. A 99% interval is wider and more cautious.</figcaption>
+        </figure>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The sentence to avoid</p>
+          <p>&ldquo;There is a 95% chance the true effect is in this interval.&rdquo; The true effect is fixed; the interval is random. The procedure has 95% coverage, not this one interval.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">coverage</p>
+          <p>If we repeated the experiment many times and built an interval each time, about 95% of those intervals would contain the truth.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the trade</p>
+          <p>99% intervals are wider. That is the price of more confidence, and it is not free.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 P-VALUES -->
+  <section class="chapter-section sheet" id="p-values" data-section="p-values">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">p-values</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">What a p-value is not</p>
+          <h2 class="section-title">A small p<br>is not a big effect.</h2>
+          <p class="section-deck">The p-value is the probability of seeing a statistic this extreme if the null hypothesis were true. It is not the probability that the null is true.</p>
+        </header>
+
+        <div class="prose">
+          <p>The z statistic is the estimate divided by its standard error: <span class="math-var">z</span> = &minus;4.91 / 1.77 = <strong>&minus;2.78</strong>. Under the null, z is standard normal. The book reports the one-sided p-value:</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="z equals estimate divided by standard error">
+          <span class="formula-label mono">the test</span>
+          <span class="formula-body"><span class="math-var">z</span> = <span class="frac"><span class="num">&minus;4.91</span><span class="den">1.77</span></span> = &minus;2.78 &nbsp;&nbsp; <span class="math-var">p</span><sub>one-sided</sub> = 0.0027 &nbsp;&nbsp; <span class="math-var">p</span><sub>two-sided</sub> = 0.0054</span>
+        </div>
+
+        <div class="prose">
+          <p>A p-value of 0.0027 is small. It says: if there were no difference, a gap at least this far from zero would be rare. It does <strong>not</strong> say the effect is large, important, or robust to a different design. The interval is the more informative object.</p>
+          <p>The book uses the one-sided value because the alternative is directional &mdash; online is worse. Report which one you use. A two-sided test doubles it.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">Three sentences that are false</p>
+          <p>&ldquo;The p-value is the probability the null is true.&rdquo; &ldquo;A p &lt; 0.05 proves a real effect.&rdquo; &ldquo;A smaller p means a larger effect.&rdquo; None of them follows from the definition.</p>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The garden of forking paths</p>
+          <p>If you try many outcomes, subgroups, or model specifications and report only the one with p &lt; 0.05, the p-value no longer means what it says. The design has to be honest about the search.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the definition</p>
+          <p>p = P(statistic at least as extreme as observed | null is true). The vertical bar is doing all the work.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">p is not a verdict</p>
+          <p>Significance is a threshold convention, not a property of the world. The estimate and its interval are the report.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Three things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>The standard error scales as 1/&radic;n.</strong> Precision is expensive: four times the data buys half the error.</li>
+          <li><strong>Report an interval, not just a point.</strong> The interval shows the range of effects compatible with the data and the design.</li>
+          <li><strong>A p-value is a probability about the data, conditional on a null.</strong> It is not the probability that the null is true, nor a measure of importance.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The most dangerous equation</p>
+          <p>Small samples produce extreme averages. That is why the top of a league table is full of small schools &mdash; and why an exciting subgroup result from 12 people deserves a standard error, not a headline.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>An estimate without an error bar is a story with the uncertainty edited out.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> Why does the standard error shrink with the square root of n, not with n?</summary>
+            <p>Because the sample mean averages n independent pieces of noise. Their variance adds, but the variance of the average is the variance of one observation divided by n; the standard deviation &mdash; the standard error &mdash; therefore scales as 1/&radic;n.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> The 95% interval is (&minus;8.38, &minus;1.45). What does it rule out, and what does it not rule out?</summary>
+            <p>It rules out zero at the 95% level under the model. It does not rule out a 1.5-point loss or an 8-point loss; those are inside the interval. It also does not rule out bias from a broken design.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> The book reports p = 0.0027. Why is the two-sided value 0.0054?</summary>
+            <p>The one-sided test asks how often a z at least as negative as &minus;2.78 occurs under the null. The two-sided test also counts equally extreme positive values, so it doubles the one-sided p-value. The book&rsquo;s alternative is directional, so it reports the one-sided value.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> Why can a small school top the league table?</summary>
+            <p>Its average is based on few students, so its standard error is large. Extreme averages are more likely when n is small, even if every school has the same true quality. Ranking by the estimate without its uncertainty selects for noise.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next chapter</p>
+          <h3>Graphical causal models</h3>
+          <p>Before the next estimator, draw the assumptions. A graph makes confounding, mediation, and colliders visible.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Write the estimate, the standard error, and the interval before you write the p-value.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-ch02.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: '03',
+    slug: '03-stats-review',
+    title: 'Stats review',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/03-Stats-Review-The-Most-Dangerous-Equation.html',
+    sections: [
+      { id: 'standard-error', num: '01', label: 'Standard error' },
+      { id: 'sampling', num: '02', label: 'The sample-size dial' },
+      { id: 'confidence', num: '03', label: 'Confidence intervals' },
+      { id: 'p-values', num: '04', label: 'P-values' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/ch03.js"></script>
+</body>
+</html>

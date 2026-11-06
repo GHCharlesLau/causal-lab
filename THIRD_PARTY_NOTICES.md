@@ -6,9 +6,10 @@ maintainers of the works below.
 ## Book and data
 
 **Causal Inference for the Brave and True** by Matheus Facure Alves.
-Chapters 01 (Introduction to Causality), 02 (Randomised Experiments), and 10 (Matching):
+Chapters 01 (Introduction to Causality), 02 (Randomised Experiments), 03 (Stats Review), and 10 (Matching):
 <https://matheusfacure.github.io/python-causality-handbook/01-Introduction-To-Causality.html>,
 <https://matheusfacure.github.io/python-causality-handbook/02-Randomised-Experiments.html>,
+<https://matheusfacure.github.io/python-causality-handbook/03-Stats-Review-The-Most-Dangerous-Equation.html>,
 and <https://matheusfacure.github.io/python-causality-handbook/10-Matching.html>
 
 Repository and data: <https://github.com/matheusfacure/python-causality-handbook>

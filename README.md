@@ -8,10 +8,10 @@ and arguments you can defend.
 It is a local, static website: no backend, no build step, no tracking. Open `index.html`
 for the landing page, or serve the folder over HTTP.
 
-**Status: 3 of 30 pages live.** Chapters 01 (Introduction to causality), 02 (Randomised
-experiments), and 10 (Matching) are complete. The other 27 pages are scaffolded in the
-course manifest and marked as planned; they are added one at a time, with numbers checked
-against the book's notebooks.
+**Status: 4 of 30 pages live.** Chapters 01 (Introduction to causality), 02 (Randomised
+experiments), 03 (Stats review), and 10 (Matching) are complete. The other 26 pages are
+scaffolded in the course manifest and marked as planned; they are added one at a time, with
+numbers checked against the book's notebooks.
 
 ---
 
@@ -42,6 +42,21 @@ or online classes. The page includes a dot-strip lab and a pre-treatment balance
 | Online mean | 73.64 (n = 94) |
 | Online − face-to-face | −4.91 |
 | Blended − face-to-face | −1.45 |
+
+### 03 — Stats review
+
+Standard errors, confidence intervals, and p-values, with two labs: a sample-size dial that
+shows the sampling distribution narrowing as n grows, and an interval ruler that changes
+width with the confidence level.
+
+| Quantity | Value |
+|---|---|
+| Online SE | 1.5372 |
+| Face-to-face SE | 0.8724 |
+| Gap / SE | −4.9122 / 1.7674 |
+| 95% CI on the gap | (−8.3764, −1.4480) |
+| z | −2.7793 |
+| One-sided p | 0.002724 |
 
 ### 10 — Matching
 
@@ -87,6 +102,8 @@ point here is to let you see estimator bias separately from confounding bias.
 
 ![Chapter 02, the three classrooms](assets/img/screenshots/ch02-lab.png)
 
+![Chapter 03, the sample-size dial](assets/img/screenshots/ch03-sampling.png)
+
 ![The Matching chapter](assets/img/screenshots/matching.png)
 
 ---
@@ -96,8 +113,8 @@ point here is to let you see estimator bias separately from confounding bias.
 ### Option 1: double-click
 
 Open `index.html` in Chrome or Edge. It is the landing page. The live chapters are
-`chapters/01-introduction.html`, `chapters/02-randomised-experiments.html`, and
-`chapters/10-matching.html`. Everything needed is local: CSS, JS, data, fonts, the poster,
+`chapters/01-introduction.html`, `chapters/02-randomised-experiments.html`,
+`chapters/03-stats-review.html`, and `chapters/10-matching.html`. Everything needed is local: CSS, JS, data, fonts, the poster,
 and the rendered opener at `assets/video/matching-opener.mp4`.
 
 ### Option 2: local server
@@ -204,8 +221,9 @@ Reference, chapter, and manifest tests (Node 24, no packages):
 The suite checks the Matching book numbers, the k-curve, severity-band checkpoints, the
 oracle, the k-d tree, the OLS toy regression, the Chapter 01 potential-outcomes arithmetic
 (ATE −50, ATT −75, naive +125, bias +200), the Chapter 02 group means and missing-data
-balance, and the site manifest (30 pages, unique slugs, every live page exists, the shared
-reading scale is loaded). 24 tests in total.
+balance, the Chapter 03 standard errors, interval, z, and p-values, and the site manifest
+(30 pages, unique slugs, every live page exists, the shared reading scale is loaded).
+28 tests in total.
 
 Browser smoke tests use Chrome DevTools Protocol through Node's built-in WebSocket (no
 Playwright/Puppeteer). Matching-specific scripts default to
@@ -217,6 +235,7 @@ to test a different page.
 & "...\node.exe" tools/cdp-interact.mjs
 & "...\node.exe" tools/cdp-ch01.mjs   # Chapter 01: lens, course map, practice
 & "...\node.exe" tools/cdp-ch02.mjs   # Chapter 02: three formats, balance
+& "...\node.exe" tools/cdp-ch03.mjs   # Chapter 03: sample size, interval ruler
 & "...\node.exe" tools/cdp-a11y.mjs
 & "...\node.exe" tools/cdp-reduced.mjs
 & "...\node.exe" tools/cdp-film.mjs
@@ -229,7 +248,8 @@ to test a different page.
 omitting sex, unit inspection, bias cycling, the dimension slider, the quiz, the checklist,
 practice mode, and the course map. It prints the observed values and any console errors.
 `cdp-ch01.mjs` checks the observed table, the lens, the course map, and practice mode;
-`cdp-ch02.mjs` checks all three format means, the gaps, and the balance table.
+`cdp-ch02.mjs` checks all three format means, the gaps, and the balance table;
+`cdp-ch03.mjs` checks the sample-size dial and the interval ruler.
 `cdp-a11y.mjs` checks button names, input labels, duplicate IDs, and heading structure;
 `cdp-reduced.mjs` verifies that reduced motion lands on final states; `cdp-film.mjs`
 checks the rendered video’s metadata and dialog; `cdp-persist.mjs` reloads after scoring
@@ -244,6 +264,7 @@ index.html                 landing page + course map
 chapters/
   01-introduction.html     live chapter: the two roads
   02-randomised-experiments.html  live chapter: the coin, three classrooms
+  03-stats-review.html     live chapter: standard errors, intervals, p-values
   10-matching.html         live chapter: the matching bench
 assets/css/
   tokens.css               paper/ink/pencil tokens, type scale
@@ -256,6 +277,7 @@ assets/css/
   landing.css              landing page
   ch01.css                 chapter 01 lab and bias equation
   ch02.css                 chapter 02 dot strip, tabs, balance table
+  ch03.css                 chapter 03 sampling histogram and interval ruler
   print.css                readable paper version
 assets/js/
   chapters.js              the manifest: 25 chapters + 5 notes, live/planned
@@ -264,6 +286,7 @@ assets/js/
   data-ch02.js             online-classroom payload (323 students)
   labs/ch01.js             the counterfactual lens
   labs/ch02.js             the three-classroom dot strip + balance
+  labs/ch03.js             the sample-size dial and the interval ruler
   data.js                  matching payload (20k patients)
   reference.js             generated book numbers
   stats.js                 mean/sd/OLS, k-d tree, k-NN matching, correction
@@ -321,9 +344,9 @@ The site is built to grow by one chapter at a time. To add one:
 5. Add a browser test (the `tools/cdp-ch01.mjs` pattern) and a Node arithmetic test.
 6. Update this README's live list and screenshots.
 
-The next chapter is **03 — Stats review**: standard errors, sampling distributions, and
-why a 4.91-point gap needs an uncertainty interval. After that, the plan is 04–09 in
-order, then 11–16, then Part II 17–25, then the five technical notes.
+The next chapter is **04 — Graphical causal models**: draw the assumptions before you
+estimate. After that, the plan is 05–09 in order, then 11–16, then Part II 17–25, then
+the five technical notes.
 
 ---
 
@@ -377,10 +400,12 @@ source is still valid and can be rendered later.
 ## Credits
 
 - **Book & data:** Matheus Facure Alves, *Causal Inference for the Brave and True*,
-  chapters 01, 02, and 10, MIT-licensed repository. Chapter 01's four-school table and its
+  chapters 01, 02, 03, and 10, MIT-licensed repository. Chapter 01's four-school table and its
   arithmetic are the book's example; Chapter 02's online-classroom data comes from Alpert,
-  Couch & Harmon (2016) via the book repository. The prose is adapted and shortened, and
-  the counterfactual lens and three-classroom dot strip are new.
+  Couch & Harmon (2016) via the book repository. Chapter 03's sampling simulation uses the
+  book's true mean 74 and standard deviation 2. The prose is adapted and shortened, and the
+  counterfactual lens, three-classroom dot strip, sample-size dial, and interval ruler are
+  new.
 - **Visual language:** adapted from the **Data Storytelling** style in
   [Lemo-Opuscar](https://github.com/lemomo-ai/lemo-opuscar) by Lemomo (MIT). The charts,
   copy, and motion here are original; no demo assets or story are reused.
