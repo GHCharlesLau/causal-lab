@@ -1,0 +1,258 @@
+/* ============================================================
+   Chapter 17 — prediction pipeline, policy slider, policy bars.
+   ============================================================ */
+
+.pred-kicker,
+.pred-sub,
+.pred-question {
+  font-family: var(--mono);
+}
+
+.pred-kicker {
+  font-size: 8px;
+  fill: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pred-node {
+  font-family: var(--serif);
+  font-size: 16px;
+  fill: var(--ink);
+}
+
+.pred-sub {
+  font-size: 8px;
+  fill: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pred-score {
+  font-family: var(--serif);
+  font-size: 24px;
+  fill: var(--blue);
+}
+
+.pred-question {
+  font-size: 8px;
+  fill: var(--ink-2);
+}
+
+.pred-hand {
+  font-family: var(--hand);
+  font-size: 17px;
+  fill: var(--blue);
+}
+
+/* ---------------------------------------------------------- split */
+.split-strip {
+  display: grid;
+  grid-template-columns: 7fr 3fr;
+  gap: 4px;
+  margin: 18px 0;
+  border: 1px solid var(--rule-strong);
+}
+
+.split-train,
+.split-test {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+}
+
+.split-train {
+  background: var(--blue-soft);
+}
+
+.split-test {
+  background: var(--red-soft);
+  border-left: 1px solid var(--rule-strong);
+}
+
+.split-train .mono,
+.split-test .mono {
+  color: var(--ink-3);
+  font-size: 8px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.split-train strong,
+.split-test strong {
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  font-weight: 400;
+}
+
+.split-train span:last-child,
+.split-test span:last-child {
+  color: var(--ink-2);
+  font-size: 0.78rem;
+}
+
+/* ---------------------------------------------------------- chart */
+.ch17-chart {
+  min-height: 290px;
+}
+
+.ch17-chart svg,
+.policy-bars svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ch17-tick {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-3);
+}
+
+.ch17-axis-title {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  fill: var(--ink-2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ch17-policy-line {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 2;
+}
+
+.ch17-policy-dot {
+  fill: var(--red);
+  stroke: var(--ink);
+  stroke-width: 1.2;
+}
+
+.ch17-model-line {
+  stroke: var(--red);
+  stroke-width: 1.2;
+  stroke-dasharray: 4 4;
+}
+
+.ch17-model-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--red);
+}
+
+.ch17-cutoff-line {
+  stroke: var(--ink-3);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+
+.ch17-cutoff-readout {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+.ch17-side-label {
+  margin-top: 8px;
+}
+
+/* ---------------------------------------------------------- controls */
+.ch17-controls {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 48px;
+  align-items: center;
+  gap: 12px;
+}
+
+.ch17-slider-label {
+  font-size: 8px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+#ch17-cutoff {
+  width: 100%;
+  accent-color: var(--red);
+}
+
+.ch17-slider-output {
+  font-size: 0.9rem;
+  color: var(--ink);
+  text-align: right;
+}
+
+/* ---------------------------------------------------------- policy bars */
+.policy-bars {
+  margin: 18px 0;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  padding: 10px;
+}
+
+.ch17-bar-negative {
+  fill: var(--red);
+  opacity: 0.55;
+}
+
+.ch17-bar-positive {
+  fill: var(--blue);
+  opacity: 0.55;
+}
+
+.ch17-bar-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-2);
+}
+
+.ch17-bar-value {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink);
+}
+
+.lab--no-swipe .lab-head::after {
+  content: none;
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .lab-body {
+    grid-template-columns: 1fr;
+  }
+
+  .ch17-chart {
+    overflow: visible;
+    min-height: 210px;
+  }
+
+  .ch17-chart svg,
+  .policy-bars svg {
+    width: 100%;
+    max-width: none;
+  }
+
+  .ch17-tick,
+  .ch17-axis-title,
+  .ch17-model-label,
+  .ch17-bar-label,
+  .ch17-bar-value {
+    font-size: 15px;
+  }
+
+  .ch17-controls {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .ch17-slider-output {
+    text-align: left;
+  }
+
+  .policy-bars {
+    overflow: visible;
+  }
+}

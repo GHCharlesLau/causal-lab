@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Predictive models &mdash; Causal Field Notes</title>
+  <meta name="description" content="Chapter 17: predictive models and policies — customer profitability, cross-validation, region rules, model bands, and the gap between a prediction and a decision.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/ch17.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the chapter</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Chapter 17</p>
+      <h1 class="hero-title">Prediction <br>is not policy<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">a number is not a decision &darr;</p>
+      <p class="hero-deck">A model estimates E[Y|X]. A policy decides who gets treated.</p>
+      <p class="hero-sub">Ten thousand customers, thirty days of transactions, and a simple question: who is profitable? Treating everyone loses R$ 29 per customer. A region rule makes R$ 15.57. A gradient-boosted model makes R$ 16.60 &mdash; only a little better, and only if the policy is built on top.</p>
+      <div class="hero-meta mono">
+        <span>10,000 customers</span><span>50 regions</span><span>70 / 30 split</span><span>~18 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#policy-bench">Open the policy bench <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/17-Predictive-Models-101.html" target="_blank" rel="noreferrer">Read the source chapter</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="Features feed a model, which produces a prediction, which becomes a policy after a decision threshold.">
+        <g class="hero-paper">
+          <path d="M24 28h412v244H24z" fill="#fbf8f1" stroke="#ddd6c9"/>
+        </g>
+        <defs>
+          <marker id="pred-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0 0L10 5L0 10z" fill="#2b2723"/>
+          </marker>
+        </defs>
+        <g class="pred-figure">
+          <rect x="40" y="72" width="86" height="112" fill="none" stroke="#bdb4a5"/>
+          <text x="83" y="94" text-anchor="middle" class="pred-kicker">features</text>
+          <text x="83" y="118" text-anchor="middle" class="pred-node">region</text>
+          <text x="83" y="138" text-anchor="middle" class="pred-node">income</text>
+          <text x="83" y="158" text-anchor="middle" class="pred-node">age</text>
+          <rect x="164" y="86" width="82" height="84" rx="2" fill="#f6f3ec" stroke="#2b2723"/>
+          <text x="205" y="122" text-anchor="middle" class="pred-node">model</text>
+          <text x="205" y="142" text-anchor="middle" class="pred-sub">E[Y|X]</text>
+          <circle cx="304" cy="128" r="42" fill="#e4ecf3" stroke="#2f5d8a"/>
+          <text x="304" y="124" text-anchor="middle" class="pred-score">16.6</text>
+          <text x="304" y="144" text-anchor="middle" class="pred-sub">prediction</text>
+          <rect x="374" y="94" width="58" height="68" rx="2" fill="#fbf8f1" stroke="#a8283a"/>
+          <text x="403" y="122" text-anchor="middle" class="pred-node">policy</text>
+          <text x="403" y="142" text-anchor="middle" class="pred-sub">&gt; 0?</text>
+          <path d="M126 128 L160 128" stroke="#2b2723" stroke-width="1.4" marker-end="url(#pred-arrow)"/>
+          <path d="M246 128 L258 128" stroke="#2b2723" stroke-width="1.4" marker-end="url(#pred-arrow)"/>
+          <path d="M346 128 L370 128" stroke="#2b2723" stroke-width="1.4" marker-end="url(#pred-arrow)"/>
+          <text x="56" y="216" class="pred-question">who is profitable?</text>
+          <text x="240" y="216" class="pred-question">how sure?</text>
+          <text x="374" y="216" class="pred-question">engage?</text>
+          <path d="M64 250c14 4 26 3 38-2" fill="none" stroke="#2f5d8a" stroke-width="1"/>
+          <text x="42" y="270" class="hand pred-hand">the policy is the decision, not the score</text>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">Features feed a predictive model, which outputs a profitability prediction, which a threshold turns into an engagement policy.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Treat all</span>
+        <span class="hero-stat-value">&minus;29.17</span>
+        <span class="hero-stat-note">training net value</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&rarr;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Region rule</span>
+        <span class="hero-stat-value">+15.57</span>
+        <span class="hero-stat-note">test set, per customer</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&rarr;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Model policy</span>
+        <span class="hero-stat-value">+16.60</span>
+        <span class="hero-stat-note">the book's GBM</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 PREDICTION -->
+  <section class="chapter-section sheet" id="prediction" data-section="prediction">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">prediction</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">A mapping, not a cause</p>
+          <h2 class="section-title">Predict the<br>outcome.</h2>
+          <p class="section-deck">Machine learning estimates a conditional expectation. It is very good at mapping known inputs to an unknown output; it is not, by itself, a causal statement.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">This is the bridge to Part II. The question changes from &ldquo;what is the average effect?&rdquo; to &ldquo;who should we treat?&rdquo; Prediction gives a number; a policy turns that number into a decision.</p>
+          <p>A prediction is <span class="math-var">E&#770;[Y|X]</span> &mdash; the expected net value for a customer with region, income, and age. A policy is a rule: engage if the prediction is above zero, or above some other threshold.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Prediction and policy">
+          <span class="formula-label mono">prediction &rarr; policy</span>
+          <span class="formula-body"><span class="math-var">p</span><sub>i</sub> = E&#770;[<span class="math-var">Y</span><sub>i</sub> | <span class="math-var">X</span><sub>i</sub>] &nbsp;&nbsp; &rarr; &nbsp;&nbsp; engage<sub>i</sub> = 1{<span class="math-var">p</span><sub>i</sub> &gt; <span class="math-var">t</span>}</span>
+        </div>
+
+        <div class="prose">
+          <p>Cross-validation is what makes the evaluation credible. Split the labelled data into training and test sets, fit the rule on one, and evaluate it on the other. Otherwise a flexible model can memorize the training set and look perfect for the wrong reason.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The distinction</p>
+          <p><strong>Prediction:</strong> how much will this customer be worth? <strong>Policy:</strong> should we engage? The first is an estimate; the second is a decision with consequences.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the trap</p>
+          <p>A model can be accurate and still useless if the prediction is not attached to a decision that changes an outcome.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the caution</p>
+          <p>Predicting who is profitable is not the same as knowing who becomes profitable because we engage them. That is a causal question for later chapters.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 DATA -->
+  <section class="chapter-section sheet" id="data" data-section="data">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">the data</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Ten thousand customers</p>
+          <h2 class="section-title">One number<br>per customer.</h2>
+          <p class="section-deck">Sum the thirty days of transactions, subtract acquisition cost, and you get net value. Then split the labelled data before doing anything else.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">The data has <strong>10,000 customers</strong>, 30 days of transactions, and three pre-acquisition features: region, income, and age. Net value is the sum of all cash events. The training set has <strong>7,000</strong> customers; the test set has <strong>3,000</strong>.</p>
+          <p>The training mean is <strong>&minus;29.17</strong> reais per customer. Treating everyone loses money. The question is whether a rule can select a profitable subset.</p>
+        </div>
+
+        <div class="split-strip" aria-label="Train and test split">
+          <div class="split-train"><span class="mono">train</span><strong>7,000</strong><span>fit the rule</span></div>
+          <div class="split-test"><span class="mono">test</span><strong>3,000</strong><span>judge the rule</span></div>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">Why split first</p>
+          <p>If you choose the rule after looking at the test set, the test set is no longer a test. It becomes part of training, and the evaluation is optimistic.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the target</p>
+          <p>Net value is a simplification. It ignores churn timing, maintenance, and the difference between a customer who never buys and one who is between purchases.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the question</p>
+          <p>Are we predicting who is profitable, or deciding who to acquire? The data can answer the first; the second needs a policy.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 POLICY BENCH -->
+  <section class="chapter-section sheet" id="policy-bench" data-section="policy-bench">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">the policy bench</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">One feature, one rule</p>
+          <h2 class="section-title">How confident<br>do you need to be?</h2>
+          <p class="section-deck">The region rule keeps regions whose training average is significantly above zero. Raise the confidence cutoff and fewer regions survive.</p>
+        </header>
+
+        <div class="prose">
+          <p>For each region, compute the training mean and the lower bound of its 95% interval. Keep the region if the lower bound is above zero. That selects <strong>18 regions</strong> and earns <strong>15.57</strong> per test customer. The model policy earns 16.60, only slightly more.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-policy" aria-labelledby="lab-policy-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-policy-title">The region policy</h3>
+            </div>
+            <p class="lab-status mono" id="ch17-policy-status">cutoff 0 &middot; 18 regions</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch17-chart" id="ch17-policy-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono">Test net value</p>
+              <p class="readout-value" id="ch17-policy-value">+15.57</p>
+              <p class="readout-sub">reais per test customer</p>
+              <p class="side-label mono ch17-side-label">Confidence cutoff</p>
+              <p class="ch17-cutoff-readout mono" id="ch17-cutoff-readout">0.0</p>
+              <dl class="mini-stats">
+                <div><dt>regions kept</dt><dd id="ch17-regions-kept">18</dd></div>
+                <div><dt>test customers</dt><dd>3,000</dd></div>
+                <div><dt>model policy</dt><dd>16.60</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch17-policy-note">raise the cutoff to be more selective.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch17-controls">
+            <label class="ch17-slider-label mono" for="ch17-cutoff">Lower bound must exceed</label>
+            <input type="range" id="ch17-cutoff" min="0" max="55" step="1" value="0">
+            <output class="ch17-slider-output mono" id="ch17-cutoff-value">0</output>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> At cutoff zero the rule keeps 18 regions and earns 15.57. Raising the cutoff keeps fewer regions; the model benchmark stays at 16.60.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the confidence rule</p>
+          <p>The lower bound is a multiple-testing hazard: with 50 regions, some will look profitable by chance. The test set is the check.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the comparison</p>
+          <p>Model 16.60 vs region 15.57. A small gain, but over many customers it can be real money.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 MODEL -->
+  <section class="chapter-section sheet" id="model" data-section="model">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">the model</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Gradient boosting</p>
+          <h2 class="section-title">A little better,<br>a lot more complex.</h2>
+          <p class="section-deck">The model uses all three features and their interactions. It explains 71% of training variance and 69% of test variance.</p>
+        </header>
+
+        <div class="prose">
+          <p>The book fits a gradient-boosted regression with 400 trees, depth 4, and a learning rate of 0.01. The train R² is <strong>0.7109</strong>; the test R² is <strong>0.6939</strong>. That gap is modest, which suggests the model is not badly overfit.</p>
+          <p>The policy engages customers whose predicted net value is above zero. It earns <strong>16.60</strong> per test customer, against <strong>15.57</strong> for the region rule. The gain is real but small; the complexity is much larger.</p>
+        </div>
+
+        <div class="policy-bars" id="ch17-policy-bars" aria-label="Net value per customer under three policies">
+          <!-- bars are filled by ch17.js -->
+        </div>
+
+        <div class="prose">
+          <p>The model can also be used for a finer policy. Instead of a binary engage / don't engage, split predictions into 20 bands and spend more on the top bands. The decision becomes continuous: how much to invest, not just whether to invest.</p>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The prediction is not the policy</p>
+          <p>The model outputs a number. The business decision is the threshold, the budget, and the cost of being wrong. None of that is in the R².</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the gain</p>
+          <p>16.60 vs 15.57 is about one real per customer. At a million customers, that is a million reais &mdash; and also a million opportunities to get the policy wrong.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the limits</p>
+          <p>This is a predictive exercise, not a causal one. The model does not tell us what happens if we change who we engage.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>ML estimates E[Y|X].</strong> It maps known inputs to an unknown output. It does not identify a causal effect on its own.</li>
+          <li><strong>Cross-validation is non-negotiable.</strong> Fit on one partition, judge on another; otherwise a flexible model will flatter itself.</li>
+          <li><strong>Predictions are inputs to policies.</strong> The decision rule, threshold, and cost of errors are separate choices.</li>
+          <li><strong>Complexity has to earn its keep.</strong> The model beats the region rule by about one real per customer; that may or may not justify the machinery.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The sentence to avoid</p>
+          <p>&ldquo;The model predicts profit, so engaging the predicted-profitable customers will cause profit.&rdquo; Prediction is not causation; the next part of the book is about closing that gap.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Split first. Fit the rule. Judge it on the test set. Then ask what decision the number is supposed to change.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> What is the difference between a prediction and a policy?</summary>
+            <p>A prediction is an estimate of an outcome, usually E[Y|X]. A policy is a decision rule that maps the prediction to an action, such as engaging only if the prediction is above zero.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> Why is cross-validation necessary?</summary>
+            <p>A flexible model can fit the training set perfectly, including its noise. Evaluating on held-out data estimates how the rule will perform on customers it has not seen.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> Why did the model only slightly beat the region rule?</summary>
+            <p>The region already carries much of the signal. Income and age add some information, but the incremental predictive gain is small; complexity does not automatically buy accuracy.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> What causal question does this chapter not answer?</summary>
+            <p>Whether engaging a customer changes their net value. That is a treatment effect, not a prediction; it needs a causal design, which the next chapters develop.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next chapter</p>
+          <h3>Heterogeneous effects</h3>
+          <p>Move from average effects to who responds differently. The next chapter asks for the conditional average treatment effect.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>A model is a tool for a decision. Name the decision before you name the metric.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-ch17.js"></script>
+<script src="../assets/js/iv17.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: '17',
+    slug: '17-predictive-models',
+    title: 'Predictive models',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/17-Predictive-Models-101.html',
+    sections: [
+      { id: 'prediction', num: '01', label: 'Prediction' },
+      { id: 'data', num: '02', label: 'The data' },
+      { id: 'policy-bench', num: '03', label: 'The policy bench' },
+      { id: 'model', num: '04', label: 'The model' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/ch17.js"></script>
+</body>
+</html>
