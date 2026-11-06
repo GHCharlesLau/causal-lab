@@ -56,7 +56,7 @@
       chapters: [
         { num: 'A1', slug: 'a1-debiasing-orthogonalization', title: 'Debiasing with orthogonalization', short: 'The algebra', deck: 'A compact derivation of the orthogonal moment.', status: 'live' },
         { num: 'A2', slug: 'a2-debiasing-propensity-score', title: 'Debiasing with propensity score', short: 'The score as a device', deck: 'Why balancing on the score is enough.', status: 'live' },
-        { num: 'A3', slug: 'a3-when-prediction-fails', title: 'When prediction fails', short: 'The limits', deck: 'Distribution shift, overlap, and the predictions that cannot save you.', status: 'planned' },
+        { num: 'A3', slug: 'a3-when-prediction-fails', title: 'When prediction fails', short: 'The limits', deck: 'Distribution shift, overlap, and the predictions that cannot save you.', status: 'live' },
         { num: 'A4', slug: 'a4-prediction-metrics', title: 'Prediction metrics are dangerous', short: 'The wrong scoreboard', deck: 'Why a better predictor can be a worse causal estimator.', status: 'planned' },
         { num: 'A5', slug: 'a5-conformal-synthetic-control', title: 'Conformal inference for synthetic control', short: 'Uncertainty, honestly', deck: 'A distribution-free interval for a synthetic control estimate.', status: 'planned' }
       ]

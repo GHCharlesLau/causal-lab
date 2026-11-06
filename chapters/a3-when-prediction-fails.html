@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>When prediction fails &mdash; Causal Field Notes</title>
+  <meta name="description" content="Technical note A3: when prediction fails — coupons, net value, and why a good predictive model can produce a worse policy than a simple flat rule.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/a3.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the note</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Technical Note A3</p>
+      <h1 class="hero-title hero-title--long">The model <br>loses<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">predicting Y is not optimizing Y &darr;</p>
+      <p class="hero-deck">A coupon model with R² 0.54 earned less than a flat 5-real coupon for everyone.</p>
+      <p class="hero-sub">The simple policy earned 252.93 per customer. The model policy earned 229.93. The model was good at predicting net value and bad at choosing the coupon, because prediction flattens the very variation the policy needs.</p>
+      <div class="hero-meta mono">
+        <span>10,000 customers</span><span>4 coupon values</span><span>2 labs</span><span>~14 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#policy-bench">Open the policy bench <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/When-Prediction-Fails.html" target="_blank" rel="noreferrer">Read the source note</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="A hump-shaped net-value curve; a predictive partition flattens the curve into horizontal segments, hiding the coupon effect.">
+        <g class="hero-paper">
+          <path d="M24 28h412v244H24z" fill="#fbf8f1" stroke="#ddd6c9"/>
+        </g>
+        <g class="pred-figure">
+          <line x1="54" y1="222" x2="416" y2="222" stroke="#bdb4a5"/>
+          <line x1="54" y1="58" x2="54" y2="222" stroke="#bdb4a5"/>
+          <path d="M54 210 C 140 120, 230 82, 300 116 S 380 206, 416 218" fill="none" stroke="#2b2723" stroke-width="2.2"/>
+          <line x1="150" y1="126" x2="248" y2="126" stroke="#a8283a" stroke-width="2"/>
+          <line x1="248" y1="104" x2="340" y2="104" stroke="#a8283a" stroke-width="2"/>
+          <line x1="340" y1="170" x2="410" y2="170" stroke="#a8283a" stroke-width="2"/>
+          <text x="176" y="118" class="pred-note">flat</text>
+          <text x="290" y="96" class="pred-note">flat</text>
+          <text x="356" y="162" class="pred-note">flat</text>
+          <text x="80" y="248" class="pred-label">coupon value</text>
+          <text x="38" y="84" class="pred-label">net value</text>
+          <text x="64" y="278" class="hand pred-hand">the predictive bands hide the slope</text>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">The net-value curve is hump-shaped; grouping customers by predicted net value produces flat segments, so the coupon effect disappears inside each band.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Simple policy</span>
+        <span class="hero-stat-value">252.93</span>
+        <span class="hero-stat-note">5-real coupon for all</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Model policy</span>
+        <span class="hero-stat-value">229.93</span>
+        <span class="hero-stat-note">R² 0.54</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Loss</span>
+        <span class="hero-stat-value">&minus;22.99</span>
+        <span class="hero-stat-note">per customer</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 HAMMER -->
+  <section class="chapter-section sheet" id="hammer" data-section="hammer">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">the hammer</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Prediction is not optimization</p>
+          <h2 class="section-title">A good forecast<br>can be a bad policy.</h2>
+          <p class="section-deck">The five-line ML recipe predicts an outcome. It does not tell you which action changes the outcome.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">The business question is “how much coupon should each customer get?” The predictive question is “what net value will this customer produce?” Those are different targets. A model can be excellent at the second and useless at the first.</p>
+          <p>The coupon also enters net value as a cost. If the model predicts net value well, it has already absorbed the coupon’s effect. Segmenting on those predictions removes the variation needed to compare coupon values.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Prediction versus policy">
+          <span class="formula-label mono">target shift</span>
+          <span class="formula-body"><span class="math-var">E</span>[<span class="math-var">Y</span>|<span class="math-var">X</span>] &nbsp;&nbsp;&rarr;&nbsp;&nbsp; <span class="math-var">E</span>[<span class="math-var">Y</span>(<span class="math-var">t</span>) &minus; <span class="math-var">Y</span>(<span class="math-var">t</span>&prime;) | <span class="math-var">X</span>]</span>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The thumb</p>
+          <p>If all you have is a prediction model, every business problem looks like a forecasting problem. Coupon optimization is not one.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the R²</p>
+          <p>The model scored 0.538 on train and 0.505 on test. That is decent forecasting, and irrelevant to the policy comparison.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the cost</p>
+          <p>Coupons are subtracted from net value. A model that predicts net value is partly predicting the coupon assignment, not the coupon effect.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 COUPONS -->
+  <section class="chapter-section sheet" id="coupons" data-section="coupons">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">the coupon data</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Not randomly assigned</p>
+          <h2 class="section-title">Age drove<br>the coupons.</h2>
+          <p class="section-deck">Older customers got larger coupons. The raw coupon–net-value correlation is negative, and it is not causal.</p>
+        </header>
+
+        <div class="prose">
+          <p>The coupon counts are heavily concentrated at 5 and 10 reais. The correlation between age and coupon value is <strong>0.897</strong>; the correlation between coupon value and net value is <strong>−0.078</strong>. Both are signs of assignment bias, not a causal effect.</p>
+          <p>This note sidesteps the bias by using the book’s simulated data, where the true counterfactual policy can be regenerated. The lesson is still about prediction versus causality, not about this particular dataset.</p>
+        </div>
+
+        <div class="coupon-row">
+          <div class="coupon-card"><span class="mono">0 reais</span><strong>458</strong><p>customers</p></div>
+          <div class="coupon-card"><span class="mono">5 reais</span><strong>4,749</strong><p>customers</p></div>
+          <div class="coupon-card"><span class="mono">10 reais</span><strong>4,154</strong><p>customers</p></div>
+          <div class="coupon-card"><span class="mono">15 reais</span><strong>639</strong><p>customers</p></div>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The correlation trap</p>
+          <p>“More coupons, lower net value” is not evidence that coupons hurt. Older customers get both larger coupons and lower net value, so age confounds the raw correlation.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the simple policy</p>
+          <p>Look at the average net value by coupon value and give everyone the best one. Here, 5 reais wins with 252.93 per customer.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the artifact</p>
+          <p>The simulated data lets us regenerate the outcome under any coupon policy. Real data would not give us that counterfactual.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 POLICIES -->
+  <section class="chapter-section sheet" id="policy-bench" data-section="policy-bench">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">the policy bench</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Simple vs model</p>
+          <h2 class="section-title">The flat rule<br>wins.</h2>
+          <p class="section-deck">Give everyone 5 reais, or use the predicted-net-value bands to choose a coupon. The flat rule earns more.</p>
+        </header>
+
+        <figure class="lab lab--no-swipe" id="lab-policy" aria-labelledby="lab-policy-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-policy-title">The coupon policy bench</h3>
+            </div>
+            <p class="lab-status mono" id="a3-status">model &middot; 229.93</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart a3-chart" id="a3-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="a3-label">Model policy</p>
+              <p class="readout-value" id="a3-gain">229.93</p>
+              <p class="readout-sub">net value per customer</p>
+              <p class="side-label mono a3-side-label">Gap to simple</p>
+              <p class="a3-loss" id="a3-loss">&minus;22.99</p>
+              <dl class="mini-stats">
+                <div><dt>customers</dt><dd>10,000</dd></div>
+                <div><dt>R&sup2; test</dt><dd>0.505</dd></div>
+                <div><dt>bands</dt><dd>10</dd></div>
+              </dl>
+              <p class="side-note hand" id="a3-note">a better forecast made a worse policy.</p>
+            </aside>
+          </div>
+          <div class="lab-controls a3-controls">
+            <div class="a3-presets" role="group" aria-label="Choose a policy">
+              <button class="a3-preset" type="button" data-policy="simple" aria-pressed="false">Simple</button>
+              <button class="a3-preset is-active" type="button" data-policy="model" aria-pressed="true">Model</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The model chooses a different coupon in every band, but the average net value is lower than the flat 5-real rule.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the model policy</p>
+          <p>Ten prediction bands, each with its own best coupon. The choices vary: 5, 10, and 15 reais.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the result</p>
+          <p>The apparent personalization loses 22.99 per customer. Prediction bands are not causal segments.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 WHY -->
+  <section class="chapter-section sheet" id="why" data-section="why">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">why it fails</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">The flattening</p>
+          <h2 class="section-title">A good model<br>eats the slope.</h2>
+          <p class="section-deck">Within a prediction band, net value barely varies. If the outcome does not vary, it cannot reveal how the coupon changes it.</p>
+        </header>
+
+        <div class="prose">
+          <p>Prediction models partition the outcome axis. By construction, customers in the same band have similar predicted net value. That is what makes the model good; it is also what removes the variation needed to estimate the coupon effect inside the band.</p>
+          <p>Excluding the coupon from the model’s features is not enough. Features that drive coupon assignment can carry the treatment information back into the prediction, so the model still learns the coupon pattern indirectly.</p>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">Bad control, new clothes</p>
+          <p>Segmenting on a prediction of the outcome is like conditioning on a proxy for the treatment-outcome path. It blocks the variation the policy needs.</p>
+        </div>
+
+        <figure class="band-chart" id="a3-bands" aria-hidden="true"></figure>
+        <p class="band-caption mono">Coupon chosen by the model, per prediction band</p>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the exception</p>
+          <p>Prediction can help when outcome and elasticity move together, so slicing on Y also slices on the effect. Coupons are not that case.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the fix</p>
+          <p>Target the derivative, not the level. That is the whole book: estimate <span class="math-var">dY</span>/<span class="math-var">dT</span>, then optimize.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 WHEN -->
+  <section class="chapter-section sheet" id="when" data-section="when">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">when it helps</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">The rare exception</p>
+          <h2 class="section-title">When outcome<br>and effect align.</h2>
+          <p class="section-deck">If higher outcomes systematically imply higher or lower sensitivity, a prediction slice can also be an effect slice.</p>
+        </header>
+
+        <div class="prose">
+          <p>Waiting time is the clean example. As waiting increases, satisfaction falls, and the marginal drop is largest at the start. Both the outcome and the marginal effect move in the same direction, so a prediction model can accidentally group similar elasticities.</p>
+          <p>Coupons are the opposite. Net value rises and then falls with the coupon value, so the same outcome level can occur on both sides of the optimum. A prediction band mixes customers with positive and negative elasticities.</p>
+        </div>
+
+        <div class="when-grid">
+          <div class="when-card when-card--coupon">
+            <p class="mono">Coupons</p>
+            <h3>Hump-shaped</h3>
+            <p>Outcome and elasticity reverse signs. Prediction slices mix both sides of the optimum.</p>
+          </div>
+          <div class="when-card when-card--wait">
+            <p class="mono">Waiting time</p>
+            <h3>Monotone</h3>
+            <p>Outcome and elasticity move together. Prediction slices are more likely to group similar effects.</p>
+          </div>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The safe rule</p>
+          <p>Do not assume a predictive model can rank treatment effects. Check the shape of the response curve; if it reverses, prediction will mix the signs.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the graphical view</p>
+          <p>Conditioning on a prediction of Y blocks part of the path from T to Y. With random T, it only removes variance; with confounded T, it can remove the effect.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the bottom line</p>
+          <p>Prediction is a legitimate tool for forecasting. It is not a policy optimizer.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>Predicting Y is not optimizing Y.</strong> A policy question needs the derivative of the outcome with respect to the treatment, not the level.</li>
+          <li><strong>Prediction bands flatten the slope.</strong> Within a band, outcome variance is small by construction, so the coupon effect cannot be seen.</li>
+          <li><strong>Leaving T out of the model is not enough.</strong> Features that drive treatment assignment can carry T’s information back into the prediction.</li>
+          <li><strong>Prediction helps only when outcome and effect align.</strong> Monotone response curves can be sliced safely; hump-shaped ones cannot.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The sentence to avoid</p>
+          <p>&ldquo;The model has a high R², so its coupon policy must be good.&rdquo; The policy uses the model’s ranking, not its fit, and the ranking can be economically backwards.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Ask what decision the model changes. If the decision is a treatment level, the target is the treatment effect.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 07 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">07</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> Why did the model policy lose money?</summary>
+            <p>It grouped customers by predicted net value, which flattened the within-group variation in net value. The best coupon per band was chosen from too little signal.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> Why is the simple policy hard to beat?</summary>
+            <p>It directly compares net value across coupon values and picks the best average. It uses the treatment variation that the prediction bands remove.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> Does removing the coupon from the model fix it?</summary>
+            <p>No. Features that predict coupon assignment can carry the treatment information indirectly, so the model still learns the coupon pattern.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> When can prediction be useful for a causal policy?</summary>
+            <p>When outcome and elasticity move together, as with monotone waiting-time effects. Then prediction slices can group similar elasticities. Hump-shaped responses violate this.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next note</p>
+          <h3>Prediction metrics are dangerous</h3>
+          <p>Why a better predictor can be a worse causal estimator, and how to read the scoreboard.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Plot the policy gain, not just the R². The scoreboard should match the decision.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-a3.js"></script>
+<script src="../assets/js/iv-a3.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: 'A3',
+    slug: 'a3-when-prediction-fails',
+    title: 'When prediction fails',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/When-Prediction-Fails.html',
+    sections: [
+      { id: 'hammer', num: '01', label: 'The hammer' },
+      { id: 'coupons', num: '02', label: 'The coupon data' },
+      { id: 'policy-bench', num: '03', label: 'The policy bench' },
+      { id: 'why', num: '04', label: 'Why it fails' },
+      { id: 'when', num: '05', label: 'When it helps' },
+      { id: 'key', num: '06', label: 'Key ideas' },
+      { id: 'practice', num: '07', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/a3.js"></script>
+</body>
+</html>

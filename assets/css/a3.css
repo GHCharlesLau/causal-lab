@@ -1,0 +1,267 @@
+/* ============================================================
+   Technical note A3 — prediction failure and coupon policy.
+   ============================================================ */
+
+.pred-label {
+  font-family: var(--mono);
+  font-size: 8px;
+  fill: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pred-note {
+  font-family: var(--mono);
+  font-size: 8px;
+  fill: var(--red);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.pred-hand {
+  font-family: var(--hand);
+  font-size: 18px;
+  fill: var(--blue);
+}
+
+/* ---------------------------------------------------------- coupons */
+.coupon-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 18px 0;
+}
+
+.coupon-card {
+  padding: 12px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+}
+
+.coupon-card .mono {
+  display: block;
+  color: var(--ink-3);
+  font-size: 8px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.coupon-card strong {
+  display: block;
+  margin: 4px 0;
+  font-family: var(--mono);
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.coupon-card p {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 0.8rem;
+}
+
+/* ---------------------------------------------------------- charts */
+.a3-chart {
+  min-height: 285px;
+}
+
+.a3-chart svg,
+.band-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.a3-tick {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-3);
+}
+
+.a3-axis-title {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  fill: var(--ink-2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.a3-bar {
+  fill: var(--blue);
+  opacity: 0.55;
+}
+
+.a3-bar.is-active {
+  opacity: 1;
+}
+
+.a3-bar--simple {
+  fill: var(--red);
+}
+
+.a3-value {
+  font-family: var(--mono);
+  font-size: 10px;
+  fill: var(--ink);
+}
+
+.a3-loss {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 1rem;
+  color: var(--red);
+}
+
+.a3-side-label {
+  margin-top: 8px;
+}
+
+/* ---------------------------------------------------------- bands */
+.band-chart {
+  margin: 18px 0 4px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  padding: 8px;
+}
+
+.band-bar {
+  fill: var(--blue);
+  opacity: 0.6;
+}
+
+.band-label {
+  font-family: var(--mono);
+  font-size: 8px;
+  fill: var(--ink-3);
+}
+
+.band-caption {
+  margin: 0 0 18px;
+  font-size: 8px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ---------------------------------------------------------- when */
+.when-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 18px 0;
+}
+
+.when-card {
+  padding: 14px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+}
+
+.when-card--coupon {
+  border-top: 3px solid var(--red);
+}
+
+.when-card--wait {
+  border-top: 3px solid var(--blue);
+}
+
+.when-card .mono {
+  color: var(--ink-3);
+  font-size: 8px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.when-card h3 {
+  margin: 6px 0;
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  font-weight: 400;
+}
+
+.when-card p:last-child {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+/* ---------------------------------------------------------- controls */
+.a3-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.a3-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.a3-preset {
+  padding: 7px 11px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.a3-preset:hover {
+  border-color: var(--ink-2);
+  color: var(--ink);
+}
+
+.a3-preset.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.a3-preset:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.lab--no-swipe .lab-head::after {
+  content: none;
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .lab-body {
+    grid-template-columns: 1fr;
+  }
+
+  .coupon-row,
+  .when-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .a3-chart,
+  .band-chart {
+    overflow: visible;
+    min-height: 210px;
+  }
+
+  .a3-chart svg,
+  .band-chart svg {
+    width: 100%;
+    max-width: none;
+  }
+
+  .a3-tick,
+  .a3-axis-title,
+  .band-label,
+  .a3-value {
+    font-size: 15px;
+  }
+
+  .a3-preset {
+    flex: 1 1 100%;
+    text-align: left;
+  }
+}
