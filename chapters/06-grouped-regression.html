@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Grouped and dummy regression &mdash; Causal Field Notes</title>
+  <meta name="description" content="Chapter 06: grouped regression, cell weights, dummy variables, and interaction — with a 10-cell weighting bench.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/ch06.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the chapter</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Chapter 06</p>
+      <h1 class="hero-title">Cells and weights<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">who gets the weight? &darr;</p>
+      <p class="hero-deck">Regression is an average of averages &mdash; until the weights are wrong.</p>
+      <p class="hero-sub">Group the data by education and a regression becomes a weighted average of cells. Treat every cell equally and the 393 workers at 12 years vanish behind the 10 at 9. The weights are a modelling choice, not a detail.</p>
+      <div class="hero-meta mono">
+        <span>10 cells</span><span>935 workers</span><span>2 benches</span><span>~20 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#weight-bench">Weigh the cells <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/06-Grouped-and-Dummy-Regression.html" target="_blank" rel="noreferrer">Read the source chapter</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="Education cells drawn as bubbles sized by their number of workers, with a weighted regression line.">
+        <g class="hero-paper">
+          <path d="M46 30h368v238H46z" fill="#fbf8f1" stroke="#ddd6c9"/>
+          <path d="M74 240h310" stroke="#bdb4a5"/>
+          <path d="M74 240V62" stroke="#bdb4a5"/>
+        </g>
+        <g class="cells-figure">
+          <circle cx="96" cy="214" r="4" fill="#2f5d8a" opacity=".5"/>
+          <circle cx="116" cy="224" r="8" fill="#2f5d8a" opacity=".5"/>
+          <circle cx="136" cy="212" r="9" fill="#2f5d8a" opacity=".5"/>
+          <circle cx="156" cy="184" r="25" fill="#2f5d8a" opacity=".35"/>
+          <circle cx="176" cy="162" r="13" fill="#2f5d8a" opacity=".45"/>
+          <circle cx="196" cy="156" r="12" fill="#2f5d8a" opacity=".45"/>
+          <circle cx="216" cy="142" r="10" fill="#2f5d8a" opacity=".45"/>
+          <circle cx="236" cy="120" r="18" fill="#2f5d8a" opacity=".4"/>
+          <circle cx="256" cy="100" r="10" fill="#2f5d8a" opacity=".45"/>
+          <circle cx="276" cy="114" r="11" fill="#2f5d8a" opacity=".45"/>
+          <path d="M88 220 L286 106" stroke="#a8283a" stroke-width="2.2"/>
+          <path d="M88 210 L286 126" stroke="#2f5d8a" stroke-width="1.5" stroke-dasharray="5 4" opacity=".7"/>
+          <text x="158" y="84" text-anchor="middle" class="cells-label">12 years: 393 workers</text>
+          <text x="88" y="260" class="cells-axis">years of education &rarr;</text>
+          <text x="80" y="56" class="cells-axis">mean log wage</text>
+        </g>
+        <g class="hand">
+          <text x="300" y="70" fill="#2f5d8a" font-size="20">weighted</text>
+          <text x="300" y="90" fill="#a8283a" font-size="20">= individual</text>
+          <path d="M300 100c12 5 22 5 32 0" fill="none" stroke="#a8283a" stroke-width="1"/>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">Ten education cells as bubbles sized by cell count, with a weighted regression line and an unweighted line.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Weighted cells</span>
+        <span class="hero-stat-value">+0.0529</span>
+        <span class="hero-stat-note">matches the individual regression</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Equal cells</span>
+        <span class="hero-stat-value">+0.0481</span>
+        <span class="hero-stat-note">the 10-person cell speaks as loudly as 393</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Naive T</span>
+        <span class="hero-stat-value">+4.90</span>
+        <span class="hero-stat-note">hourly wage gap before IQ</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 GROUPS -->
+  <section class="chapter-section sheet" id="groups" data-section="groups">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">grouped data</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">An average of averages</p>
+          <h2 class="section-title">Ten cells,<br>one slope.</h2>
+          <p class="section-deck">When the data arrive grouped, a regression on the group means is not the same as a regression on the individuals. The difference is the weights.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">The wage data have ten education cells, from 9 to 18 years. Each cell has a mean log wage and a count. The individual regression gives a slope of <strong>0.0529</strong>. Fit the same line to the ten cell means with one observation per cell and the slope falls to <strong>0.0481</strong>.</p>
+          <p>The unweighted fit gives every cell equal influence. The 393 workers at 12 years count the same as the 10 workers at 9 years. The weighted fit gives each cell its count; it recovers the individual slope because it is the same least-squares problem, just aggregated.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Weighted group slope formula">
+          <span class="formula-label mono">weighted cells</span>
+          <span class="formula-body"><span class="math-var">&beta;<sub>w</sub></span> = <span class="frac"><span class="num">&Sigma;<sub>g</sub> n<sub>g</sub> (x&#772;<sub>g</sub> &minus; x&#772;<sub>w</sub>)(y&#772;<sub>g</sub> &minus; y&#772;<sub>w</sub>)</span><span class="den">&Sigma;<sub>g</sub> n<sub>g</sub> (x&#772;<sub>g</sub> &minus; x&#772;<sub>w</sub>)<sup>2</sup></span></span></span>
+        </div>
+
+        <div class="prose">
+          <p>The book opens with the ENEM school data for the same reason. A small school can post an extreme average score; the scatter is a warning about reading cell means as if they all carried the same information. Weighting is how the regression answers the question &ldquo;which cells are the population?&rdquo;</p>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The average of averages</p>
+          <p>If the cells have different sizes, the unweighted mean of the cell means is not the population mean. The same is true of an unweighted regression on cell means.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the check</p>
+          <p>Weighted cells: 0.0529, exactly the individual regression. Unweighted cells: 0.0481. The data did not change; the weights did.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the warning</p>
+          <p>A cell mean based on ten people is noisier than one based on 393. Equal weights treat them as equally precise.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 WEIGHT BENCH -->
+  <section class="chapter-section sheet" id="weight-bench" data-section="weight-bench">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">the weighting bench</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">The 10-cell regression</p>
+          <h2 class="section-title">Who gets<br>the weight?</h2>
+          <p class="section-deck">The bubbles are education cells, sized by the number of workers. Toggle the weights and watch the fitted line move between 0.0529 and 0.0481.</p>
+        </header>
+
+        <div class="prose">
+          <p>The red line weights each cell by its count. The blue line gives every cell one vote. Both are least-squares lines through the same ten points; only the weights differ.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-weights" aria-labelledby="lab-weights-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-weights-title">The weighting bench</h3>
+            </div>
+            <p class="lab-status mono" id="ch06-weight-status">weighted &middot; 10 cells &middot; 935 workers</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch06-chart" id="ch06-weight-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono">Education coefficient</p>
+              <p class="readout-value" id="ch06-weight-coef">0.0529</p>
+              <p class="readout-sub">log wage per year</p>
+              <p class="side-label mono ch06-ci-label">95% CI</p>
+              <p class="ch06-ci" id="ch06-weight-ci">(0.0397, 0.0662)</p>
+              <dl class="mini-stats">
+                <div><dt>cells</dt><dd>10</dd></div>
+                <div><dt>workers</dt><dd>935</dd></div>
+                <div><dt>weight</dt><dd id="ch06-weight-mode">count</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch06-weight-note">the 393 at 12 years dominate.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch06-controls">
+            <label class="ch06-switch">
+              <input type="checkbox" id="ch06-weight-toggle" checked>
+              <span>Weight each cell by its count</span>
+            </label>
+            <p class="ch06-hint mono">the line and the readout change</p>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The individual regression and the weighted cell regression are the same 0.0529. The unweighted cell regression is a different estimand, not a better one.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">try it</p>
+          <p>Turn the weight off. The line pivots upward on the left and flattens: the small cells at 9 and 10 now have the same say as the crowd at 12.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the question</p>
+          <p>What population are you describing? The weighted fit describes the workers; the unweighted fit describes the ten education cells.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 DUMMIES -->
+  <section class="chapter-section sheet" id="dummies" data-section="dummies">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">dummy regression</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Regression for dummies</p>
+          <h2 class="section-title">A staircase,<br>not a slope.</h2>
+          <p class="section-deck">A categorical variable enters as a set of dummies. The fitted value is the cell mean; the intercept is the mean of the baseline cell.</p>
+        </header>
+
+        <div class="prose">
+          <p>Regress hourly wage on education as a category. The intercept is the mean at 9 years: <strong>18.56</strong>. The coefficient on &ldquo;17 years&rdquo; is the difference from that baseline: <strong>+9.59</strong>. Every coefficient is a comparison with the omitted cell, not a per-year slope.</p>
+          <p>The fitted line is a staircase: it jumps at each education level and stays flat within the cell. A linear term would force one slope through all ten cells; the dummies let the data speak cell by cell.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-dummy" aria-labelledby="lab-dummy-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 02</p>
+              <h3 class="lab-title" id="lab-dummy-title">The cell-means staircase</h3>
+            </div>
+            <p class="lab-status mono" id="ch06-dummy-status">educ 17 &middot; 28.15 &middot; +9.59</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch06-chart" id="ch06-dummy-chart"></div>
+            <aside class="lab-side">
+              <p class="side-label mono">Cell mean</p>
+              <p class="readout-value" id="ch06-dummy-mean">28.15</p>
+              <p class="readout-sub">hourly wage</p>
+              <p class="side-label mono ch06-ci-label">Versus educ = 9</p>
+              <p class="ch06-diff" id="ch06-dummy-diff">+9.59</p>
+              <dl class="mini-stats">
+                <div><dt>cell</dt><dd id="ch06-dummy-cell">17 years</dd></div>
+                <div><dt>workers</dt><dd id="ch06-dummy-workers">40</dd></div>
+                <div><dt>baseline</dt><dd>18.56</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch06-dummy-note">the coefficient is a cell contrast.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch06-controls">
+            <p class="ch06-hint mono">click a cell dot to change the comparison</p>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The dummy regression does not draw a line through the cells. It reports the cells, with one omitted as the baseline.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the baseline</p>
+          <p>Every dummy coefficient is relative to the omitted category. Change the baseline and all the numbers change; the fitted values do not.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the cost</p>
+          <p>Ten cells and nine dummies spend degrees of freedom. The book&rsquo;s grouped IQ regression has only ten observations and three parameters; the full dummy regression uses one parameter per cell.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 INTERACTION -->
+  <section class="chapter-section sheet" id="interaction" data-section="interaction">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">interaction</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Parallel lines, then a fan</p>
+          <h2 class="section-title">The effect<br>can depend on IQ.</h2>
+          <p class="section-deck">A treatment dummy and a control can enter additively or with an interaction. Additive means one gap; interaction lets the gap change with the control.</p>
+        </header>
+
+        <div class="prose">
+          <p>Define <span class="math-var">T</span> as more than 12 years of education. The naive hourly-wage gap is <strong>+4.90</strong>. Add IQ and the gap at the same IQ falls to <strong>+3.16</strong>. The additive model draws two parallel lines: the IQ slope is the same in both groups.</p>
+          <p>Allow an interaction and the lines fan. The fitted model is <span class="math-var">hwage</span> = 9.14 + 0.69<span class="math-var">T</span> + 0.114<span class="math-var">IQ</span> + 0.024<span class="math-var">T</span>&times;<span class="math-var">IQ</span>. The T coefficient of 0.69 is the gap at IQ = 0, far outside the data; at IQ = 100 the gap is about <strong>3.11</strong>. The interaction is small and imprecise.</p>
+        </div>
+
+        <div class="interaction-figure" id="interaction-figure" role="img" aria-label="Two panels: parallel lines for T plus IQ, and slightly fanning lines for T times IQ.">
+          <svg viewBox="0 0 640 290" aria-hidden="true">
+            <g class="interaction-panel">
+              <text x="28" y="26" class="interaction-title">T + IQ: parallel</text>
+              <path d="M46 238h240M46 238V54" stroke="#bdb4a5"/>
+              <path d="M56 214 L276 76" stroke="#2f5d8a" stroke-width="2"/>
+              <path d="M56 196 L276 58" stroke="#a8283a" stroke-width="2"/>
+              <text x="282" y="80" class="interaction-label">T=0</text>
+              <text x="282" y="62" class="interaction-label">T=1</text>
+              <text x="46" y="262" class="interaction-axis">IQ &rarr;</text>
+              <text x="50" y="48" class="interaction-axis">wage</text>
+              <text x="150" y="134" class="interaction-note">gap 3.16</text>
+            </g>
+            <g class="interaction-panel">
+              <text x="348" y="26" class="interaction-title">T &times; IQ: a fan</text>
+              <path d="M366 238h240M366 238V54" stroke="#bdb4a5"/>
+              <path d="M376 208 L596 66" stroke="#2f5d8a" stroke-width="2"/>
+              <path d="M376 186 L596 40" stroke="#a8283a" stroke-width="2"/>
+              <text x="602" y="70" class="interaction-label">T=0</text>
+              <text x="602" y="44" class="interaction-label">T=1</text>
+              <text x="366" y="262" class="interaction-axis">IQ &rarr;</text>
+              <text x="370" y="48" class="interaction-axis">wage</text>
+              <text x="478" y="124" class="interaction-note">gap grows</text>
+            </g>
+            <g class="hand">
+              <text x="46" y="286" fill="#2f5d8a" font-size="18">additive: one gap &nbsp;&middot;&nbsp; interaction: a gap that moves</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The zero is not a policy</p>
+          <p>The interaction coefficient on T is the gap at IQ = 0, which no worker has. Report the gap at a meaningful IQ, or center the control before interacting.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the model</p>
+          <p>Additive: two parallel lines. Interaction: different slopes. Neither is &ldquo;more causal&rdquo;; both are assumptions about how the effect varies.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the check</p>
+          <p>Naive gap 4.90; at the same IQ, 3.16. A large part of the naive gap was selection on IQ, not an effect that grows with IQ.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>Grouped regression is weighted.</strong> A cell with more people carries more information; equal weights change the estimand.</li>
+          <li><strong>Dummies are cell means.</strong> The intercept is the baseline cell; each coefficient is a contrast with it.</li>
+          <li><strong>Interactions change the slope.</strong> Additive models assume one gap; interaction models let the gap depend on another variable.</li>
+          <li><strong>Degrees of freedom are data.</strong> Ten cells and many parameters leave little room for uncertainty; the grouped IQ regression is a warning.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The kitchen sink, again</p>
+          <p>Dummies and interactions can fit more, but every parameter spends information. The graph still decides which variables belong; the cells decide how much they count.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Before reading a coefficient, ask: which cell is the baseline, which cells are weighted, and is the effect allowed to vary?</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> Why does the weighted grouped regression match the individual regression?</summary>
+            <p>Because weighting each cell by its count makes the grouped least-squares objective the same sum of squared errors as the individual regression. The algebra is an aggregation, not a new estimator.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> What does the intercept mean in a dummy regression?</summary>
+            <p>It is the mean of the omitted baseline cell. Every dummy coefficient is the difference between its cell mean and that baseline.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> When should you add an interaction?</summary>
+            <p>When the effect of treatment plausibly depends on another variable. Additive models force one gap; interactions let the gap change. The choice is a substantive assumption, not a fit contest.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> Why is the 10-cell IQ regression fragile?</summary>
+            <p>It has only ten observations for three parameters, leaving seven degrees of freedom. The coefficients can be large and imprecise; the book reports only ten observations for that grouped model.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next chapter</p>
+          <h3>Beyond confounders</h3>
+          <p>Not every identification problem is a backdoor. The next chapter moves to instruments, front doors, and other designs.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Ask three questions of every coefficient: which cell is the baseline, how is the cell weighted, and does the effect vary?</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-ch06.js"></script>
+<script src="../assets/js/regression.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: '06',
+    slug: '06-grouped-regression',
+    title: 'Grouped and dummy regression',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/06-Grouped-and-Dummy-Regression.html',
+    sections: [
+      { id: 'groups', num: '01', label: 'Grouped data' },
+      { id: 'weight-bench', num: '02', label: 'The weighting bench' },
+      { id: 'dummies', num: '03', label: 'Dummy regression' },
+      { id: 'interaction', num: '04', label: 'Interaction' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/ch06.js"></script>
+</body>
+</html>

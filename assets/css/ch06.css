@@ -1,0 +1,264 @@
+/* ============================================================
+   Chapter 06 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â weighted cells, dummy staircase, interaction.
+   ============================================================ */
+
+.cells-label,
+.cells-axis {
+  font-family: var(--mono);
+  fill: var(--ink-3);
+}
+
+.cells-label {
+  font-size: 8.5px;
+}
+
+.cells-axis {
+  font-size: 8.5px;
+}
+
+.ch06-chart {
+  min-height: 300px;
+}
+
+.ch06-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ch06-tick {
+  font-family: var(--mono);
+  font-size: 12px;
+  fill: var(--ink-3);
+}
+
+.ch06-axis-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  fill: var(--ink-2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ch06-ci-label {
+  margin-top: 8px;
+}
+
+.ch06-ci {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink-2);
+}
+
+.ch06-diff {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 1.2rem;
+  color: var(--red);
+}
+
+.weight-bubble {
+  fill: var(--blue);
+  opacity: 0.38;
+  stroke: var(--blue);
+  stroke-width: 1;
+}
+
+.weight-line {
+  fill: none;
+  stroke-width: 2.2;
+}
+
+.weight-line--weighted {
+  stroke: var(--red);
+}
+
+.weight-line--unweighted {
+  stroke: var(--blue);
+  stroke-dasharray: 6 4;
+}
+
+.weight-line.is-muted {
+  opacity: 0.22;
+  stroke-width: 1.4;
+}
+
+.weight-legend {
+  font-family: var(--mono);
+  font-size: 11px;
+  fill: var(--ink-2);
+}
+
+.weight-value {
+  font-family: var(--mono);
+  font-size: 10px;
+  fill: var(--ink);
+}
+
+.dummy-step {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 2;
+}
+
+.dummy-baseline {
+  stroke: var(--ink-3);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.dummy-label {
+  font-family: var(--mono);
+  font-size: 12px;
+  fill: var(--ink-3);
+}
+
+.dummy-dot {
+  fill: var(--paper);
+  stroke: var(--blue);
+  stroke-width: 1.5;
+  cursor: pointer;
+  transition: fill 0.15s var(--ease);
+}
+
+.dummy-dot:hover {
+  fill: var(--blue-soft);
+}
+
+.dummy-dot.is-selected {
+  fill: var(--red);
+  stroke: var(--ink);
+  stroke-width: 1.6;
+}
+
+.dummy-hit {
+  fill: transparent;
+  cursor: pointer;
+}
+
+.dummy-cell-label {
+  font-family: var(--mono);
+  font-size: 12px;
+  fill: var(--ink-3);
+}
+
+.dummy-cell-label.is-selected {
+  fill: var(--red);
+}
+
+.ch06-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.ch06-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.ch06-switch input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--red);
+}
+
+.ch06-switch input:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.ch06-hint {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: 9px;
+}
+
+/* ---------------------------------------------------------- interaction figure */
+.interaction-figure {
+  margin: 20px 0;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  padding: 10px;
+}
+
+.interaction-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.interaction-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  fill: var(--ink);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.interaction-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  fill: var(--ink-2);
+}
+
+.interaction-axis {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-3);
+}
+
+.interaction-note {
+  font-family: var(--hand);
+  font-size: 16px;
+  fill: var(--red);
+}
+
+.lab--no-swipe .lab-head::after {
+  content: none;
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .ch06-chart {
+    overflow: visible;
+    min-height: 210px;
+  }
+
+  .ch06-chart svg {
+    width: 100%;
+    max-width: none;
+  }
+
+  .ch06-tick,
+  .weight-legend,
+  .weight-value,
+  .dummy-label,
+  .dummy-cell-label {
+    font-size: 18px;
+  }
+
+  .ch06-axis-title {
+    font-size: 16px;
+  }
+
+  .interaction-figure {
+    overflow-x: auto;
+  }
+
+  .interaction-figure svg {
+    width: 560px;
+    max-width: none;
+  }
+}
+
+
+
