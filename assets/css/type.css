@@ -1,0 +1,295 @@
+/* ============================================================
+   Reading scale
+   The editorial micro-labels were tuned for a 16px root and a
+   large monitor. This file lifts the whole page one comfortable
+   step: 18px root, 21px body at desktop, 10px+ labels, larger
+   chart ticks. Loaded after tokens/base/layout/components/charts.
+   ============================================================ */
+
+html {
+  font-size: 18px;
+}
+
+:root {
+  --step--2: clamp(0.8rem, 0.77rem + 0.1vw, 0.88rem);
+  --step--1: clamp(0.9rem, 0.86rem + 0.12vw, 0.98rem);
+  --step-0: clamp(1.06rem, 1.02rem + 0.22vw, 1.2rem);
+  --topbar: 64px;
+  --railw: 164px;
+}
+
+body {
+  font-size: var(--step-0);
+  line-height: 1.64;
+}
+
+/* ---------------------------------------------------------- top bar + rail */
+.brand-text {
+  font-size: 11.5px;
+}
+
+.topbar-chapter {
+  font-size: 11.5px;
+}
+
+.icon-btn {
+  font-size: 10.5px;
+}
+
+.rail-link {
+  font-size: 10.5px;
+}
+
+.rail-num {
+  font-size: 9.5px;
+}
+
+/* ---------------------------------------------------------- hero */
+.hero-sub {
+  font-size: clamp(1.1rem, 1.02rem + 0.3vw, 1.24rem);
+}
+
+.hero-meta,
+.hero-stat-label {
+  font-size: 10px;
+}
+
+.hero-stat-note {
+  font-size: 9.5px;
+}
+
+.scroll-cue {
+  font-size: 9.5px;
+}
+
+/* ---------------------------------------------------------- section text */
+.section-deck {
+  font-size: clamp(1.16rem, 1.1rem + 0.35vw, 1.38rem);
+}
+
+.prose .lede {
+  font-size: clamp(1.24rem, 1.16rem + 0.35vw, 1.42rem);
+}
+
+.prose p,
+.prose li {
+  line-height: 1.68;
+}
+
+.section-label {
+  font-size: 9.5px;
+}
+
+/* ---------------------------------------------------------- lab chrome */
+.lab-kicker,
+.lab-status {
+  font-size: 9.5px;
+}
+
+.lab-caption {
+  font-size: 0.9rem;
+}
+
+.lab-caption .mono {
+  font-size: 9px;
+}
+
+.side-label {
+  font-size: 9px;
+}
+
+.control-label {
+  font-size: 9px;
+}
+
+.control-value {
+  font-size: 9.5px;
+}
+
+.readout-sub {
+  font-size: 0.86rem;
+}
+
+.mini-stats dt {
+  font-size: 9px;
+}
+
+.mini-stats dd {
+  font-size: 9.5px;
+}
+
+.lab-body {
+  grid-template-columns: minmax(0, 1fr) 208px;
+}
+
+.lab-body--knn {
+  grid-template-columns: minmax(0, 1fr) 274px;
+}
+
+/* ---------------------------------------------------------- tables, notes */
+.note {
+  font-size: 0.98rem;
+}
+
+.note-label {
+  font-size: 9px;
+}
+
+.callout p:last-child {
+  font-size: 1.05rem;
+}
+
+.data-table {
+  font-size: 0.9rem;
+}
+
+.data-table th {
+  font-size: 9px;
+}
+
+.source-line {
+  font-size: 10px;
+}
+
+/* ---------------------------------------------------------- practice cards */
+.quiz {
+  font-size: 0.98rem;
+}
+
+.q-title {
+  font-size: 1.05rem;
+}
+
+.option {
+  font-size: 0.94rem;
+}
+
+.feedback {
+  font-size: 0.9rem;
+}
+
+.quiz-note {
+  font-size: 0.82rem;
+}
+
+.code-block {
+  font-size: 11.5px;
+}
+
+.check-item {
+  font-size: 0.9rem;
+}
+
+/* ---------------------------------------------------------- chart text */
+.tick-label {
+  font-size: 10px;
+}
+
+.axis-title {
+  font-size: 9.5px;
+}
+
+.plot-title {
+  font-size: 19px;
+}
+
+.annotation-text {
+  font-size: 10.5px;
+}
+
+.annotation-hand {
+  font-size: 19px;
+}
+
+.scale-label {
+  font-size: 10px;
+}
+
+.cell-count {
+  font-size: 12px;
+}
+
+.cell-axis {
+  font-size: 11px;
+}
+
+.knn-legend {
+  font-size: 9px;
+}
+
+.knn-axis-note {
+  font-size: 8.5px;
+}
+
+.knn-tooltip {
+  font-size: 10px;
+}
+
+.ruler-label {
+  font-size: 8.5px;
+}
+
+.ruler-marker-label {
+  font-size: 8px;
+}
+
+.estimate-numbers span {
+  font-size: 8px;
+}
+
+.diag span {
+  font-size: 8px;
+}
+
+.diag b {
+  font-size: 9.5px;
+}
+
+.spark-note {
+  font-size: 8px;
+}
+
+/* The KNN side panel is wider; keep the chart from getting cramped. */
+@media (max-width: 960px) {
+  .lab-body {
+    grid-template-columns: 1fr;
+  }
+
+  .lab-body--knn {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .brand-text {
+    font-size: 9.5px;
+  }
+
+  .rail-link {
+    font-size: 10px;
+  }
+}
+
+/* Fixed top bar: keep hero copy clear of it on small screens. */
+@media (max-width: 720px) {
+  .hero {
+    padding-top: calc(var(--topbar) + 26px);
+  }
+}
+
+.topbar-actions {
+  grid-column: 3;
+  justify-self: end;
+}
+
+
+.hero-title {
+  margin-top: 24px;
+}
+
+
+@media (min-width: 721px) {
+  .hero {
+    padding-top: max(clamp(54px, 8vh, 110px), calc(var(--topbar) + 20px));
+  }
+}

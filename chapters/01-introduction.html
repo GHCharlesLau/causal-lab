@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Introduction to causality &mdash; Causal Field Notes</title>
+  <meta name="description" content="Chapter 01: potential outcomes, the fundamental problem of causal inference, and why association is ATT plus bias.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/ch01.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the chapter</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Chapter 01</p>
+      <h1 class="hero-title">The two roads<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">you can only take one &darr;</p>
+      <p class="hero-deck">Every unit has two potential lives. We observe one.</p>
+      <p class="hero-sub">Causal inference begins with a counterfactual: what would have happened to this same school, patient, or customer under the other treatment? The whole book is a set of ways to make that missing road visible.</p>
+      <div class="hero-meta mono">
+        <span>1 experiment</span><span>4 schools</span><span>2 roads</span><span>~15 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#potential">Meet the two roads <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/01-Introduction-To-Causality.html" target="_blank" rel="noreferrer">Read the source chapter</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="A school at the fork of two roads: a solid red road to the treated outcome and a dashed blue road to the untreated counterfactual.">
+        <g class="hero-paper">
+          <path d="M52 30h356v238H52z" fill="#fbf8f1" stroke="#ddd6c9"/>
+          <path d="M52 86h356" stroke="#ddd6c9" stroke-dasharray="2 4"/>
+        </g>
+        <g class="two-roads">
+          <circle cx="104" cy="150" r="7" fill="#2b2723"/>
+          <path d="M111 150 C 178 150, 198 96, 300 78" fill="none" stroke="#a8283a" stroke-width="2.4"/>
+          <path d="M111 150 C 178 150, 198 204, 300 222" fill="none" stroke="#2f5d8a" stroke-width="1.7" stroke-dasharray="5 5"/>
+          <circle cx="332" cy="73" r="6" fill="#a8283a" stroke="#2b2723" stroke-width="1.1"/>
+          <circle cx="332" cy="227" r="6" fill="#f6f3ec" stroke="#2f5d8a" stroke-width="1.7"/>
+          <text class="road-label" x="344" y="70">Y&#8321;</text>
+          <text class="road-label road-label--blue" x="344" y="232">Y&#8320;</text>
+          <text class="road-small" x="344" y="86">observed</text>
+          <text class="road-small road-small--blue" x="344" y="248">counterfactual</text>
+          <text class="road-small" x="104" y="180" text-anchor="middle">same unit</text>
+        </g>
+        <g class="hand">
+          <text x="146" y="118" fill="#a8283a" font-size="19">the road taken</text>
+          <path d="M196 123c10 5 18 4 28 0" fill="none" stroke="#a8283a" stroke-width="1"/>
+          <text x="152" y="214" fill="#2f5d8a" font-size="19">the road not taken</text>
+          <path d="M210 219c12 5 22 4 34 0" fill="none" stroke="#2f5d8a" stroke-width="1"/>
+        </g>
+        <text class="hero-chart-title" x="52" y="292">one school &rarr; two potential outcomes</text>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">A school sits at a fork. The treated outcome is observed; the untreated outcome is the counterfactual.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Average effect</span>
+        <span class="hero-stat-value">&minus;50</span>
+        <span class="hero-stat-note">ATE, four schools</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">On the treated</span>
+        <span class="hero-stat-value">&minus;75</span>
+        <span class="hero-stat-note">ATT, same four</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Naive gap</span>
+        <span class="hero-stat-value">+125</span>
+        <span class="hero-stat-note">association, not causation</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 WHY -->
+  <section class="chapter-section sheet" id="why" data-section="why">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">a different question</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Prediction vs. cause</p>
+          <h2 class="section-title">What is,<br>versus what if.</h2>
+          <p class="section-deck">Machine learning is very good at predicting what comes next. Causal questions ask what would have happened under a different decision.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">A model can tell a hotel that low prices and low sales tend to appear together. It cannot tell the hotel what would happen if it raised the price. That is a different question &mdash; an <em>inverse</em> question, a what-if.</p>
+          <p>Should a school give every student a tablet? Should a bank change its credit line? Should a hospital give a drug to the next patient? Each question asks about an intervention. The data show us the world under one decision; the causal question asks about a world we did not get to see.</p>
+          <p>This chapter builds the notation for that missing world. It is short, but it is the grammar for everything that follows: experiments, graphs, regression, matching, instruments, and the modern heterogeneity tools in Part II.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The shift</p>
+          <p>Prediction asks <em>what is</em>. Causality asks <em>what would be</em> if we acted differently &mdash; and then asks what assumptions make the answer credible.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the tablet question</p>
+          <p>Schools with tablets get higher scores. Is that the tablet &mdash; or the tuition those schools can afford?</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">not a prediction problem</p>
+          <p>A better predictor of scores is not a better estimate of the tablet&rsquo;s effect.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 POTENTIAL -->
+  <section class="chapter-section sheet" id="potential" data-section="potential">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">the two roads</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Potential outcomes</p>
+          <h2 class="section-title">One unit.<br>Two outcomes.</h2>
+          <p class="section-deck">For each unit, define the outcome under treatment and the outcome under control. Only one of them can be observed.</p>
+        </header>
+
+        <div class="prose">
+          <p>Let <span class="math-var">T<sub>i</sub></span> be the treatment for unit <span class="math-var">i</span>: 1 if treated, 0 otherwise. Let <span class="math-var">Y<sub>0i</sub></span> be the outcome unit <span class="math-var">i</span> would have under control, and <span class="math-var">Y<sub>1i</sub></span> the outcome under treatment. The individual treatment effect is their difference:</p>
+        </div>
+
+        <div class="formula" role="math" aria-label="Individual treatment effect equals Y1 minus Y0">
+          <span class="formula-label mono">individual effect</span>
+          <span class="formula-body"><span class="math-var">TE<sub>i</sub></span> = <span class="math-var">Y<sub>1i</sub></span> &minus; <span class="math-var">Y<sub>0i</sub></span></span>
+        </div>
+
+        <div class="prose">
+          <p>We never see both. If unit <span class="math-var">i</span> is treated, we observe <span class="math-var">Y<sub>1i</sub></span> and <span class="math-var">Y<sub>0i</sub></span> is a <em>counterfactual</em>. If it is untreated, the reverse. This is the <strong>fundamental problem of causal inference</strong>: the same unit cannot travel both roads.</p>
+          <p>The book&rsquo;s four-school table makes the problem concrete. Suppose a causal deity lets us see both potential outcomes. The observed Y column is what we would see; the last is the effect we could compute if we could see both roads.</p>
+        </div>
+
+        <figure class="lab" id="lab-two-roads" aria-labelledby="lab-two-roads-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-two-roads-title">The counterfactual lens</h3>
+            </div>
+            <p class="lab-status mono" id="po-status">one road observed</p>
+          </div>
+          <div class="lab-body">
+            <div class="po-area">
+              <table class="po-table" id="po-table">
+                <caption class="sr-only">Four schools with potential outcomes, treatment, observed outcome, and treatment effect</caption>
+                <thead>
+                  <tr><th scope="col">School</th><th scope="col">Y<sub>0</sub></th><th scope="col">Y<sub>1</sub></th><th scope="col">T</th><th scope="col">Y observed</th><th scope="col">TE</th></tr>
+                </thead>
+                <tbody id="po-body"></tbody>
+              </table>
+              <p class="po-detail" id="po-detail" aria-live="polite">Select a school to inspect its two roads. Or reveal the lens to see the missing column.</p>
+            </div>
+            <aside class="lab-side">
+              <p class="side-label mono">If we could see both</p>
+              <p class="readout-value" id="po-ate">&mdash;</p>
+              <p class="readout-sub">ATE &middot; average over four</p>
+              <p class="readout-value readout-value--small" id="po-att">&mdash;</p>
+              <p class="readout-sub">ATT &middot; average on the treated</p>
+              <dl class="mini-stats">
+                <div><dt>naive gap</dt><dd id="po-naive">+125</dd></div>
+                <div><dt>bias</dt><dd id="po-bias">&mdash;</dd></div>
+                <div><dt>observed</dt><dd>4 / 8 roads</dd></div>
+              </dl>
+            </aside>
+          </div>
+          <div class="lab-controls">
+            <button class="btn btn--small" type="button" id="po-lens" aria-pressed="false">Reveal the other road</button>
+            <button class="btn btn--ghost btn--small" type="button" id="po-reset">Reset</button>
+            <p class="po-hint mono" id="po-hint">The table is showing what the researcher actually sees.</p>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The observed table can compute the naive gap, but not a single treatment effect. Revealing the lens fills in the counterfactual cells; the ATE is &minus;50, the ATT is &minus;75, and the naive +125 is not either of them.</figcaption>
+        </figure>
+
+        <div class="prose">
+          <p>With both potential outcomes, the average treatment effect is just the average of the individual effects. The average effect on the treated uses only the treated units:</p>
+        </div>
+        <div class="formula formula--wide" role="math" aria-label="ATE is the expectation of Y1 minus Y0; ATT is the same expectation conditional on treatment">
+          <span class="formula-label mono">the targets</span>
+          <span class="formula-body"><span class="math-var">ATE</span> = E[<span class="math-var">Y<sub>1</sub></span> &minus; <span class="math-var">Y<sub>0</sub></span>] &nbsp;&nbsp;&nbsp; <span class="math-var">ATT</span> = E[<span class="math-var">Y<sub>1</sub></span> &minus; <span class="math-var">Y<sub>0</sub></span> | <span class="math-var">T</span> = 1]</span>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The fundamental problem</p>
+          <p>An individual treatment effect is never identified from one observed outcome. Everything causal is a strategy for identifying an <em>average</em> by making different units comparable.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">try it first</p>
+          <p>Before you reveal the lens: which school do you think has the largest negative effect? Then check the TE column.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">read the table</p>
+          <p>School 1 is untreated, so its observed Y is Y<sub>0</sub>. School 3 is treated, so its observed Y is Y<sub>1</sub>. The other cell in each row is missing.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 BIAS -->
+  <section class="chapter-section sheet" id="bias" data-section="bias">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">association vs. cause</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">The bias term</p>
+          <h2 class="section-title">The naive gap<br>is not the effect.</h2>
+          <p class="section-deck">Compare the treated and untreated averages and you get the effect on the treated &mdash; plus a term for how different they were before treatment.</p>
+        </header>
+
+        <div class="prose">
+          <p>Take the observed table at face value. The treated schools average <strong>675</strong>; the untreated average <strong>550</strong>. The association is <strong>+125</strong>. But the true ATT is <strong>&minus;75</strong>. The difference between those two numbers is bias:</p>
+        </div>
+
+        <div class="bias-eq" role="math" aria-label="Association plus 125 equals ATT minus 75 plus bias plus 200">
+          <div class="bias-term bias-term--assoc">
+            <span class="mono">association</span>
+            <strong>+125</strong>
+          </div>
+          <span class="bias-op" aria-hidden="true">=</span>
+          <div class="bias-term bias-term--att">
+            <span class="mono">ATT</span>
+            <strong>&minus;75</strong>
+          </div>
+          <span class="bias-op" aria-hidden="true">+</span>
+          <div class="bias-term bias-term--bias">
+            <span class="mono">bias</span>
+            <strong>+200</strong>
+          </div>
+        </div>
+
+        <div class="prose">
+          <p>The bias is the difference in untreated outcomes between the groups: the treated schools would have averaged <strong>750</strong> even without tablets; the untreated average <strong>550</strong>. They were already 200 points apart. Giving them tablets did not create that gap &mdash; tuition, teachers, and neighborhoods did.</p>
+          <p>In potential-outcome notation, add and subtract the counterfactual control mean for the treated, <span class="math-var">E[Y<sub>0</sub> | T = 1]</span>, and regroup:</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Difference in means equals ATT plus selection bias">
+          <span class="formula-label mono">the decomposition</span>
+          <span class="formula-body">E[<span class="math-var">Y</span> | <span class="math-var">T</span>=1] &minus; E[<span class="math-var">Y</span> | <span class="math-var">T</span>=0] = <span class="bias-att">E[<span class="math-var">Y<sub>1</sub></span> &minus; <span class="math-var">Y<sub>0</sub></span> | <span class="math-var">T</span>=1]</span> + <span class="bias-bias">{ E[<span class="math-var">Y<sub>0</sub></span> | <span class="math-var">T</span>=1] &minus; E[<span class="math-var">Y<sub>0</sub></span> | <span class="math-var">T</span>=0] }</span></span>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">Why this is the whole book</p>
+          <p>Every identification strategy is an argument that the bias term is zero, or a way to estimate and subtract it. Randomization makes the two groups comparable; matching finds comparable units; regression controls for the confounder; instruments use a nudge that is unrelated to the bias.</p>
+        </div>
+
+        <div class="prose">
+          <p>So when can association <em>be</em> causation? When the treated and untreated would have had the same untreated outcome. In notation, <span class="math-var">E[Y<sub>0</sub> | T=1] = E[Y<sub>0</sub> | T=0]</span>. Then the bias vanishes and the difference in means equals the ATT. That is the exchangeability assumption, and it is the door to Chapter 02.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">check the arithmetic</p>
+          <p>Treated mean: (600 + 750) / 2 = 675. Control mean: (500 + 600) / 2 = 550. Naive gap: +125. ATT: (&minus;200 + 50) / 2 = &minus;75. Bias: 125 &minus; (&minus;75) = 200.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the temptation</p>
+          <p>&ldquo;The treated schools score higher, so tablets work.&rdquo; This is the most common causal mistake in applied work &mdash; and the one this book is built to prevent.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 DESIGN -->
+  <section class="chapter-section sheet" id="design" data-section="design">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">the way in</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Exchangeability</p>
+          <h2 class="section-title">Make the groups<br>the same on paper.</h2>
+          <p class="section-deck">If treatment is assigned by a coin flip, the treated and untreated are comparable in expectation. Then the naive gap becomes an estimate of the effect.</p>
+        </header>
+
+        <div class="prose">
+          <p>A randomized experiment is the cleanest version of the idea. Flip a coin for each school. Rich and poor schools have the same chance of getting tablets. The groups may still differ by chance, but not systematically. In expectation, the bias term is zero.</p>
+          <p>That does not mean every experiment gives the right answer. A finite sample can be unlucky; a broken randomization can be biased; non-compliance can dilute the effect. Chapter 02 takes the coin seriously and shows how to estimate and quantify the result.</p>
+          <p>For now, keep the grammar: a causal quantity is defined with potential outcomes; an estimate is credible when the design makes the observed groups comparable on the untreated road.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">Next</p>
+          <p>Chapter 02 &mdash; <strong>Randomised experiments</strong>: the coin, the standard error, and the difference between &ldquo;no effect&rdquo; and &ldquo;not enough evidence.&rdquo;</p>
+        </div>
+        <p class="source-line">Source: <a href="https://matheusfacure.github.io/python-causality-handbook/01-Introduction-To-Causality.html" target="_blank" rel="noreferrer">Chapter 01 &middot; Introduction to Causality</a>, Facure. Adapted under the book&rsquo;s MIT license. The four-school table and its arithmetic are the book&rsquo;s example.</p>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">one sentence</p>
+          <p>Causal inference is the search for a comparison in which the only difference between groups is the treatment.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">next question</p>
+          <p>How do we know the coin was fair &mdash; and how much noise does one experiment carry?</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>Potential outcomes are the language.</strong> Every unit has a treated and an untreated outcome; we observe one.</li>
+          <li><strong>The fundamental problem is missing data.</strong> The counterfactual is not a modeling inconvenience; it is structurally absent.</li>
+          <li><strong>Association = ATT + bias.</strong> The naive gap is only causal when the bias term is zero.</li>
+          <li><strong>Design beats arithmetic.</strong> No amount of regression can rescue a comparison whose groups were selected on the outcome&rsquo;s untreated level.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">Common trap</p>
+          <p>Adding more variables does not automatically reduce bias. Some variables are mediators; some are colliders; some are proxies for the treatment. Chapter 07 makes this precise.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>&ldquo;Compared with what?&rdquo; is the first question of every causal estimate.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> Why can&rsquo;t we compute an individual treatment effect from the observed table?</summary>
+            <p>Because each unit contributes only one potential outcome. For a treated school we observe <span class="math-var">Y<sub>1</sub></span> but not <span class="math-var">Y<sub>0</sub></span>; for a control school we observe <span class="math-var">Y<sub>0</sub></span> but not <span class="math-var">Y<sub>1</sub></span>. The missing cell is the counterfactual, not a data-entry error.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> What is the difference between the ATE and the ATT, and when are they equal?</summary>
+            <p>The ATE averages over everyone; the ATT averages over the treated only. They are equal when the treatment effect is the same for treated and untreated units. Under random assignment the groups are comparable in expectation, but that alone does not force the two effects to be equal.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> The naive gap is +125 and the ATT is &minus;75. What is the bias, and what does it mean?</summary>
+            <p>Bias = 125 &minus; (&minus;75) = <strong>+200</strong>. In this example, treated schools would have averaged 750 without tablets, while untreated schools averaged 550. The +200 is selection: richer schools were already different before the treatment.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> What condition would make the difference in means equal the ATT?</summary>
+            <p>Exchangeability of the untreated outcomes: <span class="math-var">E[Y<sub>0</sub> | T=1] = E[Y<sub>0</sub> | T=0]</span>. Then the bias term is zero, and the observed difference in means equals the average effect on the treated.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next chapter</p>
+          <h3>Randomised experiments</h3>
+          <p>If the coin is fair, the comparison is credible. How fair is fair enough &mdash; and how noisy is one experiment?</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Write the estimand before you write the model: ATE or ATT? Over whom? Under what treatment contrast?</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: '01',
+    slug: '01-introduction',
+    title: 'Introduction to causality',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/01-Introduction-To-Causality.html',
+    sections: [
+      { id: 'why', num: '01', label: 'A different question' },
+      { id: 'potential', num: '02', label: 'The two roads' },
+      { id: 'bias', num: '03', label: 'Association vs. cause' },
+      { id: 'design', num: '04', label: 'Exchangeability' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/ch01.js"></script>
+</body>
+</html>

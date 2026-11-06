@@ -1,0 +1,126 @@
+/* ============================================================
+   Site shell extras: reading progress, course map, chapter pager.
+   Loaded after the chapter styles on every generated chapter page.
+   ============================================================ */
+
+.reading-progress {
+  position: fixed;
+  z-index: 55;
+  top: var(--topbar);
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: transparent;
+  pointer-events: none;
+}
+
+#reading-fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--red);
+  transition: width 0.08s linear;
+}
+
+/* ---------------------------------------------------------- course map */
+.dialog-inner--map {
+  max-width: min(1120px, 92vw);
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.course-map {
+  margin-top: 18px;
+}
+
+.course-part + .course-part {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+
+.course-part-title {
+  margin: 0 0 8px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+a.course-ticket {
+  color: inherit;
+  text-decoration: none;
+}
+
+a.course-ticket:hover,
+a.course-ticket:focus-visible {
+  border-color: var(--ink);
+  background: var(--paper-2);
+}
+
+a.course-ticket:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.course-ticket[aria-current="page"] {
+  cursor: default;
+}
+
+/* ---------------------------------------------------------- chapter pager */
+.chapter-pager {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  border-top: 1px solid var(--rule);
+  padding: 18px 0 22px;
+  margin-bottom: 26px;
+}
+
+.chapter-pager-link {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 4px;
+}
+
+.chapter-pager-link:last-child {
+  text-align: right;
+  align-items: flex-end;
+}
+
+.chapter-pager-link .mono {
+  color: var(--red);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+}
+
+.chapter-pager-link strong {
+  font-weight: 500;
+  font-size: 1.05rem;
+  line-height: 1.25;
+}
+
+.chapter-pager-link.is-planned {
+  opacity: 0.58;
+}
+
+a.chapter-pager-link:hover strong {
+  color: var(--red);
+}
+
+@media (max-width: 720px) {
+  .chapter-pager {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .chapter-pager-link:last-child {
+    text-align: left;
+    align-items: flex-start;
+  }
+}

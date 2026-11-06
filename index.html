@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Matching &mdash; Causal Field Notes</title>
-  <meta name="description" content="An interactive chapter on matching for causal inference: find twins, measure the bias that survives, and correct it.">
+  <title>Causal Field Notes &mdash; an interactive guide to causal inference</title>
+  <meta name="description" content="An interactive field guide to Causal Inference for the Brave and True: 25 chapters rebuilt as stories, labs, and defenses.">
   <meta name="theme-color" content="#f6f3ec">
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/fonts/fonts.css">
@@ -12,15 +12,15 @@
   <link rel="stylesheet" href="assets/css/base.css">
   <link rel="stylesheet" href="assets/css/layout.css">
   <link rel="stylesheet" href="assets/css/components.css">
-  <link rel="stylesheet" href="assets/css/charts.css">
-  <link rel="stylesheet" href="assets/css/print.css" media="print">
+  <link rel="stylesheet" href="assets/css/type.css">
+  <link rel="stylesheet" href="assets/css/landing.css">
 </head>
-<body>
-<a class="skip-link" href="#main">Skip to the chapter</a>
+<body class="landing">
+<a class="skip-link" href="#course">Skip to the course map</a>
 <div class="paper-grain" aria-hidden="true"></div>
 
-<header class="topbar" id="topbar">
-  <a class="brand" href="#top" aria-label="Causal Field Notes, back to top">
+<header class="landing-top">
+  <a class="brand" href="index.html" aria-label="Causal Field Notes, home">
     <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
       <path d="M8 23 21 7l4 3-13 16z" fill="none" stroke="currentColor" stroke-width="1.4"/>
       <path d="M8 23l-3 4 5-1" fill="none" stroke="currentColor" stroke-width="1.4"/>
@@ -28,1002 +28,113 @@
     </svg>
     <span class="brand-text">Causal Field Notes</span>
   </a>
-  <div class="topbar-chapter">
-    <span class="mono">Ch. 10</span>
-    <span class="topbar-slash">/</span>
-    <span>Matching</span>
-  </div>
-  <div class="topbar-actions">
-    <button class="icon-btn" type="button" data-dialog="course" title="Course map" aria-label="Open course map">
-      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 4h5v12H3zM12 4h5v12h-5z" fill="none" stroke="currentColor"/></svg>
-      <span class="icon-btn-text">Course map</span>
-    </button>
-    <button class="icon-btn" type="button" id="btn-sound" aria-pressed="false" title="Toggle sound" aria-label="Toggle sound">
-      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 8h3l4-3v10l-4-3H4z" fill="none" stroke="currentColor"/><path class="sound-wave" d="M13 7c1.4 1.6 1.4 4.4 0 6" fill="none" stroke="currentColor"/></svg>
-      <span class="icon-btn-text" id="sound-label">Sound off</span>
-    </button>
-    <button class="icon-btn practice-toggle" type="button" id="btn-practice" aria-pressed="false" title="Hide hints and answers" aria-label="Toggle practice mode">
-      <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7" fill="none" stroke="currentColor"/><path d="M7 10l2 2 4-5" fill="none" stroke="currentColor"/></svg>
-      <span class="icon-btn-text">Practice</span>
-    </button>
-    <div class="progress-ring" title="Chapter progress">
-      <svg viewBox="0 0 40 40" aria-hidden="true">
-        <circle cx="20" cy="20" r="16" fill="none" stroke="currentColor" stroke-opacity=".18" stroke-width="3"/>
-        <circle id="progress-arc" cx="20" cy="20" r="16" fill="none" stroke="#a8283a" stroke-width="3" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="100.53" transform="rotate(-90 20 20)"/>
-      </svg>
-      <span class="progress-count" id="progress-count" aria-hidden="true">0/8</span>
-      <span class="sr-only" id="progress-label">0 of 8 sections visited</span>
-    </div>
-  </div>
+  <nav class="landing-nav" aria-label="Main">
+    <a href="#course">Course map</a>
+    <a href="chapters/01-introduction.html">Start with 01</a>
+  </nav>
 </header>
 
-<nav class="rail" aria-label="Chapter sections">
-  <div class="rail-progress" aria-hidden="true"><span id="rail-fill"></span></div>
-  <ol class="rail-list">
-    <li><a class="rail-link" href="#problem" data-section-link="problem"><span class="rail-num">00</span><span class="rail-name">The question</span></a></li>
-    <li><a class="rail-link" href="#regression" data-section-link="regression"><span class="rail-num">01</span><span class="rail-name">Regression</span></a></li>
-    <li><a class="rail-link" href="#cells" data-section-link="cells"><span class="rail-num">02</span><span class="rail-name">Cells</span></a></li>
-    <li><a class="rail-link" href="#exact" data-section-link="exact"><span class="rail-num">03</span><span class="rail-name">Exact twins</span></a></li>
-    <li><a class="rail-link" href="#knn" data-section-link="knn"><span class="rail-num">04</span><span class="rail-name">Nearest neighbour</span></a></li>
-    <li><a class="rail-link" href="#bias" data-section-link="bias"><span class="rail-num">05</span><span class="rail-name">The bias</span></a></li>
-    <li><a class="rail-link" href="#curse" data-section-link="curse"><span class="rail-num">06</span><span class="rail-name">The curse</span></a></li>
-    <li><a class="rail-link" href="#practice" data-section-link="practice"><span class="rail-num">07</span><span class="rail-name">Practice</span></a></li>
-  </ol>
-</nav>
-
-<main id="main" tabindex="-1">
-
-  <!-- ============================================================ HERO -->
-  <section class="hero sheet" id="top">
-    <div class="hero-copy">
-      <p class="kicker">Causal Field Notes &middot; Chapter 10</p>
-      <h1 class="hero-title">Matching<span class="hero-period">.</span></h1>
-      <p class="hero-note hand" aria-hidden="true">find the twin &darr;</p>
-      <p class="hero-deck">Treatment isn&rsquo;t random. So compare like with like.</p>
-      <p class="hero-sub">A hands-on chapter on finding twins, measuring the bias that survives the match, and knowing when the comparison is good enough to defend.</p>
-      <div class="hero-meta mono">
-        <span>6 experiments</span><span>8 questions</span><span>1 notebook</span><span>~30 min</span>
+<main id="main">
+  <section class="landing-hero">
+    <div class="landing-copy">
+      <p class="kicker">An interactive field guide</p>
+      <h1 class="landing-title">The whole textbook,<br><em>one experiment at a time.</em></h1>
+      <p class="landing-deck">Twenty-five chapters of <em>Causal Inference for the Brave and True</em>, rebuilt as stories you can read, labs you can break, and arguments you can defend.</p>
+      <div class="landing-actions">
+        <a class="btn btn--primary" href="chapters/01-introduction.html">Start with Chapter 01 <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="chapters/10-matching.html">Jump to Matching</a>
       </div>
-      <div class="hero-actions">
-        <a class="btn btn--primary" href="#problem">Start with the problem <span aria-hidden="true">&rarr;</span></a>
-        <button class="btn btn--ghost" type="button" data-dialog="film" id="hero-film-btn">Watch the 12s primer</button>
-      </div>
+      <p class="landing-meta mono"><span>25 chapters</span><span>5 technical notes</span><span>1 source text</span><span>no tracking</span></p>
     </div>
-    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
-      <svg viewBox="0 0 460 300" role="img" aria-label="A treated dot and a control dot of the same age connected by a pencil line, with a second pair faintly drawn.">
-        <g class="hero-paper">
-          <path d="M60 36h340v228H60z" fill="#fbf8f1" stroke="#ddd6c9"/>
-          <path d="M84 60v180M84 240h292" fill="none" stroke="#bdb4a5"/>
-          <g class="hero-ticks mono">
-            <text x="74" y="246" text-anchor="end">23</text>
-            <text x="74" y="190" text-anchor="end">31</text>
-            <text x="74" y="134" text-anchor="end">39</text>
-            <text x="74" y="78" text-anchor="end">47</text>
-            <text x="92" y="260" text-anchor="middle">20k</text>
-            <text x="212" y="260" text-anchor="middle">25k</text>
-            <text x="332" y="260" text-anchor="middle">30k</text>
+    <figure class="landing-figure" aria-labelledby="landing-figure-cap">
+      <svg viewBox="0 0 520 380" role="img" aria-label="A stack of paper chapters with a red thread running from chapter 01 to chapter 10.">
+        <g class="stack">
+          <path d="M110 78h260v246H110z" fill="#efe9dc" stroke="#bdb4a5"/>
+          <path d="M124 64h260v246H124z" fill="#f6f3ec" stroke="#bdb4a5"/>
+          <path d="M138 50h260v246H138z" fill="#fbf8f1" stroke="#2b2723"/>
+          <path d="M158 76h220M158 92h196M158 108h210" stroke="#ddd6c9" stroke-width="1.2"/>
+          <text class="stack-kicker" x="158" y="130">CAUSAL FIELD NOTES</text>
+          <text class="stack-title" x="158" y="170">A field guide to</text>
+          <text class="stack-title" x="158" y="205">cause &amp; effect.</text>
+          <path d="M158 226h146" stroke="#a8283a" stroke-width="2"/>
+          <text class="stack-mono" x="158" y="254">25 CHAPTERS &middot; 5 NOTES</text>
+          <text class="stack-mono" x="158" y="270">READ / PLAY / DEFEND</text>
+          <g class="tabs">
+            <rect x="330" y="72" width="82" height="18" fill="#a8283a"/>
+            <text x="340" y="85" fill="#f6f3ec">01</text>
+            <rect x="330" y="96" width="82" height="18" fill="#2f5d8a"/>
+            <text x="340" y="109" fill="#f6f3ec">10</text>
+            <rect x="330" y="120" width="82" height="18" fill="#e7dfcf"/>
+            <text x="340" y="133" fill="#6e665c">11&ndash;25</text>
           </g>
+          <path class="thread" d="M412 81 C 470 150, 436 260, 300 330" fill="none" stroke="#a8283a" stroke-width="1.4" stroke-dasharray="4 4"/>
+          <circle cx="412" cy="81" r="4" fill="#a8283a"/>
+          <circle cx="300" cy="330" r="4" fill="#2f5d8a"/>
         </g>
-        <g class="hero-pairs">
-          <path class="hero-match" d="M170 208 Q 240 196 318 148" fill="none" stroke="#2f5d8a" stroke-width="1.4" stroke-dasharray="3 4"/>
-          <path class="hero-match hero-match--2" d="M206 238 Q 280 222 352 190" fill="none" stroke="#bdb4a5" stroke-width="1.1" stroke-dasharray="2 5"/>
-          <circle class="hero-dot hero-dot--treated" cx="170" cy="208" r="6.5" fill="#a8283a" stroke="#2b2723" stroke-width="1.2"/>
-          <circle class="hero-dot hero-dot--control" cx="318" cy="148" r="6.5" fill="#f6f3ec" stroke="#2f5d8a" stroke-width="1.6"/>
-          <circle class="hero-dot hero-dot--treated" cx="206" cy="238" r="5" fill="#a8283a" stroke="#2b2723" stroke-width="1.1" opacity=".55"/>
-          <circle class="hero-dot hero-dot--control" cx="352" cy="190" r="5" fill="#f6f3ec" stroke="#2f5d8a" stroke-width="1.3" opacity=".55"/>
+        <g class="hand">
+          <text x="300" y="46" fill="#2f5d8a" font-size="20">one source text</text>
+          <path d="M348 53c10 4 18 3 27-1" fill="none" stroke="#2f5d8a" stroke-width="1"/>
+          <text x="372" y="292" fill="#a8283a" font-size="20">all the comparisons</text>
         </g>
-        <g class="hero-label hand">
-          <text x="186" y="192" fill="#2f5d8a" font-size="19">same age</text>
-          <path d="M182 197c-4 8-1 12 6 12" fill="none" stroke="#2f5d8a" stroke-width="1"/>
-          <text x="336" y="126" fill="#2b2723" font-size="17">&#8595; 17,700</text>
-          <text x="336" y="164" fill="#2b2723" font-size="17">&#8595; 8,800</text>
-        </g>
-        <g class="hero-pencil" aria-hidden="true">
-          <path d="M300 132l16-10 5 8-16 10z" fill="#e3c79c" stroke="#2b2723" stroke-width="1"/>
-          <path d="M300 132l-7 4 3-8z" fill="#2b2723"/>
-          <path d="M311 124l5 8" stroke="#a8283a" stroke-width="2"/>
-        </g>
-        <text class="hero-chart-title" x="60" y="292">age &rarr; earnings, 40 trainees</text>
       </svg>
-      <figcaption id="hero-figure-cap" class="sr-only">A treated trainee at age 28 earning 17,700 is matched to an untreated person of the same age earning 8,800.</figcaption>
+      <figcaption id="landing-figure-cap" class="sr-only">A stack of field notes representing the twenty-five chapters, with threads marking the live chapters.</figcaption>
     </figure>
-    <div class="hero-numbers">
-      <div class="hero-stat">
-        <span class="hero-stat-label mono">Naive gap</span>
-        <span class="hero-stat-value">&minus;4,297</span>
-        <span class="hero-stat-note">trainees earn less</span>
-      </div>
-      <div class="hero-arrow" aria-hidden="true">&rarr;</div>
-      <div class="hero-stat hero-stat--blue">
-        <span class="hero-stat-label mono">Same-age match</span>
-        <span class="hero-stat-value">+2,458</span>
-        <span class="hero-stat-note">the sign flips</span>
-      </div>
-      <div class="hero-truth-note">
-        <span class="hand">the whole chapter in one flip.</span>
-      </div>
-    </div>
-    <div class="scroll-cue mono" aria-hidden="true">read &middot; drag &middot; explain <span>&darr;</span></div>
   </section>
 
-  <!-- ============================================================ 00 -->
-  <section class="chapter-section sheet" id="problem" data-section="problem">
-    <div class="section-grid">
-      <div class="section-margin">
-        <span class="section-number">00</span>
-        <span class="section-label mono">the question</span>
-      </div>
-      <div class="section-body">
-        <header class="section-head">
-          <p class="kicker">The hook</p>
-          <h2 class="section-title">The drug looks harmful.<br>Is it?</h2>
-          <p class="section-deck">20,000 patients. Some get the drug, some don&rsquo;t. Taken at face value, the drug is a disaster.</p>
-        </header>
-
-        <div class="prose">
-          <p class="lede">Patients on the drug take <strong>16.9 more days</strong> to recover. If this were a randomized trial, that number would be the answer. It is not a randomized trial.</p>
-          <p>Sicker patients are more likely to receive the drug. Severity raises recovery time <em>and</em> the chance of treatment. The naive comparison is mixing the drug&rsquo;s effect with the reason it was given &mdash; the classic confounding problem from the earlier chapters.</p>
-          <p>A crude fix: compare patients with similar severity. Drag the band below and watch what happens to the estimate.</p>
-        </div>
-
-        <figure class="lab" id="lab-problem" aria-labelledby="lab-problem-title">
-          <div class="lab-head">
-            <div>
-              <p class="lab-kicker mono">Experiment 01</p>
-              <h3 class="lab-title" id="lab-problem-title">The severity band</h3>
-            </div>
-            <p class="lab-status mono" id="band-status">wide band &middot; 19,814 patients</p>
-          </div>
-          <div class="lab-body">
-            <div class="lab-chart" id="band-chart" aria-hidden="true"></div>
-            <aside class="lab-side">
-              <p class="side-label mono">Estimate</p>
-              <p class="readout-value" id="band-estimate">+16.90</p>
-              <p class="readout-sub">days on the drug</p>
-              <dl class="mini-stats">
-                <div><dt>patients</dt><dd id="band-n">19,814</dd></div>
-                <div><dt>treated</dt><dd id="band-treated">6,738</dd></div>
-              </dl>
-              <p class="side-note hand" id="band-note">wide enough to keep almost everyone.</p>
-            </aside>
-          </div>
-          <div class="lab-controls">
-            <label class="control control--wide" for="band-slider">
-              <span class="control-label">Band width <span class="mono">&plusmn; severity</span></span>
-              <input class="range" type="range" id="band-slider" min="0.01" max="0.5" step="0.005" value="0.5">
-              <output class="control-value mono" id="band-out">0.500</output>
-            </label>
-            <button class="btn btn--small" type="button" id="band-sweep">Play the sweep</button>
-          </div>
-          <figcaption class="lab-caption"><span class="mono">What to notice</span> The estimate falls from +16.9 to &minus;5.9 as the band narrows. The sign flip is confounding, not pharmacology. But a narrow band throws away most of the data &mdash; and age and sex still differ inside it.</figcaption>
-        </figure>
-
-        <div class="callout callout--key guided-only">
-          <p class="callout-kicker mono">Key idea</p>
-          <p>Matching is the discipline of comparing units that are alike on the variables that made treatment non-random.</p>
-        </div>
-        <div class="callout callout--trap guided-only">
-          <p class="callout-kicker mono">Common trap</p>
-          <p>A narrow band is not a free lunch. You lose sample size, and you still have to match on the <em>other</em> confounders.</p>
-        </div>
-
-        <div class="formula" role="math" aria-label="ATE equals the integral over x of the difference between the treated and untreated conditional means">
-          <span class="formula-label mono">the target</span>
-          <span class="formula-body"><span class="math-var">ATE</span> = &int; <span class="paren">(</span> E[Y | X, T=1] &minus; E[Y | X, T=0] <span class="paren">)</span> dP(x)</span>
-        </div>
-        <p class="source-line">Source: <a href="https://matheusfacure.github.io/python-causality-handbook/10-Matching.html" target="_blank" rel="noreferrer">Chapter 10 &middot; Matching</a>, Facure. Data: the book&rsquo;s simulated medicine table.</p>
-      </div>
-      <aside class="section-notes">
-        <div class="note note--blue note--tape">
-          <p class="note-label mono">predict first</p>
-          <p>Will narrowing the band make the drug look <strong>better</strong> or <strong>worse</strong>?</p>
-        </div>
-        <div class="note note--red">
-          <p class="note-label mono">the catch</p>
-          <p>We are holding severity roughly constant. Age and sex are still free to differ.</p>
-        </div>
-      </aside>
+  <section class="landing-strip" aria-label="Status">
+    <div class="landing-strip-inner">
+      <p class="mono">The book is the source. The field guide is the practice.</p>
+      <p class="mono"><span id="live-count">2</span> of 25 chapters live &middot; <span id="visited-count">0</span> visited</p>
     </div>
   </section>
 
-  <!-- ============================================================ 01 -->
-  <section class="chapter-section sheet" id="regression" data-section="regression">
-    <div class="section-grid">
-      <div class="section-margin">
-        <span class="section-number">01</span>
-        <span class="section-label mono">regression</span>
-      </div>
-      <div class="section-body">
-        <header class="section-head">
-          <p class="kicker">What regression is doing</p>
-          <h2 class="section-title">Regression is a weighted average in disguise.</h2>
-          <p class="section-deck">Six men and four women. The drug works better on men, but men get almost all of it. Watch how three estimators combine the same two cells.</p>
-        </header>
+  <section class="course" id="course">
+    <header class="course-head">
+      <p class="kicker">The course map</p>
+      <h2 class="course-title">Thirty pages.<br>One argument at a time.</h2>
+      <p class="course-deck">Each chapter follows the same shape: a story, a lab, a formula you can read, and a short defense. Live chapters are open. Planned chapters are marked, not silently broken.</p>
+    </header>
+    <div id="course-parts"></div>
+  </section>
 
-        <div class="prose">
-          <p>Men stay longer in hospital and are much more likely to get the drug. Women recover faster and are split evenly. The true effect is <strong>&minus;3 days</strong> for men and <strong>&minus;2 days</strong> for women, so the true ATE is <strong>&minus;2.6</strong>.</p>
-          <p>The naive comparison says <strong>&minus;1.19</strong>: too small, because it compares mostly men on the drug with the one man off it. Subclassification compares within each sex and weights by cell size: <strong>&minus;2.6</strong>, the right answer.</p>
-          <p>Regression also partitions by sex, but it combines the cells with weights proportional to <strong>N<sub>k</sub> &times; Var(T<sub>k</sub>)</strong>. Men have only one control, so their cell gets less weight. The estimate leans toward the women&rsquo;s &minus;2: <strong>&minus;2.45</strong>.</p>
-        </div>
-
-        <figure class="lab" id="lab-regression" aria-labelledby="lab-regression-title">
-          <div class="lab-head">
-            <div>
-              <p class="lab-kicker mono">Experiment 02</p>
-              <h3 class="lab-title" id="lab-regression-title">Three ways to combine two cells</h3>
-            </div>
-            <p class="lab-status mono" id="regression-status">subclassification</p>
-          </div>
-          <div class="lab-body">
-            <div class="lab-chart" id="regression-chart" aria-hidden="true"></div>
-            <aside class="lab-side">
-              <p class="side-label mono">Estimate</p>
-              <p class="readout-value" id="regression-estimate">&minus;2.60</p>
-              <p class="readout-sub">drug effect, days</p>
-              <div class="segmented" role="group" aria-label="Estimator">
-                <button type="button" class="segmented-btn" data-weight-mode="naive">Naive</button>
-                <button type="button" class="segmented-btn is-active" data-weight-mode="sub">Cells</button>
-                <button type="button" class="segmented-btn" data-weight-mode="ols">OLS</button>
-              </div>
-              <p class="side-note" id="regression-detail">weights: 60% men / 40% women</p>
-            </aside>
-          </div>
-          <div class="table-wrap">
-            <table class="data-table" id="regression-cells">
-              <caption class="sr-only">Cell means and weights for the drug example</caption>
-              <thead><tr><th>Cell</th><th>n</th><th>Treated</th><th>Effect</th><th>Var(T)</th><th>Weight</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-          <figcaption class="lab-caption"><span class="mono">What to notice</span> The same two within-cell effects produce &minus;2.6 or &minus;2.45 depending only on how the cells are weighted. Regression is not &ldquo;controlling for&rdquo; sex in some magical way; it is reweighting.</figcaption>
-        </figure>
-
-        <div class="callout callout--key guided-only">
-          <p class="callout-kicker mono">Key idea</p>
-          <p>Regression is a particular weighted average of within-cell comparisons, and the weights depend on the variance of treatment inside each cell.</p>
-        </div>
-        <div class="callout callout--trap guided-only">
-          <p class="callout-kicker mono">Common trap</p>
-          <p>With continuous covariates, regression is still linear and still extrapolates. It is not doing exact cell comparisons.</p>
-        </div>
-
-        <div class="formula" role="math" aria-label="Regression cell weights are proportional to cell size times treatment variance">
-          <span class="formula-label mono">the weights</span>
-          <span class="formula-body"><span class="math-var">w</span><sub>k</sub> &prop; <span class="math-var">N</span><sub>k</sub> &middot; Var(<span class="math-var">T</span><sub>k</sub>)</span>
-        </div>
-      </div>
-      <aside class="section-notes">
-        <div class="note note--blue note--tape">
-          <p class="note-label mono">try it</p>
-          <p>Switch to OLS. Which cell gains weight? Why does the estimate move toward the women&rsquo;s effect?</p>
-        </div>
-        <div class="note note--red">
-          <p class="note-label mono">hold on</p>
-          <p>We only have two cells here. Real datasets have many &mdash; and most of them will be empty.</p>
-        </div>
-      </aside>
+  <section class="method" id="method">
+    <p class="kicker">How to read it</p>
+    <h2 class="method-title">Read. Play. Defend.</h2>
+    <div class="method-grid">
+      <article>
+        <span class="method-num mono">01</span>
+        <h3>Read the story</h3>
+        <p>Start with the decision, not the estimator. Every method exists because a naive comparison failed in a specific way.</p>
+      </article>
+      <article>
+        <span class="method-num mono">02</span>
+        <h3>Break the lab</h3>
+        <p>Move the slider, change the match, reveal the counterfactual. The point is to build an intuition you can feel when the numbers move.</p>
+      </article>
+      <article>
+        <span class="method-num mono">03</span>
+        <h3>Write the defense</h3>
+        <p>End with the assumption in plain language: what must be true for this comparison to be credible, and what would break it?</p>
+      </article>
     </div>
   </section>
 
-  <!-- ============================================================ 02 -->
-  <section class="chapter-section sheet" id="cells" data-section="cells">
-    <div class="section-grid">
-      <div class="section-margin">
-        <span class="section-number">02</span>
-        <span class="section-label mono">cells</span>
-      </div>
-      <div class="section-body">
-        <header class="section-head">
-          <p class="kicker">Subclassification</p>
-          <h2 class="section-title">Compare like with like, one cell at a time.</h2>
-          <p class="section-deck">If treatment is independent of potential outcomes within a cell of X, the cell-level difference is a clean local effect. Weight the cells and you have the ATE.</p>
-        </header>
-
-        <div class="prose">
-          <p>The cell idea is the cleanest in causal inference. Partition the data by the confounders, compare treated and control inside each cell, then average the cell effects using the cell&rsquo;s share of the sample.</p>
-          <p>With sex alone there are two cells and both are full. Add severity bins and the grid starts to thin. Some cells have treated patients but no controls; some have controls but no treated. The estimator is undefined there.</p>
-        </div>
-
-        <div class="formula" role="math" aria-label="Subclassification estimator is the sum over cells of the within-cell difference times the cell share">
-          <span class="formula-label mono">subclassification</span>
-          <span class="formula-body"><span class="math-var">ATE</span> = &sum;<sub>k</sub> <span class="paren">(</span><span class="math-var">&#x0232;</span><sub>k1</sub> &minus; <span class="math-var">&#x0232;</span><sub>k0</sub><span class="paren">)</span> &middot; <span class="frac"><span class="num">N<sub>k</sub></span><span class="den">N</span></span></span>
-        </div>
-
-        <figure class="lab" id="lab-cells" aria-labelledby="lab-cells-title">
-          <div class="lab-head">
-            <div>
-              <p class="lab-kicker mono">Experiment 03</p>
-              <h3 class="lab-title" id="lab-cells-title">The cell atlas</h3>
-            </div>
-            <p class="lab-status mono" id="cells-status">4 bins &times; sex &middot; 400 patients</p>
-          </div>
-          <div class="lab-body">
-            <div class="lab-chart lab-chart--tall" id="cells-chart" aria-hidden="true"></div>
-            <aside class="lab-side">
-              <p class="side-label mono">Cells with both groups</p>
-              <p class="readout-value" id="cells-estimable">10 / 10</p>
-              <p class="readout-sub">estimable cells</p>
-              <dl class="mini-stats">
-                <div><dt>total cells</dt><dd id="cells-count">10</dd></div>
-                <div><dt>one group only</dt><dd id="cells-empty">0</dd></div>
-              </dl>
-              <div class="segmented" role="group" aria-label="Number of severity bins">
-                <button type="button" class="segmented-btn" data-bins="2">2</button>
-                <button type="button" class="segmented-btn is-active" data-bins="4">4</button>
-                <button type="button" class="segmented-btn" data-bins="8">8</button>
-              </div>
-              <label class="control control--compact" for="cells-sample">
-                <span class="control-label">Patients</span>
-                <select class="select" id="cells-sample">
-                  <option value="400" selected>400 sample</option>
-                  <option value="2000">2,000 sample</option>
-                  <option value="20000">all 20,000</option>
-                </select>
-              </label>
-            </aside>
-          </div>
-          <figcaption class="lab-caption"><span class="mono">What to notice</span> More bins mean finer comparisons, but also cells with only one treatment group. That is the first sign of the curse of dimensionality &mdash; and the reason matching needs a different strategy.</figcaption>
-        </figure>
-
-        <div class="callout callout--key guided-only">
-          <p class="callout-kicker mono">Key idea</p>
-          <p>Subclassification is the cleanest idea in matching, and the first to break when X gets big.</p>
-        </div>
-        <div class="callout callout--trap guided-only">
-          <p class="callout-kicker mono">Common trap</p>
-          <p>Empty cells are not a nuisance. They are the data telling you that common support is failing.</p>
-        </div>
-      </div>
-      <aside class="section-notes">
-        <div class="note note--blue note--tape">
-          <p class="note-label mono">try it</p>
-          <p>Switch from 4 to 8 severity bins. How many cells lose one of the groups?</p>
-        </div>
-        <div class="note note--red">
-          <p class="note-label mono">dimension check</p>
-          <p>10 covariates &times; 3 bins each = 3<sup>10</sup> = 59,049 cells. That is the next section.</p>
-        </div>
-      </aside>
+  <section class="source" id="source">
+    <div class="source-inner">
+      <p class="kicker">Source &amp; license</p>
+      <p class="source-text">Adapted from <a href="https://matheusfacure.github.io/python-causality-handbook/landing-page.html" target="_blank" rel="noreferrer"><em>Causal Inference for the Brave and True</em></a> by Matheus Facure Alves. The book, its data, and its code are MIT licensed; this independent field guide keeps the source visible and the mistakes its own. No tracking, no backend, no build step.</p>
+      <p class="source-text mono">CSS / JS / data: this repository &middot; Type: Newsreader, IBM Plex Mono, Caveat &middot; Style: Data Storytelling</p>
     </div>
   </section>
-
-  <!-- ============================================================ 03 -->
-  <section class="chapter-section sheet" id="exact" data-section="exact">
-    <div class="section-grid">
-      <div class="section-margin">
-        <span class="section-number">03</span>
-        <span class="section-label mono">exact twins</span>
-      </div>
-      <div class="section-body">
-        <header class="section-head">
-          <p class="kicker">When a twin exists</p>
-          <h2 class="section-title">Find the untreated twin.</h2>
-          <p class="section-deck">Nineteen trainees, twenty-one controls. The trainees are younger. Match each trainee to a control of exactly the same age, and the comparison flips.</p>
-        </header>
-
-        <div class="prose">
-          <p>At face value, trainees earn <strong>$4,297 less</strong> than non-trainees. But look at the ages: the trainee group is much younger. Age is a confounder, and it is easy to condition on because the data has exact overlaps.</p>
-          <p>Take unit 1: age 28, earnings $17,700. Unit 27 is also 28, and earns $8,800. Same age, different life. Compare the two, and the trainee looks <em>better</em> by $8,900. Do this for every trainee and average the within-pair differences.</p>
-        </div>
-
-        <div class="formula" role="math" aria-label="ATET is the average within-pair difference for treated units">
-          <span class="formula-label mono">paired ATET</span>
-          <span class="formula-body"><span class="math-var">ATET</span> = <span class="frac"><span class="num">1</span><span class="den">N<sub>1</sub></span></span> &sum;<sub>i</sub> <span class="paren">(</span><span class="math-var">Y</span><sub>i</sub> &minus; <span class="math-var">Y</span><sub>j(i)</sub><span class="paren">)</span></span>
-        </div>
-
-        <figure class="lab" id="lab-exact" aria-labelledby="lab-exact-title">
-          <div class="lab-head">
-            <div>
-              <p class="lab-kicker mono">Experiment 04</p>
-              <h3 class="lab-title" id="lab-exact-title">Pair them up</h3>
-            </div>
-            <p class="lab-status mono" id="exact-status">19 pairs &middot; same age</p>
-          </div>
-          <div class="lab-body">
-            <div class="lab-chart" id="exact-chart" aria-hidden="true"></div>
-            <aside class="lab-side">
-              <p class="side-label mono">Matched estimate</p>
-              <p class="readout-value readout-value--blue" id="exact-estimate">+2,458</p>
-              <p class="readout-sub">dollars, within age</p>
-              <dl class="mini-stats">
-                <div><dt>pairs</dt><dd id="exact-pairs">0 / 19</dd></div>
-                <div><dt>naive</dt><dd>&minus;4,297</dd></div>
-              </dl>
-              <p class="side-note hand" id="exact-note">press play to draw the pairs.</p>
-            </aside>
-          </div>
-          <div class="lab-controls">
-            <div class="control-row">
-              <button class="btn btn--small" type="button" id="exact-play">Play pairs</button>
-              <button class="btn btn--small btn--ghost" type="button" id="exact-reset">Reset</button>
-              <button class="btn btn--small btn--ghost" type="button" id="exact-tiebreak">Shuffle ties</button>
-              <span class="control-value mono" id="exact-step-out">0 / 19</span>
-            </div>
-            <label class="control control--wide" for="exact-scrub">
-              <span class="control-label">Scrub</span>
-              <input class="range" type="range" id="exact-scrub" min="0" max="19" step="1" value="0">
-            </label>
-          </div>
-          <div class="lab-foot">
-            <div class="pair-card" id="exact-card">
-              <p class="pair-card-label mono">Selected pair</p>
-              <p class="pair-card-body">Click a red dot, or press play.</p>
-            </div>
-            <div class="hist-wrap">
-              <p class="side-label mono">Tie-break distribution</p>
-              <div id="exact-hist" class="hist" aria-hidden="true"></div>
-              <p class="hist-note">200 random tie-breaks; the book&rsquo;s deterministic choice is marked.</p>
-            </div>
-          </div>
-          <figcaption class="lab-caption"><span class="mono">What to notice</span> The naive gap is negative; the matched gap is positive. The difference is age, not training. But this is a contrived example: exact twins exist, and age is the only confounder.</figcaption>
-        </figure>
-
-        <div class="callout callout--key guided-only">
-          <p class="callout-kicker mono">Key idea</p>
-          <p>If a credible twin exists, matching is just a paired comparison. The hard part is finding the twin.</p>
-        </div>
-        <div class="callout callout--trap guided-only">
-          <p class="callout-kicker mono">Common trap</p>
-          <p>Exact matching needs exact overlap. Real data has many covariates and no exact twins, so we need a distance.</p>
-        </div>
-      </div>
-      <aside class="section-notes">
-        <div class="note note--blue note--tape">
-          <p class="note-label mono">predict first</p>
-          <p>Will matching make the training program look better or worse?</p>
-        </div>
-        <div class="note note--red">
-          <p class="note-label mono">look closely</p>
-          <p>Control units are reused: unit 37 is the match for both unit 3 and unit 5. Matching allows reuse unless you forbid it.</p>
-        </div>
-      </aside>
-    </div>
-  </section>
-
-  <!-- ============================================================ 04 -->
-  <section class="chapter-section sheet" id="knn" data-section="knn">
-    <div class="section-grid">
-      <div class="section-margin">
-        <span class="section-number">04</span>
-        <span class="section-label mono">nearest neighbour</span>
-      </div>
-      <div class="section-body">
-        <header class="section-head">
-          <p class="kicker">The main lab</p>
-          <h2 class="section-title">No twin? Find the nearest neighbour.</h2>
-          <p class="section-deck">Three confounders, 20,000 patients, no exact twins. Standardize the features, choose a distance, and let every treated patient borrow the closest control.</p>
-        </header>
-
-        <div class="prose">
-          <p>The medicine data has three covariates: severity, age, and sex. Distances in raw units are meaningless &mdash; age spans decades while severity spans 0 to 1 &mdash; so we standardize first. Then each patient is matched to the nearest patient in the opposite group.</p>
-          <p>The naive comparison says <strong>+16.9</strong>. One-nearest-neighbour matching says <strong>&minus;1.0</strong>: the sign is fixed, but the magnitude is far from the truth. The match is not a twin. Correcting for the match discrepancy gets us to <strong>&minus;7.36</strong>. The simulation truth is <strong>&minus;10</strong>.</p>
-        </div>
-
-        <div class="formula" role="math" aria-label="Matching ATE averages the signed difference between each unit and its match">
-          <span class="formula-label mono">matching ATE</span>
-          <span class="formula-body"><span class="math-var">ATE</span> = <span class="frac"><span class="num">1</span><span class="den">N</span></span> &sum;<sub>i</sub> <span class="paren">(</span>2<span class="math-var">T</span><sub>i</sub> &minus; 1<span class="paren">)</span> <span class="paren">(</span><span class="math-var">Y</span><sub>i</sub> &minus; <span class="math-var">Y</span><sub>jm(i)</sub><span class="paren">)</span></span>
-        </div>
-
-        <figure class="lab lab--wide" id="lab-knn" aria-labelledby="lab-knn-title">
-          <div class="lab-head">
-            <div>
-              <p class="lab-kicker mono">Experiment 05</p>
-              <h3 class="lab-title" id="lab-knn-title">The matching bench</h3>
-            </div>
-            <p class="lab-status mono" id="knn-status">1-NN &middot; all features &middot; z-scored</p>
-          </div>
-
-          <div class="lab-body lab-body--knn">
-            <div class="knn-stage">
-              <div class="knn-canvas-wrap" id="knn-chart">
-                <canvas id="knn-canvas" aria-hidden="true"></canvas>
-                <svg id="knn-overlay" class="chart-svg" aria-hidden="true"></svg>
-                <div class="knn-tooltip" id="knn-tooltip" hidden></div>
-              </div>
-              <div class="knn-legend mono">
-                <span><i class="legend-dot legend-dot--treated"></i> treated</span>
-                <span><i class="legend-dot legend-dot--control"></i> control</span>
-                <span><i class="legend-shape"></i> sex = square</span>
-                <span class="knn-legend-hint">hover / click a dot</span>
-              </div>
-              <p class="knn-axis-note mono">x: severity &nbsp; y: age &nbsp; &middot; projection of the 3D covariate space</p>
-            </div>
-
-            <aside class="knn-panel">
-              <div class="estimate-ruler-wrap">
-                <p class="side-label mono">The estimate, against the truth</p>
-                <div id="knn-ruler" class="ruler" aria-hidden="true"></div>
-                <div class="estimate-numbers">
-                  <div><span class="mono">raw</span><strong id="knn-ate">&minus;1.00</strong></div>
-                  <div><span class="mono">corrected</span><strong id="knn-corrected">&minus;7.36</strong></div>
-                  <div><span class="mono">truth</span><strong id="knn-truth">&minus;10.00</strong></div>
-                </div>
-              </div>
-
-              <div class="diagnostics">
-                <div class="diag"><span class="mono">median dist</span><b id="knn-median">0.49</b></div>
-                <div class="diag"><span class="mono">p90 dist</span><b id="knn-p90">1.54</b></div>
-                <div class="diag"><span class="mono">used</span><b id="knn-used">20,000</b></div>
-                <div class="diag"><span class="mono">dropped</span><b id="knn-dropped">0</b></div>
-              </div>
-
-              <div class="spark-wrap">
-                <p class="side-label mono">Estimate by k</p>
-                <div id="knn-curve" class="spark" aria-hidden="true"></div>
-                <p class="spark-note">uncorrected &middot; k = 1&hellip;10</p>
-              </div>
-
-              <div class="pair-card pair-card--knn" id="knn-card">
-                <p class="pair-card-label mono">Inspect</p>
-                <p class="pair-card-body">Click a dot to see its match, the distance, and the correction.</p>
-              </div>
-
-              <label class="control control--compact" for="knn-select">
-                <span class="control-label">Inspect a unit</span>
-                <select class="select" id="knn-select">
-                  <option value="">Choose a patient&hellip;</option>
-                </select>
-              </label>
-
-              <div class="knn-actions">
-                <button class="btn btn--small" type="button" id="knn-replay">Replay matches</button>
-                <button class="btn btn--small btn--ghost" type="button" id="knn-book">Book settings</button>
-                <button class="btn btn--small btn--ghost" type="button" id="knn-reset">Reset</button>
-              </div>
-            </aside>
-          </div>
-
-          <div class="knn-controls">
-            <label class="control" for="knn-k">
-              <span class="control-label">Neighbours <span class="mono">k</span></span>
-              <input class="range" type="range" id="knn-k" min="1" max="10" step="1" value="1">
-              <output class="control-value mono" id="knn-k-out">1</output>
-            </label>
-            <fieldset class="control control--fieldset">
-              <legend class="control-label">Match on</legend>
-              <label class="check"><input type="checkbox" id="knn-use-severity" checked> severity</label>
-              <label class="check"><input type="checkbox" id="knn-use-age" checked> age</label>
-              <label class="check"><input type="checkbox" id="knn-use-sex" checked> sex</label>
-            </fieldset>
-            <label class="control" for="knn-caliper">
-              <span class="control-label">Caliper <span class="mono">SD</span></span>
-              <input class="range" type="range" id="knn-caliper" min="0" max="3" step="0.1" value="0">
-              <output class="control-value mono" id="knn-caliper-out">off</output>
-            </label>
-            <div class="control control--switches">
-              <label class="switch"><input type="checkbox" id="knn-standardize" checked><span>z-score</span></label>
-              <label class="switch"><input type="checkbox" id="knn-replace" checked><span>replacement</span></label>
-              <label class="switch"><input type="checkbox" id="knn-correct"><span>bias correct</span></label>
-            </div>
-          </div>
-
-          <div class="lab-foot lab-foot--knn">
-            <div class="dist-wrap">
-              <p class="side-label mono">Match distances</p>
-              <div id="knn-dist" class="dist" aria-hidden="true"></div>
-            </div>
-            <div class="truth-note guided-only">
-              <p class="mono">Why is the corrected estimate still short of &minus;10?</p>
-              <p>Matches are close, not exact; a linear correction only removes the part of the gap a line can see. A correctly specified outcome model recovers <strong id="knn-oracle">&minus;10.05</strong> &mdash; but that model uses the simulation&rsquo;s true functional form and is not available in practice.</p>
-            </div>
-          </div>
-          <figcaption class="lab-caption"><span class="mono">What to notice</span> The raw 1-NN estimate is better than the naive comparison but still far from the truth. Bias correction is not cosmetic: it moves the estimate by more than six days. Turn sex off and watch the confounder return.</figcaption>
-        </figure>
-
-        <div class="callout callout--key guided-only">
-          <p class="callout-kicker mono">Key idea</p>
-          <p>Matching is a design choice. Distance, scaling, k, replacement, caliper, and correction all change the number.</p>
-        </div>
-        <div class="callout callout--trap guided-only">
-          <p class="callout-kicker mono">Common trap</p>
-          <p>More neighbours is not automatically better. In this data, k=10 moves the uncorrected estimate back toward zero.</p>
-        </div>
-      </div>
-      <aside class="section-notes">
-        <div class="note note--blue note--tape">
-          <p class="note-label mono">predict first</p>
-          <p>Will more neighbours make the raw estimate closer to &minus;10, or farther away?</p>
-        </div>
-        <div class="note note--red">
-          <p class="note-label mono">real practice</p>
-          <p>Always report k, the distance metric, the caliper, the share of units dropped, and the correction model.</p>
-        </div>
-      </aside>
-    </div>
-  </section>
-
-  <!-- ============================================================ 05 -->
-  <section class="chapter-section sheet" id="bias" data-section="bias">
-    <div class="section-grid">
-      <div class="section-margin">
-        <span class="section-number">05</span>
-        <span class="section-label mono">the bias</span>
-      </div>
-      <div class="section-body">
-        <header class="section-head">
-          <p class="kicker">Matching bias</p>
-          <h2 class="section-title">A match is not a twin.</h2>
-          <p class="section-deck">The estimator compares Y<sub>i</sub> with the outcome of a similar &mdash; not identical &mdash; unit. The difference between their expected untreated outcomes is bias.</p>
-        </header>
-
-        <div class="prose">
-          <p>Write &mu;<sub>0</sub>(x) for the expected outcome of an untreated unit with covariates x. A treated unit i and its match j are close, but x<sub>i</sub> &ne; x<sub>j</sub>. The gap &mu;<sub>0</sub>(x<sub>i</sub>) &minus; &mu;<sub>0</sub>(x<sub>j</sub>) leaks into the comparison.</p>
-          <p>For the first patient in the medicine data, the raw outcome is 31 and the matched control&rsquo;s is 39. A regression fitted on the untreated predicts a &mu;<sub>0</sub> gap of about <strong>4.4 days</strong>. Subtract that estimated gap from the pair, and the comparison gets closer to the truth. Across all pairs, the correction moves the estimate from <strong>&minus;1.00</strong> to <strong>&minus;7.36</strong>.</p>
-          <p>The regression is not extrapolating over treatment. It is a local correction for the fact that the match is imperfect. The meat of the estimator is still the match.</p>
-        </div>
-
-        <div class="formula" role="math" aria-label="Bias-corrected ATET subtracts the estimated difference in untreated means">
-          <span class="formula-label mono">bias-corrected</span>
-          <span class="formula-body"><span class="math-var">ATET</span> = <span class="frac"><span class="num">1</span><span class="den">N<sub>1</sub></span></span> &sum;<sub>i</sub> <span class="paren">[</span> <span class="paren">(</span><span class="math-var">Y</span><sub>i</sub> &minus; <span class="math-var">Y</span><sub>j(i)</sub><span class="paren">)</span> &minus; <span class="paren">(</span><span class="math-hat">&mu;</span><sub>0</sub>(<span class="math-var">X</span><sub>i</sub>) &minus; <span class="math-hat">&mu;</span><sub>0</sub>(<span class="math-var">X</span><sub>j(i)</sub>)<span class="paren">)</span> <span class="paren">]</span></span>
-        </div>
-
-        <figure class="lab" id="lab-bias" aria-labelledby="lab-bias-title">
-          <div class="lab-head">
-            <div>
-              <p class="lab-kicker mono">Experiment 06</p>
-              <h3 class="lab-title" id="lab-bias-title">The discrepancy, up close</h3>
-            </div>
-            <p class="lab-status mono" id="bias-status">unit 1 &middot; 1-NN</p>
-          </div>
-          <div class="lab-body">
-            <div class="lab-chart" id="bias-chart" aria-hidden="true"></div>
-            <aside class="lab-side">
-              <p class="side-label mono">Selected pair</p>
-              <p class="readout-value" id="bias-estimate">&minus;8.00</p>
-              <p class="readout-sub">raw pair difference</p>
-              <dl class="mini-stats">
-                <div><dt>correction</dt><dd id="bias-correction">+4.40</dd></div>
-                <div><dt>corrected</dt><dd id="bias-corrected">&minus;12.40</dd></div>
-              </dl>
-              <button class="btn btn--small btn--ghost" type="button" id="bias-cycle">Next pair &rarr;</button>
-              <p class="side-note hand">the match is close. not close enough.</p>
-            </aside>
-          </div>
-          <div class="table-wrap">
-            <table class="data-table" id="bias-table">
-              <caption class="sr-only">Five matched pairs, raw differences, corrections, and corrected differences</caption>
-              <thead><tr><th>Pair</th><th>Y treated</th><th>Y match</th><th>Raw</th><th>&mu;<sub>0</sub> gap</th><th>Corrected</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-          <div id="bias-waterfall" class="waterfall" aria-hidden="true"></div>
-          <figcaption class="lab-caption"><span class="mono">What to notice</span> The correction is not a new estimator; it pays for the imperfection of the match. The more different the match, the bigger the correction.</figcaption>
-        </figure>
-
-        <div class="callout callout--key guided-only">
-          <p class="callout-kicker mono">Key idea</p>
-          <p>Bias correction does not replace matching; it pays for the fact that the match is imperfect.</p>
-        </div>
-        <div class="callout callout--trap guided-only">
-          <p class="callout-kicker mono">Common trap</p>
-          <p>A linear correction can only remove the part of the discrepancy a line can see. Nonlinearity leaves residual bias.</p>
-        </div>
-      </div>
-      <aside class="section-notes">
-        <div class="note note--blue note--tape">
-          <p class="note-label mono">compare</p>
-          <p>Toggle <em>bias correct</em> in the lab above. The estimate jumps by more than six days.</p>
-        </div>
-        <div class="note note--red">
-          <p class="note-label mono">not a free lunch</p>
-          <p>The correction model is an assumption. If it is wrong, the correction can make things worse.</p>
-        </div>
-      </aside>
-    </div>
-  </section>
-
-  <!-- ============================================================ 06 -->
-  <section class="chapter-section sheet" id="curse" data-section="curse">
-    <div class="section-grid">
-      <div class="section-margin">
-        <span class="section-number">06</span>
-        <span class="section-label mono">the curse</span>
-      </div>
-      <div class="section-body">
-        <header class="section-head">
-          <p class="kicker">Dimensionality</p>
-          <h2 class="section-title">Every covariate makes the twin harder to find.</h2>
-          <p class="section-deck">Matching on one variable is easy. On ten, the feature space is mostly empty: the nearest neighbour gets farther and farther away.</p>
-        </header>
-
-        <div class="prose">
-          <p>In one dimension, 500 points give a nearest neighbour at a typical distance of a few hundredths. Add dimensions and the same 500 points spread out. The nearest neighbour distance rises, and with it the matching discrepancy.</p>
-          <p>Subclassification feels the same curse from the other side. Split 10 covariates into 3 bins each and you need <strong>3<sup>10</sup> = 59,049</strong> cells. Most will be empty.</p>
-          <p>This is why the next chapter compresses the covariates into a single dimension: the propensity score. It is also why regression, which projects X onto Y, handles high dimensions more gracefully than raw matching.</p>
-        </div>
-
-        <figure class="lab" id="lab-curse" aria-labelledby="lab-curse-title">
-          <div class="lab-head">
-            <div>
-              <p class="lab-kicker mono">Experiment 07</p>
-              <h3 class="lab-title" id="lab-curse-title">The distance to the nearest neighbour</h3>
-            </div>
-            <p class="lab-status mono" id="curse-status">500 points &middot; uniform in d dimensions</p>
-          </div>
-          <div class="lab-body">
-            <div class="lab-chart" id="curse-chart" aria-hidden="true"></div>
-            <aside class="lab-side">
-              <p class="side-label mono">At dimension</p>
-              <p class="readout-value" id="curse-d-out">10</p>
-              <p class="readout-sub">covariates</p>
-              <dl class="mini-stats">
-                <div><dt>mean NN distance</dt><dd id="curse-distance">0.82</dd></div>
-                <div><dt>3<sup>d</sup> cells</dt><dd id="curse-cells">59,049</dd></div>
-                <div><dt>data multiplier</dt><dd id="curse-budget">&times;59,049</dd></div>
-              </dl>
-              <label class="control" for="curse-d">
-                <span class="control-label">Dimensions</span>
-                <input class="range" type="range" id="curse-d" min="1" max="10" step="1" value="10">
-              </label>
-            </aside>
-          </div>
-          <div id="curse-grid" class="curse-grid" aria-hidden="true"></div>
-          <figcaption class="lab-caption"><span class="mono">What to notice</span> The curve is not a bug in matching. It is the price of asking for a twin in a high-dimensional space. More data helps, but the required amount grows exponentially with d.</figcaption>
-        </figure>
-
-        <div class="callout callout--key guided-only">
-          <p class="callout-kicker mono">Key idea</p>
-          <p>The curse is not a bug in matching; it is the price of asking for a twin in a high-dimensional space.</p>
-        </div>
-        <div class="callout callout--trap guided-only">
-          <p class="callout-kicker mono">Common trap</p>
-          <p>Adding a covariate can reduce confounding bias and increase matching bias at the same time. The net effect is empirical.</p>
-        </div>
-
-        <div class="next-card">
-          <p class="mono">Next chapter</p>
-          <h3>Propensity Score</h3>
-          <p>If matching gets harder with every covariate, compress the covariates into one number: the probability of treatment. That is the propensity score &mdash; and it is the next chapter.</p>
-          <span class="chip chip--soon">Chapter 11 &middot; coming next</span>
-        </div>
-      </div>
-      <aside class="section-notes">
-        <div class="note note--blue note--tape">
-          <p class="note-label mono">try it</p>
-          <p>Drag from d=1 to d=10. How much farther does the nearest neighbour get?</p>
-        </div>
-        <div class="note note--red">
-          <p class="note-label mono">remember</p>
-          <p>59,049 cells, 500 points. Most cells would be empty. That is the whole problem in one number.</p>
-        </div>
-      </aside>
-    </div>
-  </section>
-
-  <!-- ============================================================ 07 -->
-  <section class="chapter-section sheet" id="practice" data-section="practice">
-    <div class="section-grid">
-      <div class="section-margin">
-        <span class="section-number">07</span>
-        <span class="section-label mono">practice</span>
-      </div>
-      <div class="section-body">
-        <header class="section-head">
-          <p class="kicker">Mastery</p>
-          <h2 class="section-title">Make the estimate, then defend it.</h2>
-          <p class="section-deck">Eight questions, a code mirror, a field-ready checklist, and a notebook you can run on your own machine.</p>
-        </header>
-
-        <div class="practice-grid">
-          <section class="quiz" id="quiz" aria-labelledby="quiz-title">
-            <div class="quiz-head">
-              <h3 id="quiz-title">Check yourself</h3>
-              <p class="mono" id="quiz-score">0 / 8</p>
-            </div>
-            <form id="quiz-form" novalidate></form>
-            <div class="quiz-actions">
-              <button class="btn btn--primary" type="submit" form="quiz-form">Score my answers</button>
-              <button class="btn btn--ghost" type="button" id="quiz-reset">Reset</button>
-            </div>
-            <p class="quiz-note">Explanations appear after scoring. Wrong answers link back to the section.</p>
-          </section>
-
-          <section class="code-card" aria-labelledby="code-title">
-            <div class="code-head">
-              <div>
-                <p class="mono">Real practice</p>
-                <h3 id="code-title">The same estimator, in Python</h3>
-              </div>
-              <button class="btn btn--small btn--ghost" type="button" id="copy-code">Copy</button>
-            </div>
-            <pre class="code-block"><code id="code-mirror"></code></pre>
-            <p class="code-note">The mirror follows your lab settings. Download the notebook for the full exercises and solutions.</p>
-          </section>
-        </div>
-
-        <section class="checklist-card" aria-labelledby="checklist-title">
-          <div class="checklist-head">
-            <div>
-              <p class="mono">Before you report a matching estimate</p>
-              <h3 id="checklist-title">The field-ready checklist</h3>
-            </div>
-            <p class="mono" id="checklist-status">0 / 5</p>
-          </div>
-          <div class="checklist" id="checklist">
-            <label class="check-item"><input type="checkbox" data-check="standardized"><span>I standardized the covariates, or justified the units.</span></label>
-            <label class="check-item"><input type="checkbox" data-check="confounders"><span>I matched on all confounders, not just the convenient ones.</span></label>
-            <label class="check-item"><input type="checkbox" data-check="distance"><span>I inspected the match-distance distribution and set a caliper.</span></label>
-            <label class="check-item"><input type="checkbox" data-check="support"><span>I checked common support and reported how many units were dropped.</span></label>
-            <label class="check-item"><input type="checkbox" data-check="sensitivity"><span>I reported sensitivity to k, replacement, and the correction model.</span></label>
-          </div>
-          <p class="checklist-stamp" id="checklist-stamp" hidden>Ready to defend.</p>
-        </section>
-
-        <section class="downloads" aria-labelledby="downloads-title">
-          <h3 id="downloads-title">Take it with you</h3>
-          <div class="download-grid">
-            <a class="download" href="practice/matching_practice.ipynb" download>
-              <span class="mono">notebook</span>
-              <strong>Matching practice</strong>
-              <span>7 exercises + solutions</span>
-            </a>
-            <a class="download" href="data/trainees.csv" download>
-              <span class="mono">csv</span>
-              <strong>Trainees</strong>
-              <span>40 rows &middot; exact matching</span>
-            </a>
-            <a class="download" href="data/medicine_impact_recovery.csv" download>
-              <span class="mono">csv</span>
-              <strong>Medicine</strong>
-              <span>20,000 rows &middot; 3 covariates</span>
-            </a>
-            <a class="download" href="data/drug_example.csv" download>
-              <span class="mono">csv</span>
-              <strong>Drug example</strong>
-              <span>10 rows &middot; regression weights</span>
-            </a>
-          </div>
-        </section>
-
-        <div class="callout callout--key">
-          <p class="callout-kicker mono">You can now</p>
-          <p>Explain why the naive comparison fails. Build a tuned matching estimate. Diagnose match quality. Correct the surviving bias. Recognize the curse of dimensionality &mdash; and say what you would report.</p>
-        </div>
-      </div>
-      <aside class="section-notes">
-        <div class="note note--blue note--tape">
-          <p class="note-label mono">use practice mode</p>
-          <p>Turn on <em>Practice</em> in the top bar to hide the guided hints, truths, and benchmarks.</p>
-        </div>
-        <div class="note note--red">
-          <p class="note-label mono">the honest sentence</p>
-          <p>&ldquo;Matching reduced the confounding bias, but the estimate is sensitive to k and the correction model; here is the caliper and the dropped share.&rdquo;</p>
-        </div>
-      </aside>
-    </div>
-  </section>
-
-  <footer class="footer sheet">
-    <div class="footer-grid">
-      <div>
-        <p class="footer-mark">Causal Field Notes</p>
-        <p class="footer-note">A local, independent learning demo built around Chapter 10 of <em>Causal Inference for the Brave and True</em>. No tracking, no backend, no build step.</p>
-      </div>
-      <div>
-        <p class="mono">Sources</p>
-        <ul class="footer-list">
-          <li><a href="https://matheusfacure.github.io/python-causality-handbook/10-Matching.html" target="_blank" rel="noreferrer">Facure, Chapter 10 &mdash; Matching</a></li>
-          <li><a href="https://github.com/matheusfacure/python-causality-handbook" target="_blank" rel="noreferrer">Book repository &amp; data (MIT)</a></li>
-          <li><a href="https://github.com/lemomo-ai/lemo-opuscar" target="_blank" rel="noreferrer">Lemo-Opuscar &mdash; Data Storytelling style (MIT)</a></li>
-          <li><a href="https://github.com/heygen-com/hyperframes" target="_blank" rel="noreferrer">HyperFrames opener (Apache 2.0)</a></li>
-        </ul>
-      </div>
-      <div>
-        <p class="mono">Colophon</p>
-        <p class="footer-note">Newsreader, IBM Plex Mono, Caveat. Paper, ink, red and blue pencil. The medicine data is simulated with a constant &minus;10-day effect; the truth line is a teaching device, not a claim about the book&rsquo;s estimate.</p>
-        <button class="link-btn" type="button" data-dialog="data">Data provenance</button>
-        <button class="link-btn" type="button" data-dialog="sources">Licenses &amp; credits</button>
-      </div>
-    </div>
-    <div class="footer-bottom mono">
-      <span>Chapter 10 / 16</span>
-      <button class="link-btn" type="button" data-dialog="course">Course map</button>
-      <span>Built for learning, not for production estimates.</span>
-    </div>
-  </footer>
 </main>
 
-<!-- ============================================================ DIALOGS -->
-<dialog class="dialog" id="dlg-course" aria-labelledby="dlg-course-title">
-  <div class="dialog-inner">
-    <button class="dialog-close" type="button" data-close aria-label="Close">&times;</button>
-    <p class="kicker">The course map</p>
-    <h2 id="dlg-course-title">Part I &mdash; The Yang</h2>
-    <p class="dialog-deck">Sixteen chapters. Matching is ready. The rest reuse this shell: a story, a lab, a motion, a notebook.</p>
-    <div class="course-grid" id="course-grid"></div>
-    <p class="dialog-note mono">Status: 01 ready &middot; 15 planned &middot; chapter 11 is next.</p>
-  </div>
-</dialog>
+<footer class="landing-footer">
+  <span class="mono">Causal Field Notes</span>
+  <span class="mono">Built for learning, not for production estimates.</span>
+  <a class="mono" href="#main">Back to top &uarr;</a>
+</footer>
 
-<dialog class="dialog" id="dlg-film" aria-labelledby="dlg-film-title">
-  <div class="dialog-inner dialog-inner--film">
-    <button class="dialog-close" type="button" data-close aria-label="Close">&times;</button>
-    <p class="kicker">The 12-second primer</p>
-    <h2 id="dlg-film-title">Same age. Different lives.</h2>
-    <div class="film-wrap" id="film-wrap">
-      <video id="film-video" controls preload="none" playsinline poster="assets/img/matching-opener-poster.jpg">
-        <source src="assets/video/matching-opener.mp4" type="video/mp4">
-      </video>
-      <div class="film-fallback" id="film-fallback">
-        <p class="hand">The film is still being rendered.</p>
-        <p>The interactive chapter is the main event. The HyperFrames composition lives in <code>motion/index.html</code>; render it with the HyperFrames CLI, or just use the lab.</p>
-      </div>
-    </div>
-    <details class="transcript">
-      <summary>Transcript</summary>
-      <p>Nineteen trainees. Twenty-one controls. The naive gap is four thousand, two hundred and ninety-seven dollars against the trainees. But the trainees are younger. Match each trainee to a control of the same age, and the gap becomes two thousand, four hundred and fifty-eight dollars in their favour. Same age. Different lives. That is matching.</p>
-    </details>
-  </div>
-</dialog>
-
-<dialog class="dialog" id="dlg-data" aria-labelledby="dlg-data-title">
-  <div class="dialog-inner">
-    <button class="dialog-close" type="button" data-close aria-label="Close">&times;</button>
-    <p class="kicker">Provenance</p>
-    <h2 id="dlg-data-title">Where the numbers come from</h2>
-    <div class="dialog-prose">
-      <p><strong>Trainees.</strong> The 40-row table used in the chapter: 19 trainees, 21 controls, age and earnings. It is contrived to make exact matching visible.</p>
-      <p><strong>Medicine.</strong> 20,000 patients simulated in the book&rsquo;s companion notebook. Columns: sex, age, severity, medication, recovery. 6,924 are treated.</p>
-      <p><strong>The truth line.</strong> The simulation sets recovery as a deterministic function of the covariates minus ten times medication, so the true ATE is exactly &minus;10 days. The book does not reveal this; it is included here so you can see estimator bias, not just confounding bias. The oracle model in the lab uses the simulation&rsquo;s functional form and recovers about &minus;10.05; it is not a practical estimator.</p>
-      <p><strong>What we reproduce.</strong> The book&rsquo;s naive +16.90, 1-NN &minus;0.9954, and bias-corrected &minus;7.3627. Small differences can come from tie-breaking.</p>
-      <p><a href="https://github.com/matheusfacure/python-causality-handbook/blob/master/Simulated-Data.ipynb" target="_blank" rel="noreferrer">Read the simulation notebook</a> &middot; <a href="https://matheusfacure.github.io/python-causality-handbook/10-Matching.html" target="_blank" rel="noreferrer">Read the chapter</a>.</p>
-    </div>
-  </div>
-</dialog>
-
-<dialog class="dialog" id="dlg-sources" aria-labelledby="dlg-sources-title">
-  <div class="dialog-inner">
-    <button class="dialog-close" type="button" data-close aria-label="Close">&times;</button>
-    <p class="kicker">Credits</p>
-    <h2 id="dlg-sources-title">Sources &amp; licenses</h2>
-    <div class="dialog-prose">
-      <p><strong>Book &amp; data.</strong> Matheus Facure Alves, <em>Causal Inference for the Brave and True</em>, Chapter 10. Repository and data under the MIT license. This is an independent learning demo, not affiliated with the author.</p>
-      <p><strong>Visual language.</strong> Adapted from the &ldquo;Data Storytelling&rdquo; film style in <em>Lemo-Opuscar</em> by Lemomo (MIT). The chapter&rsquo;s charts, copy, and motion are original; no demo assets or story are reused.</p>
-      <p><strong>Motion tooling.</strong> The opener is authored as a HyperFrames composition (Apache 2.0, HeyGen). The live labs use a small seekable timeline engine written for this page.</p>
-      <p><strong>Type.</strong> Newsreader, IBM Plex Mono, and Caveat, all under the SIL Open Font License. Local woff2 files are included with their license notice.</p>
-    </div>
-  </div>
-</dialog>
-
-<dialog class="dialog" id="dlg-glossary" aria-labelledby="dlg-glossary-title">
-  <div class="dialog-inner">
-    <button class="dialog-close" type="button" data-close aria-label="Close">&times;</button>
-    <p class="kicker">Plain words</p>
-    <h2 id="dlg-glossary-title">Glossary</h2>
-    <dl class="glossary">
-      <dt>Counterfactual</dt><dd>The outcome a unit would have had under the treatment it did not receive.</dd>
-      <dt>Confounder</dt><dd>A variable that affects both treatment and outcome, creating a backdoor path.</dd>
-      <dt>ATE</dt><dd>Average treatment effect across the whole population.</dd>
-      <dt>ATET</dt><dd>Average treatment effect on the treated.</dd>
-      <dt>Common support</dt><dd>The region of covariate space where both treated and control units exist.</dd>
-      <dt>Caliper</dt><dd>A maximum allowed match distance; farther matches are dropped.</dd>
-      <dt>Bias correction</dt><dd>Subtracting an estimate of the outcome gap caused by imperfect matching.</dd>
-    </dl>
-  </div>
-</dialog>
-
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
-<noscript><div class="noscript">The chapter reads fine without JavaScript, but the labs need it. Enable JavaScript to drag, match, and score.</div></noscript>
-
-<script src="assets/js/data.js" defer></script>
-<script src="assets/js/reference.js" defer></script>
-<script src="assets/js/stats.js" defer></script>
-<script src="assets/js/timeline.js" defer></script>
-<script src="assets/js/pencil.js" defer></script>
-<script src="assets/js/charts.js" defer></script>
-<script src="assets/js/sound.js" defer></script>
-<script src="assets/js/progress.js" defer></script>
-<script src="assets/js/quiz.js" defer></script>
-<script src="assets/js/scenes/problem.js" defer></script>
-<script src="assets/js/scenes/regression.js" defer></script>
-<script src="assets/js/scenes/cells.js" defer></script>
-<script src="assets/js/scenes/exact.js" defer></script>
-<script src="assets/js/scenes/knn.js" defer></script>
-<script src="assets/js/scenes/bias.js" defer></script>
-<script src="assets/js/scenes/curse.js" defer></script>
-<script src="assets/js/app.js" defer></script>
+<script src="assets/js/chapters.js"></script>
+<script src="assets/js/landing.js"></script>
 </body>
 </html>
-
-
-

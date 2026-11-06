@@ -1538,3 +1538,32 @@ body.practice-mode .estimate-numbers {
 }
 
 
+
+.course-group-label {
+  grid-column: 1 / -1;
+  margin: 10px 0 3px;
+  color: var(--red);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.course-group-label:first-child {
+  margin-top: 0;
+}
+
+a.course-ticket {
+  color: inherit;
+  text-decoration: none;
+}
+
+a.course-ticket:hover,
+a.course-ticket:focus-visible {
+  border-color: var(--ink);
+  background: var(--paper-2);
+}
+
+a.course-ticket:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}

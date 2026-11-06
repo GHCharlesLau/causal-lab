@@ -5,7 +5,7 @@ import path from 'node:path';
 
 const CHROME = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const PORT = 9334;
-const URL = process.argv[2] || 'http://127.0.0.1:4173/';
+const URL = process.argv[2] || 'http://127.0.0.1:4173/chapters/10-matching.html';
 const OUT = path.resolve('assets/img/_shots');
 fs.mkdirSync(OUT, { recursive: true });
 

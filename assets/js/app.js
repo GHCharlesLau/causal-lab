@@ -139,6 +139,39 @@
   function initCourseMap() {
     var grid = doc.getElementById('course-grid');
     if (!grid) return;
+
+    if (global.CAUSAL_PARTS) {
+      global.CAUSAL_PARTS.forEach(function (part) {
+        var heading = doc.createElement('p');
+        heading.className = 'course-group-label mono';
+        heading.textContent = part.kicker + ' / ' + part.title;
+        grid.appendChild(heading);
+
+        part.chapters.forEach(function (ch) {
+          var active = ch.slug === '10-matching';
+          var live = ch.status === 'live';
+          var ticket = doc.createElement(live && !active ? 'a' : 'div');
+          ticket.className = 'course-ticket' + (active ? ' is-active' : '') + (live ? ' is-live' : ' is-planned');
+          if (live && !active) ticket.href = '../' + ch.href;
+          if (!live) ticket.setAttribute('aria-disabled', 'true');
+          if (active) ticket.setAttribute('aria-current', 'page');
+
+          var num = doc.createElement('span');
+          num.className = 'mono';
+          num.textContent = 'Ch. ' + ch.num;
+          var title = doc.createElement('strong');
+          title.textContent = ch.title;
+          var status = doc.createElement('span');
+          status.textContent = active ? 'reading' : live ? 'ready' : 'planned';
+          ticket.appendChild(num);
+          ticket.appendChild(title);
+          ticket.appendChild(status);
+          grid.appendChild(ticket);
+        });
+      });
+      return;
+    }
+
     CHAPTERS.forEach(function (row) {
       var ticket = doc.createElement('div');
       ticket.className = 'course-ticket' + (row[2] === 'active' ? ' is-active' : row[2] === 'planned' ? ' is-planned' : '');
