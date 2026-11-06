@@ -1,0 +1,197 @@
+/* ============================================================
+   Chapter 05 Ã¢â‚¬â€ regression line, control dial, coefficient rows.
+   ============================================================ */
+
+.regression-label,
+.regression-axis {
+  font-family: var(--mono);
+  fill: var(--ink-3);
+}
+
+.regression-label {
+  font-size: 9px;
+}
+
+.regression-axis {
+  font-size: 8.5px;
+}
+
+.ch05-chart {
+  min-height: 300px;
+}
+
+.ch05-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ch05-axis {
+  stroke: var(--ink);
+  stroke-width: 1.2;
+}
+
+.ch05-tick {
+  font-family: var(--mono);
+  font-size: 11px;
+  fill: var(--ink-3);
+}
+
+.ch05-axis-title {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ch05-row-label {
+  font-family: var(--mono);
+  font-size: 13px;
+  fill: var(--ink-3);
+  letter-spacing: 0.02em;
+}
+
+.ch05-row-value {
+  font-family: var(--mono);
+  font-size: 12px;
+  fill: var(--ink-2);
+}
+
+.ch05-row-line {
+  stroke: var(--rule-strong);
+  stroke-width: 1.2;
+}
+
+.ch05-row-dot {
+  fill: var(--blue);
+  stroke: var(--ink);
+  stroke-width: 0.8;
+}
+
+.ch05-row.is-current .ch05-row-label,
+.ch05-row.is-current .ch05-row-value {
+  fill: var(--red);
+}
+
+.ch05-row.is-current .ch05-row-line {
+  stroke: var(--red);
+  stroke-width: 1.8;
+}
+
+.ch05-row.is-current .ch05-row-dot {
+  fill: var(--red);
+  stroke: var(--ink);
+  stroke-width: 1;
+}
+
+.ch05-ci-label {
+  margin-top: 10px;
+}
+
+.ch05-ci {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink-2);
+}
+
+.ch05-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ch05-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.ch05-preset {
+  padding: 7px 11px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.ch05-preset:hover {
+  border-color: var(--ink-2);
+  color: var(--ink);
+}
+
+.ch05-preset.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.ch05-preset:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.ch05-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  flex: 1 1 100%;
+}
+
+.ch05-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.ch05-toggle input {
+  accent-color: var(--red);
+}
+
+.lab--no-swipe .lab-head::after {
+  content: none;
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .ch05-chart {
+    overflow: visible;
+    min-height: 180px;
+  }
+
+  .ch05-chart svg {
+    width: 100%;
+    max-width: none;
+  }
+
+  .ch05-row-label {
+    font-size: 18px;
+  }
+
+  .ch05-row-value {
+    font-size: 16px;
+  }
+
+  .ch05-tick {
+    font-size: 15px;
+  }
+
+  .ch05-axis-title {
+    font-size: 13px;
+  }
+
+  .ch05-preset {
+    flex: 1 1 calc(50% - 5px);
+    text-align: left;
+  }
+}
+
+

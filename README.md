@@ -8,10 +8,11 @@ and arguments you can defend.
 It is a local, static website: no backend, no build step, no tracking. Open `index.html`
 for the landing page, or serve the folder over HTTP.
 
-**Status: 5 of 30 pages live.** Chapters 01 (Introduction to causality), 02 (Randomised
-experiments), 03 (Stats review), 04 (Graphical causal models), and 10 (Matching) are
-complete. The other 25 pages are scaffolded in the course manifest and marked as planned;
-they are added one at a time, with numbers checked against the book's notebooks.
+**Status: 6 of 30 pages live.** Chapters 01 (Introduction to causality), 02 (Randomised
+experiments), 03 (Stats review), 04 (Graphical causal models), 05 (Linear regression), and
+10 (Matching) are complete. The other 24 pages are scaffolded in the course manifest and
+marked as planned; they are added one at a time, with numbers checked against the book's
+notebooks.
 
 ---
 
@@ -64,6 +65,13 @@ The language of DAGs: chains, forks, and colliders; confounding, selection bias,
 mediation. The workbench lets you condition on a node and watch the verdict change from
 “backdoor closed” to “selection bias” to “mediator blocked.”
 
+### 05 — Linear regression
+
+Regression as a conditional expectation, a projection, and a control dial. The wage lab
+uses 663 complete records and the book's control set. The education coefficient moves from
+0.0536 with no controls to 0.0349 with IQ, 0.0490 with human capital, and 0.0411 with the
+full specification. FWL makes the multivariate coefficient a simple slope again.
+
 ### 10 — Matching
 
 Seven sections, six experiments, and a full matching bench: severity bands, regression
@@ -112,6 +120,8 @@ point here is to let you see estimator bias separately from confounding bias.
 
 ![Chapter 04, the DAG workbench](assets/img/screenshots/ch04-workbench.png)
 
+![Chapter 05, the control dial](assets/img/screenshots/ch05-control-dial.png)
+
 ![The Matching chapter](assets/img/screenshots/matching.png)
 
 ---
@@ -122,9 +132,10 @@ point here is to let you see estimator bias separately from confounding bias.
 
 Open `index.html` in Chrome or Edge. It is the landing page. The live chapters are
 `chapters/01-introduction.html`, `chapters/02-randomised-experiments.html`,
-`chapters/03-stats-review.html`, `chapters/04-graphical-causal-models.html`, and
-`chapters/10-matching.html`. Everything needed is local: CSS, JS, data, fonts, the poster,
-and the rendered opener at `assets/video/matching-opener.mp4`.
+`chapters/03-stats-review.html`, `chapters/04-graphical-causal-models.html`,
+`chapters/05-linear-regression.html`, and `chapters/10-matching.html`. Everything needed is
+local: CSS, JS, data, fonts, the poster, and the rendered opener at
+`assets/video/matching-opener.mp4`.
 
 ### Option 2: local server
 
@@ -230,9 +241,9 @@ Reference, chapter, and manifest tests (Node 24, no packages):
 The suite checks the Matching book numbers, the k-curve, severity-band checkpoints, the
 oracle, the k-d tree, the OLS toy regression, the Chapter 01 potential-outcomes arithmetic
 (ATE −50, ATT −75, naive +125, bias +200), the Chapter 02 group means and missing-data
-balance, the Chapter 03 standard errors, interval, z, and p-values, the Chapter 04 DAG path logic, and the site manifest
+balance, the Chapter 03 standard errors, interval, z, and p-values, the Chapter 04 DAG path logic, the Chapter 05 OLS/control path, and the site manifest
 (30 pages, unique slugs, every live page exists, the shared reading scale is loaded).
-33 tests in total.
+38 tests in total.
 
 Browser smoke tests use Chrome DevTools Protocol through Node's built-in WebSocket (no
 Playwright/Puppeteer). Matching-specific scripts default to
@@ -246,6 +257,7 @@ to test a different page.
 & "...\node.exe" tools/cdp-ch02.mjs   # Chapter 02: three formats, balance
 & "...\node.exe" tools/cdp-ch03.mjs   # Chapter 03: sample size, interval ruler
 & "...\node.exe" tools/cdp-ch04.mjs   # Chapter 04: DAG scenarios and conditioning
+& "...\node.exe" tools/cdp-ch05.mjs   # Chapter 05: control dial
 & "...\node.exe" tools/cdp-a11y.mjs
 & "...\node.exe" tools/cdp-reduced.mjs
 & "...\node.exe" tools/cdp-film.mjs
@@ -260,7 +272,8 @@ practice mode, and the course map. It prints the observed values and any console
 `cdp-ch01.mjs` checks the observed table, the lens, the course map, and practice mode;
 `cdp-ch02.mjs` checks all three format means, the gaps, and the balance table;
 `cdp-ch03.mjs` checks the sample-size dial and the interval ruler;
-`cdp-ch04.mjs` checks the confounding, collider, and mediator verdicts.
+`cdp-ch04.mjs` checks the confounding, collider, and mediator verdicts;
+`cdp-ch05.mjs` checks the wage control paths.
 `cdp-a11y.mjs` checks button names, input labels, duplicate IDs, and heading structure;
 `cdp-reduced.mjs` verifies that reduced motion lands on final states; `cdp-film.mjs`
 checks the rendered video’s metadata and dialog; `cdp-persist.mjs` reloads after scoring
@@ -277,6 +290,7 @@ chapters/
   02-randomised-experiments.html  live chapter: the coin, three classrooms
   03-stats-review.html     live chapter: standard errors, intervals, p-values
   04-graphical-causal-models.html  live chapter: DAGs and the backdoor
+  05-linear-regression.html live chapter: the control dial
   10-matching.html         live chapter: the matching bench
 assets/css/
   tokens.css               paper/ink/pencil tokens, type scale
@@ -291,17 +305,21 @@ assets/css/
   ch02.css                 chapter 02 dot strip, tabs, balance table
   ch03.css                 chapter 03 sampling histogram and interval ruler
   ch04.css                 chapter 04 DAG grammar and workbench
+  ch05.css                 chapter 05 control-dial coefficient rows
   print.css                readable paper version
 assets/js/
   chapters.js              the manifest: 25 chapters + 5 notes, live/planned
   site.js                  chapter shell: top bar, rail, course map, pager
   landing.js               landing course-map renderer + visit state
   data-ch02.js             online-classroom payload (323 students)
+  data-ch05.js             wage payload (663 complete records)
   dag.js                   chapter 04 graph definitions + path verdicts
+  regression.js            chapter 05 OLS engine + classical SEs
   labs/ch01.js             the counterfactual lens
   labs/ch02.js             the three-classroom dot strip + balance
   labs/ch03.js             the sample-size dial and the interval ruler
   labs/ch04.js             the DAG workbench renderer
+  labs/ch05.js             the control-dial renderer
   data.js                  matching payload (20k patients)
   reference.js             generated book numbers
   stats.js                 mean/sd/OLS, k-d tree, k-NN matching, correction
@@ -359,9 +377,9 @@ The site is built to grow by one chapter at a time. To add one:
 5. Add a browser test (the `tools/cdp-ch01.mjs` pattern) and a Node arithmetic test.
 6. Update this README's live list and screenshots.
 
-The next chapter is **05 — Linear regression**: what the coefficients mean once the
-graph says which variables belong. After that, the plan is 06–09 in order, then 11–16,
-then Part II 17–25, then the five technical notes.
+The next chapter is **06 — Grouped and dummy regression**: regression as a weighted average
+of cells. After that, the plan is 07–09 in order, then 11–16, then Part II 17–25, then the
+five technical notes.
 
 ---
 
@@ -415,13 +433,14 @@ source is still valid and can be rendered later.
 ## Credits
 
 - **Book & data:** Matheus Facure Alves, *Causal Inference for the Brave and True*,
-  chapters 01, 02, 03, 04, and 10, MIT-licensed repository. Chapter 01's four-school table and its
+  chapters 01, 02, 03, 04, 05, and 10, MIT-licensed repository. Chapter 01's four-school table and its
   arithmetic are the book's example; Chapter 02's online-classroom data comes from Alpert,
   Couch & Harmon (2016) via the book repository. Chapter 03's sampling simulation uses the
   book's true mean 74 and standard deviation 2. Chapter 04's graph structures and verdicts
-  follow the book's DAG examples. The prose is adapted and shortened, and the
-  counterfactual lens, three-classroom dot strip, sample-size dial, interval ruler, and DAG
-  workbench are new.
+  follow the book's DAG examples. Chapter 05's wage data and control sets are the book's
+  `wage.csv` and full specification. The prose is adapted and shortened, and the
+  counterfactual lens, three-classroom dot strip, sample-size dial, interval ruler, DAG
+  workbench, and control dial are new.
 - **Visual language:** adapted from the **Data Storytelling** style in
   [Lemo-Opuscar](https://github.com/lemomo-ai/lemo-opuscar) by Lemomo (MIT). The charts,
   copy, and motion here are original; no demo assets or story are reused.

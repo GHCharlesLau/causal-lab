@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Linear regression &mdash; Causal Field Notes</title>
+  <meta name="description" content="Chapter 05: regression as a conditional expectation, orthogonalization, and a control dial on the wage data.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/ch05.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the chapter</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Chapter 05</p>
+      <h1 class="hero-title hero-title--long">The unreasonable effectiveness<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">a line with a job &darr;</p>
+      <p class="hero-deck">Regression is a conditional expectation, a projection, and a weighting device.</p>
+      <p class="hero-sub">It can recover a difference in means, partial out a confounder, and hide a bad control. The coefficient is only as credible as the graph that chose the right-hand side.</p>
+      <div class="hero-meta mono">
+        <span>1 regression</span><span>663 workers</span><span>1 control dial</span><span>~20 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#control-dial">Turn the control dial <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/05-The-Unreasonable-Effectiveness-of-Linear-Regression.html" target="_blank" rel="noreferrer">Read the source chapter</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="A scatter of education and log wage with a fitted regression line.">
+        <g class="hero-paper">
+          <path d="M46 30h368v238H46z" fill="#fbf8f1" stroke="#ddd6c9"/>
+          <path d="M78 238h306" stroke="#bdb4a5"/>
+          <path d="M78 238V66" stroke="#bdb4a5"/>
+        </g>
+        <g class="regression-figure">
+          <g fill="#2f5d8a" opacity=".55">
+            <circle cx="104" cy="214" r="2.5"/><circle cx="118" cy="200" r="2.5"/><circle cx="130" cy="208" r="2.5"/>
+            <circle cx="146" cy="190" r="2.5"/><circle cx="160" cy="198" r="2.5"/><circle cx="176" cy="178" r="2.5"/>
+            <circle cx="190" cy="186" r="2.5"/><circle cx="206" cy="166" r="2.5"/><circle cx="220" cy="174" r="2.5"/>
+            <circle cx="236" cy="154" r="2.5"/><circle cx="250" cy="160" r="2.5"/><circle cx="266" cy="142" r="2.5"/>
+            <circle cx="282" cy="148" r="2.5"/><circle cx="298" cy="128" r="2.5"/><circle cx="314" cy="136" r="2.5"/>
+            <circle cx="330" cy="116" r="2.5"/><circle cx="346" cy="122" r="2.5"/><circle cx="362" cy="102" r="2.5"/>
+          </g>
+          <path d="M94 220 L370 92" stroke="#a8283a" stroke-width="2.2"/>
+          <circle cx="330" cy="116" r="4.5" fill="#a8283a" stroke="#2b2723"/>
+          <text x="330" y="106" text-anchor="middle" class="regression-label">fitted</text>
+          <text x="78" y="258" class="regression-axis">years of education &rarr;</text>
+          <text x="88" y="58" class="regression-axis">log hourly wage</text>
+        </g>
+        <g class="hand">
+          <text x="104" y="88" fill="#2f5d8a" font-size="20">one coefficient,</text>
+          <text x="104" y="108" fill="#2f5d8a" font-size="20">many assumptions</text>
+          <path d="M242 114c14 4 26 3 38-2" fill="none" stroke="#2f5d8a" stroke-width="1"/>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">Education on the horizontal axis and log hourly wage on the vertical axis, with a positively sloped fitted line.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Online vs. face-to-face</span>
+        <span class="hero-stat-value">&minus;4.91</span>
+        <span class="hero-stat-note">regression slope = difference in means</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Education, no controls</span>
+        <span class="hero-stat-value">+0.0536</span>
+        <span class="hero-stat-note">log wage per year</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Education, full controls</span>
+        <span class="hero-stat-value">+0.0411</span>
+        <span class="hero-stat-note">the book&rsquo;s specification</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 LINE -->
+  <section class="chapter-section sheet" id="line" data-section="line">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">the line</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Regression theory</p>
+          <h2 class="section-title">A line that answers<br>a conditional question.</h2>
+          <p class="section-deck">Ordinary least squares chooses the line that minimises squared residuals. Under a causal graph, the slope can be more than a summary of the data.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">For a binary treatment, the regression slope is exactly the difference in means. Fit exam score on online format and the slope is <strong>&minus;4.91</strong>, the intercept is <strong>78.55</strong> for face-to-face, and the line passes through the two group averages.</p>
+          <p>This is the first useful fact about regression: it is not a new estimate in the simple case. It is the same comparison, written as a line. The second useful fact is that adding controls changes the slope by comparing units at the same values of those controls.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="OLS slope equals the covariance of treatment and outcome divided by the variance of treatment">
+          <span class="formula-label mono">simple regression</span>
+          <span class="formula-body"><span class="math-var">&beta;</span> = <span class="frac"><span class="num">Cov(<span class="math-var">T</span>, <span class="math-var">Y</span>)</span><span class="den">Var(<span class="math-var">T</span>)</span></span> = E[<span class="math-var">Y</span> | <span class="math-var">T</span>=1] &minus; E[<span class="math-var">Y</span> | <span class="math-var">T</span>=0]</span>
+        </div>
+
+        <div class="prose">
+          <p>The regression also imposes a model. It assumes the conditional expectation is linear and, for the classical standard errors, that the variance of the error is constant. Those assumptions are why the OLS standard error on the online slope (1.68) is slightly smaller than the difference-in-means standard error from Chapter 03 (1.77). The estimate is the same; the uncertainty model is not.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The two jobs</p>
+          <p>Regression is a <strong>description</strong> of a conditional mean and a <strong>projection</strong> of the outcome on the regressors. Causality enters only when the graph says the projection has a causal interpretation.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">try it</p>
+          <p>If treatment is binary, the regression line passes through the two group means. There is no extra magic in the slope.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the fine print</p>
+          <p>OLS is the best linear predictor, not the best causal estimator. The graph chooses which variables belong on the right-hand side.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 CONTROL DIAL -->
+  <section class="chapter-section sheet" id="control-dial" data-section="control-dial">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">the control dial</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">The wage regression</p>
+          <h2 class="section-title">The coefficient<br>is not a volume knob.</h2>
+          <p class="section-deck">663 complete records. The outcome is log hourly wage. The treatment is years of education. Add controls and watch the coefficient move &mdash; in both directions.</p>
+        </header>
+
+        <div class="prose">
+          <p>Education alone gives <strong>+0.0536</strong> log points per year. Add IQ and it falls to <strong>0.0349</strong>. Add experience, tenure, and age and it rises to <strong>0.0490</strong>. The book&rsquo;s full set lands at <strong>0.0411</strong>. The movement is not a monotone &ldquo;more controls, less bias&rdquo; story; each control changes the comparison.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-controls" aria-labelledby="lab-controls-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-controls-title">The control dial</h3>
+            </div>
+            <p class="lab-status mono" id="ch05-status">no controls &middot; 663 workers</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch05-chart" id="ch05-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono">Education coefficient</p>
+              <p class="readout-value" id="ch05-coef">0.0536</p>
+              <p class="readout-sub">log wage per year</p>
+              <p class="side-label mono ch05-ci-label">95% CI</p>
+              <p class="ch05-ci" id="ch05-ci">(0.0388, 0.0684)</p>
+              <dl class="mini-stats">
+                <div><dt>controls</dt><dd id="ch05-count">0</dd></div>
+                <div><dt>workers</dt><dd>663</dd></div>
+                <div><dt>R&sup2;</dt><dd id="ch05-r2">0.071</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch05-note">ability is still in the error.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch05-controls">
+            <div class="ch05-presets" role="group" aria-label="Preset control sets">
+              <button class="ch05-preset is-active" type="button" data-preset="raw" aria-pressed="true">No controls</button>
+              <button class="ch05-preset" type="button" data-preset="iq" aria-pressed="false">+ IQ</button>
+              <button class="ch05-preset" type="button" data-preset="human" aria-pressed="false">+ Human capital</button>
+              <button class="ch05-preset" type="button" data-preset="full" aria-pressed="false">+ Full controls</button>
+            </div>
+            <div class="ch05-toggles">
+              <label class="ch05-toggle"><input type="checkbox" data-group="IQ"> <span>IQ</span></label>
+              <label class="ch05-toggle"><input type="checkbox" data-group="human"> <span>Human capital</span></label>
+              <label class="ch05-toggle"><input type="checkbox" data-group="family"> <span>Family background</span></label>
+              <label class="ch05-toggle"><input type="checkbox" data-group="demographics"> <span>Demographics</span></label>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> Adding a control is not a free reduction in bias. IQ and human capital pull the coefficient in opposite directions. The graph, not the kitchen sink, decides which controls belong.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the puzzle</p>
+          <p>Why does adding IQ lower the education coefficient, while adding experience, tenure, and age raises it? Both are correlated with education and wages in different ways.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the trap</p>
+          <p>A control can be a collider or a mediator. Adding it can make the estimate worse even though the R&sup2; goes up.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 FWL -->
+  <section class="chapter-section sheet" id="fwl" data-section="fwl">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">orthogonalization</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Frisch&ndash;Waugh&ndash;Lovell</p>
+          <h2 class="section-title">Partial out<br>the controls.</h2>
+          <p class="section-deck">A multivariate coefficient has a one-variable interpretation: residualize treatment on the controls, then regress the outcome on the residual.</p>
+        </header>
+
+        <div class="prose">
+          <p>Take education. Regress it on all the controls and keep the part that the controls cannot explain: <span class="math-var">Educ&#771;</span>. Then regress log wage on that residual. The slope is the same as the multivariate coefficient:</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="The multivariate coefficient equals covariance of residualized education and log wage divided by variance of residualized education">
+          <span class="formula-label mono">FWL</span>
+          <span class="formula-body"><span class="math-var">&kappa;</span> = <span class="frac"><span class="num">Cov(<span class="math-var">Educ&#771;</span>, <span class="math-var">lhwage</span>)</span><span class="den">Var(<span class="math-var">Educ&#771;</span>)</span></span> = 0.041147</span>
+        </div>
+
+        <div class="prose">
+          <p>This is the cleanest way to see what &ldquo;controlling for X&rdquo; means: it compares workers who have the same X and differ in education for reasons unrelated to X. The residual is the variation left over after the controls have spoken.</p>
+          <p>It also explains why the order of controls does not matter for the final coefficient, but the set does. FWL is an algebraic identity, not a causal license.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">A useful identity</p>
+          <p>Regression coefficients are partial correlations in disguise. Once you see the residual, the multivariate coefficient is just a simple slope again.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the residual</p>
+          <p>The residual is the part of education that is not predicted by IQ, experience, tenure, and the rest. It is not &ldquo;purified&rdquo; education; it is a mathematical object.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the limit</p>
+          <p>FWL guarantees the arithmetic, not the identification. If the controls do not block the backdoor, the residualized coefficient inherits the bias.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 BIAS -->
+  <section class="chapter-section sheet" id="bias" data-section="bias">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">omitted variable bias</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">What a control can fix</p>
+          <h2 class="section-title">Bias has<br>a formula.</h2>
+          <p class="section-deck">Leave out a confounder and the short regression inherits its effect on the outcome, multiplied by its relationship with treatment.</p>
+        </header>
+
+        <div class="prose">
+          <p>Suppose the long regression is <span class="math-var">Y</span> = <span class="math-var">&beta;T</span> + <span class="math-var">&gamma;X</span> + <span class="math-var">&epsilon;</span>. If we omit X, the short-regression coefficient is biased by the product of X&rsquo;s effect on Y and the slope of X on T:</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Omitted variable bias equals beta plus gamma times delta">
+          <span class="formula-label mono">the bias</span>
+          <span class="formula-body">E[<span class="math-var">&beta;<sub>short</sub></span>] = <span class="math-var">&beta;</span> + <span class="math-var">&gamma;</span> &times; <span class="math-var">&delta;</span> &nbsp;&nbsp; where &nbsp; <span class="math-var">&gamma;</span> = effect of <span class="math-var">X</span> on <span class="math-var">Y</span>, &nbsp; <span class="math-var">&delta;</span> = slope of <span class="math-var">X</span> on <span class="math-var">T</span></span>
+        </div>
+
+        <div class="prose">
+          <p>Adding IQ lowers the education coefficient because IQ is positively related to both education and wages. Adding experience and tenure raises it because those variables change the comparison in the other direction. The sign and size of the movement are empirical; the formula tells you why it happens.</p>
+          <p>None of this says &ldquo;add more controls.&rdquo; A control that is a collider or a mediator can introduce bias. The graph from Chapter 04 is the map; the regression is just the vehicle.</p>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">R&sup2; is not identification</p>
+          <p>Adding a bad control can raise R&sup2; and move the coefficient away from the causal effect. Fit is not the same as credibility.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the two pieces</p>
+          <p>Bias needs both: the omitted variable must affect the outcome, and it must be related to treatment. If either link is zero, the short regression is fine.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the graph again</p>
+          <p>Controls are chosen by the backdoor criterion, not by the size of their coefficient or the R&sup2;.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>For a binary treatment, the slope is the difference in means.</strong> Regression is a re-description before it is an adjustment.</li>
+          <li><strong>Controls change the comparison.</strong> The coefficient is the outcome difference between units with the same controls and different treatment.</li>
+          <li><strong>FWL makes it visible.</strong> Partialling out controls leaves the variation in treatment that the controls cannot explain.</li>
+          <li><strong>Bias has a sign and a size.</strong> Omitted variable bias is the product of the omitted effect on Y and its relation to T; adding every variable is not the fix.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The kitchen sink</p>
+          <p>More controls can mean less bias, more variance, or a new bias through a collider. The graph decides; the regression obeys.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>A coefficient is a comparison. Ask: compared with whom, holding what fixed, and why those controls?</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> Why is the regression slope on a binary treatment the difference in means?</summary>
+            <p>With a binary regressor, the OLS line is determined by the two group means. The slope is the vertical difference between the treated and control means divided by the horizontal difference of one; the intercept is the control mean.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> The education coefficient falls when IQ is added, then rises when experience and tenure are added. What does that tell you?</summary>
+            <p>Each control changes the comparison. IQ is a confounder that pulls the short coefficient upward; experience and tenure change the residual variation in education and the wage relationship. The path is empirical, not a law of &ldquo;more controls&rdquo;.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> What does FWL say the multivariate coefficient is?</summary>
+            <p>It is the simple regression coefficient of Y on the part of T left unexplained by the controls. Residualize T on X, then regress Y on the residual. The arithmetic is exact; the causal interpretation still depends on the graph.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> When does omitting a variable cause bias?</summary>
+            <p>When the omitted variable affects the outcome and is related to treatment. The bias is the product of those two relationships. If either link is zero, the short regression is not biased by that variable.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next chapter</p>
+          <h3>Grouped and dummy regression</h3>
+          <p>Regression can be a weighted average of cells. The next chapter makes that algebra visible.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Write the comparison in words before you read the coefficient: same controls, different treatment, which outcome difference?</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-ch05.js"></script>
+<script src="../assets/js/regression.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: '05',
+    slug: '05-linear-regression',
+    title: 'Linear regression',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/05-The-Unreasonable-Effectiveness-of-Linear-Regression.html',
+    sections: [
+      { id: 'line', num: '01', label: 'The line' },
+      { id: 'control-dial', num: '02', label: 'The control dial' },
+      { id: 'fwl', num: '03', label: 'Orthogonalization' },
+      { id: 'bias', num: '04', label: 'Omitted variable bias' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/ch05.js"></script>
+</body>
+</html>
