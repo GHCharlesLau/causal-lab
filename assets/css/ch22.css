@@ -1,0 +1,224 @@
+/* ============================================================
+   Chapter 22 — orthogonal ML residual and gain labs.
+   ============================================================ */
+
+.ortho-title {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ortho-sub {
+  font-family: var(--mono);
+  font-size: 8px;
+  fill: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ortho-value {
+  font-family: var(--mono);
+  font-size: 14px;
+  fill: var(--red);
+}
+
+.ortho-value--blue {
+  fill: var(--blue);
+}
+
+.ortho-hand {
+  font-family: var(--hand);
+  font-size: 18px;
+  fill: var(--blue);
+}
+
+/* ---------------------------------------------------------- stat row */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 18px 0;
+}
+
+.stat-block {
+  padding: 12px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+}
+
+.stat-block .mono {
+  display: block;
+  color: var(--ink-3);
+  font-size: 8px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.stat-block strong {
+  display: block;
+  margin: 4px 0;
+  font-family: var(--mono);
+  font-size: 1.15rem;
+  font-weight: 500;
+}
+
+.stat-block p {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+/* ---------------------------------------------------------- charts */
+.ch22-chart {
+  min-height: 285px;
+}
+
+.ch22-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ch22-tick {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-3);
+}
+
+.ch22-axis-title {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  fill: var(--ink-2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ch22-dot {
+  fill: var(--blue);
+  opacity: 0.25;
+}
+
+.ch22-dot--raw {
+  fill: var(--red);
+}
+
+.ch22-fit {
+  stroke: var(--ink);
+  stroke-width: 2.2;
+}
+
+.ch22-gain-curve {
+  fill: none;
+  stroke-width: 1.6;
+  opacity: 0.45;
+}
+
+.ch22-gain-curve.is-active {
+  stroke-width: 2.6;
+  opacity: 1;
+}
+
+.ch22-gain-curve--param { stroke: var(--red); }
+.ch22-gain-curve--nonparam { stroke: var(--blue); }
+
+.ch22-baseline {
+  stroke: var(--ink-3);
+  stroke-width: 1.2;
+  stroke-dasharray: 4 4;
+}
+
+.ch22-legend {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-2);
+}
+
+.ch22-ate {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+.ch22-side-label {
+  margin-top: 8px;
+}
+
+/* ---------------------------------------------------------- controls */
+.ch22-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ch22-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.ch22-preset {
+  padding: 7px 11px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.ch22-preset:hover {
+  border-color: var(--ink-2);
+  color: var(--ink);
+}
+
+.ch22-preset.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.ch22-preset:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.lab--no-swipe .lab-head::after {
+  content: none;
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .lab-body {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-row {
+    grid-template-columns: 1fr;
+  }
+
+  .ch22-chart {
+    overflow: visible;
+    min-height: 210px;
+  }
+
+  .ch22-chart svg {
+    width: 100%;
+    max-width: none;
+  }
+
+  .ch22-tick,
+  .ch22-axis-title,
+  .ch22-legend {
+    font-size: 15px;
+  }
+
+  .ch22-preset {
+    flex: 1 1 100%;
+    text-align: left;
+  }
+}

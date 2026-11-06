@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orthogonal machine learning &mdash; Causal Field Notes</title>
+  <meta name="description" content="Chapter 22: debiased/orthogonal machine learning — Frisch-Waugh-Lovell, cross-fitted residuals, the R-learner, and the sign flip from raw to orthogonal price effects.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/ch22.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the chapter</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Chapter 22</p>
+      <h1 class="hero-title hero-title--long">Partial out <br>the noise<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">residualize, then estimate &darr;</p>
+      <p class="hero-deck">Regress the outcome on the confounders, the treatment on the confounders, and then the residuals on each other.</p>
+      <p class="hero-sub">Raw prices look positively related to sales: +1.23 units per real. Control for temperature, weekday, and cost, and the sign flips to −4.00. Orthogonal ML gets the same answer with flexible nuisance models.</p>
+      <div class="hero-meta mono">
+        <span>10,000 training days</span><span>5,000 random test days</span><span>2 labs</span><span>~22 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#residual-bench">Open the residual bench <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/22-Debiased-Orthogonal-Machine-Learning.html" target="_blank" rel="noreferrer">Read the source chapter</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="Raw price and sales are positively related; after residualizing both on confounders, the relationship is negative.">
+        <g class="hero-paper">
+          <path d="M24 28h412v244H24z" fill="#fbf8f1" stroke="#ddd6c9"/>
+        </g>
+        <g class="ortho-hero">
+          <text x="70" y="54" class="ortho-title">raw</text>
+          <line x1="54" y1="196" x2="206" y2="196" stroke="#bdb4a5"/>
+          <line x1="54" y1="80" x2="54" y2="196" stroke="#bdb4a5"/>
+          <path d="M58 172 L202 108" fill="none" stroke="#a8283a" stroke-width="2.2"/>
+          <text x="70" y="222" class="ortho-sub">positive slope</text>
+          <text x="70" y="240" class="ortho-value">+1.23</text>
+
+          <text x="278" y="54" class="ortho-title">orthogonal</text>
+          <line x1="262" y1="196" x2="414" y2="196" stroke="#bdb4a5"/>
+          <line x1="262" y1="80" x2="262" y2="196" stroke="#bdb4a5"/>
+          <path d="M266 106 L410 184" fill="none" stroke="#2f5d8a" stroke-width="2.2"/>
+          <text x="278" y="222" class="ortho-sub">negative slope</text>
+          <text x="278" y="240" class="ortho-value ortho-value--blue">&minus;3.92</text>
+
+          <path d="M216 144 L246 144" stroke="#2b2723" stroke-width="1.3"/>
+          <path d="M240 138 L248 144 L240 150" fill="none" stroke="#2b2723" stroke-width="1.3"/>
+          <text x="56" y="278" class="hand ortho-hand">same data, confounding removed</text>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">The raw price-sales relationship is positive, but after residualizing both variables on confounders, the relationship becomes negative.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Raw</span>
+        <span class="hero-stat-value">+1.23</span>
+        <span class="hero-stat-note">units per real</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">OLS</span>
+        <span class="hero-stat-value">&minus;4.00</span>
+        <span class="hero-stat-note">controls included</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Orthogonal</span>
+        <span class="hero-stat-value">&minus;3.92</span>
+        <span class="hero-stat-note">ML residuals</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 FWL -->
+  <section class="chapter-section sheet" id="fwl" data-section="fwl">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">frisch-waugh-lovell</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Nuisance parameters</p>
+          <h2 class="section-title">Control without<br>modeling everything.</h2>
+          <p class="section-deck">FWL says you can partial out the confounders first, then estimate the treatment effect from residuals.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">Estimate <span class="math-var">Y</span> on <span class="math-var">X</span>, estimate <span class="math-var">T</span> on <span class="math-var">X</span>, then regress the outcome residual on the treatment residual. For linear models, this gives the exact same treatment coefficient as one big regression.</p>
+          <p>That matters because the confounders are nuisance: temperature, weekday, and cost are not the target. FWL lets us model them separately, and later replace the linear nuisance models with flexible ML.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Frisch-Waugh-Lovell">
+          <span class="formula-label mono">FWL</span>
+          <span class="formula-body">(<span class="math-var">Y</span> &minus; <span class="math-var">Y</span>~<span class="math-var">X</span>) &nbsp;~&nbsp; (<span class="math-var">T</span> &minus; <span class="math-var">T</span>~<span class="math-var">X</span>)</span>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-block">
+            <span class="mono">Raw slope</span>
+            <strong>+1.2294</strong>
+            <p>prices look pro-cyclical</p>
+          </div>
+          <div class="stat-block">
+            <span class="mono">OLS with controls</span>
+            <strong>&minus;4.0004</strong>
+            <p>the causal sign</p>
+          </div>
+          <div class="stat-block">
+            <span class="mono">Residual regression</span>
+            <strong>&minus;4.0004</strong>
+            <p>same number, FWL</p>
+          </div>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The sign flip</p>
+          <p>Raw price and sales rise together because busy days have both higher demand and higher prices. Once demand is held fixed, price reduces sales.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the intuition</p>
+          <p>Residuals are the part of each variable that the confounders cannot explain. Regressing those parts isolates the treatment variation.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the catch</p>
+          <p>FWL is exact only when the nuisance models are correctly specified. Misspecify them and the treatment estimate inherits the bias.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 CROSSFIT -->
+  <section class="chapter-section sheet" id="residual-bench" data-section="residual-bench">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">cross-fitting</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">FWL on steroids</p>
+          <h2 class="section-title">Let ML model<br>the nuisance.</h2>
+          <p class="section-deck">Use flexible models for the outcome and treatment residuals, but make the predictions out of fold.</p>
+        </header>
+
+        <div class="prose">
+          <p>The treatment model is a “debias” model: it predicts price from temperature, weekday, and cost. The outcome model is a “denoise” model: it predicts sales from the same features. Their residuals are orthogonal to the confounders.</p>
+          <p>Cross-fitting is essential. If the nuisance model overfits, the residuals shrink and the final regression is biased toward zero. Five-fold out-of-fold predictions keep the residuals honest.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-residual" aria-labelledby="lab-residual-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-residual-title">Raw vs residual price</h3>
+            </div>
+            <p class="lab-status mono" id="ch22-res-status">orthogonal &middot; &minus;3.92</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch22-chart" id="ch22-res-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="ch22-res-label">Residual slope</p>
+              <p class="readout-value" id="ch22-res-value">&minus;3.92</p>
+              <p class="readout-sub">units per real</p>
+              <p class="side-label mono ch22-side-label">OLS benchmark</p>
+              <p class="ch22-ate" id="ch22-ols">&minus;4.000</p>
+              <dl class="mini-stats">
+                <div><dt>training days</dt><dd>10,000</dd></div>
+                <div><dt>folds</dt><dd>5</dd></div>
+                <div><dt>sample shown</dt><dd>600</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch22-res-note">the sign flips once confounders are partialled out.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch22-controls">
+            <div class="ch22-presets" role="group" aria-label="Choose raw or residual price">
+              <button class="ch22-preset is-active" type="button" data-view="orth" aria-pressed="true">Residual price</button>
+              <button class="ch22-preset" type="button" data-view="raw" aria-pressed="false">Raw price</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The raw scatter slopes up; the residual scatter slopes down. The transformation, not the data, changes the sign.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">cross-fitting</p>
+          <p>Each residual comes from a model that never saw that row. That is what stops overfitting from eating the treatment variation.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the result</p>
+          <p>Orthogonal ATE is −3.92, close to the OLS −4.00. The small gap is the cost of using flexible nuisance models.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 CATE -->
+  <section class="chapter-section sheet" id="cate-bench" data-section="cate-bench">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">r-learner</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">From ATE to CATE</p>
+          <h2 class="section-title">Weight the<br>residual regression.</h2>
+          <p class="section-deck">Interact the residualized treatment with context for a linear CATE, or fit a weighted ML model for a flexible one.</p>
+        </header>
+
+        <div class="prose">
+          <p>The residual model <span class="math-var">Y&#771;</span> = <span class="math-var">&tau;</span>(<span class="math-var">X</span>)<span class="math-var">T&#771;</span> + <span class="math-var">e</span> defines a causal loss. The R-learner rewrites it as a weighted regression: target <span class="math-var">Y&#771;</span>/<span class="math-var">T&#771;</span>, weights <span class="math-var">T&#771;</span><sup>2</sup>. Any predictive model can fit that target.</p>
+          <p>The parametric version interacts the residual with temperature, weekday, and cost. The nonparametric version lets a gradient-boosted model learn the shape. On this test set they perform similarly.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-gain" aria-labelledby="lab-gain-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 02</p>
+              <h3 class="lab-title" id="lab-gain-title">Parametric vs nonparametric</h3>
+            </div>
+            <p class="lab-status mono" id="ch22-gain-status">parametric &middot; top 10%</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch22-chart" id="ch22-gain-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="ch22-gain-label">Parametric R-learner</p>
+              <p class="readout-value" id="ch22-gain-value">+0.220</p>
+              <p class="readout-sub">gain at the top 10%</p>
+              <p class="side-label mono ch22-side-label">Test ATE</p>
+              <p class="ch22-ate" id="ch22-test-ate">&minus;2.552</p>
+              <dl class="mini-stats">
+                <div><dt>test days</dt><dd>5,000</dd></div>
+                <div><dt>models</dt><dd>2</dd></div>
+                <div><dt>CATE range</dt><dd id="ch22-cate-range">&minus;12 / +1</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch22-gain-note">the flexible model does not buy much here.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch22-controls">
+            <div class="ch22-presets" role="group" aria-label="Choose a CATE model">
+              <button class="ch22-preset is-active" type="button" data-model="param" aria-pressed="true">Parametric</button>
+              <button class="ch22-preset" type="button" data-model="nonparam" aria-pressed="false">Nonparametric</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> Both curves sit above the baseline for the most sensitive days. The gain is modest; the value is the flexible nuisance model, not a large lift.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the target</p>
+          <p>Y&#771;/T&#771; is a noisy slope per unit. The weight T&#771;<sup>2</sup> gives more influence to rows with more treatment variation.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the lesson</p>
+          <p>The R-learner is a framework, not a single model. The final learner can be linear or flexible; the orthogonalization is the constant.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 NONLINEAR -->
+  <section class="chapter-section sheet" id="nonlinear" data-section="nonlinear">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">the limits</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">A local slope, not a curve</p>
+          <h2 class="section-title">It is still<br>a linear approximation.</h2>
+          <p class="section-deck">Double ML assumes the residualized outcome is linear in the residualized treatment. A flexible final model finds the local slope, not the whole response curve.</p>
+        </header>
+
+        <div class="prose">
+          <p>If the treatment effect is nonlinear, the R-learner can recover how the slope changes with covariates, but it still approximates the effect locally. Extrapolating to a much higher treatment level is risky.</p>
+          <p>The book calls the fully counterfactual version “non-scientific”: it predicts outcomes at treatment levels far from the observed data. Use it with caution, and never without a holdout check.</p>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">Do not extrapolate blindly</p>
+          <p>A CATE of −2 at the current price does not mean the next 10 reais of price increase will reduce sales by 20. The slope can change with the treatment level.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The honest sentence</p>
+          <p>&ldquo;Orthogonal ML removes confounding from the nuisance relationships and estimates a residual treatment effect. It does not turn a local slope into a global causal curve.&rdquo;</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the use</p>
+          <p>Use orthogonal ML for a credible ATE or a ranking of local sensitivity. Do not use it to promise the outcome at an untested treatment level.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the check</p>
+          <p>If a counterfactual prediction is far outside the observed treatment range, treat it as a model artifact until validated.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>FWL separates nuisance from treatment.</strong> Residualize the outcome and treatment on confounders, then regress the residuals on each other.</li>
+          <li><strong>Cross-fitting protects the residuals.</strong> Out-of-fold predictions stop overfitting from shrinking the treatment variation.</li>
+          <li><strong>Double ML is orthogonal.</strong> Small errors in the nuisance models do not linearly contaminate the treatment effect.</li>
+          <li><strong>The R-learner is a causal loss.</strong> Target Y&#771;/T&#771; with weights T&#771;<sup>2</sup>; the final model can be linear or flexible.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The sentence to avoid</p>
+          <p>&ldquo;Orthogonal ML finds the true nonlinear treatment effect.&rdquo; It finds a local linear approximation; extrapolation beyond the observed treatment range is not guaranteed.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Partial out the confounders, cross-fit the nuisance, and estimate the treatment from residuals. The sign flip is the payoff.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> What does FWL say in one sentence?</summary>
+            <p>Regressing Y on X, T on X, and then the Y residual on the T residual gives the same treatment coefficient as regressing Y on X and T together, for linear models.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> Why is cross-fitting necessary with ML nuisance models?</summary>
+            <p>In-sample predictions overfit, shrinking residuals and biasing the treatment effect toward zero. Out-of-fold predictions keep the residuals honest.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> Why does the raw price-sales slope have the wrong sign?</summary>
+            <p>Busy days have both higher demand and higher prices. The raw correlation mixes the demand effect with the price effect; controlling for confounders flips it.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> What does the R-learner minimize?</summary>
+            <p>The squared residual outcome minus the CATE times the residual treatment. Rewritten with weights, it is a weighted regression of Y&#771;/T&#771; on X.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next chapter</p>
+          <h3>Heterogeneity and nonlinearity</h3>
+          <p>When the treatment effect changes with the treatment level, the local approximation is not enough. The next chapter explores nonlinear treatment effects.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Raw correlation, controlled OLS, and orthogonal ML should tell one story. If they do not, look for the confounder you missed.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-ch22.js"></script>
+<script src="../assets/js/iv22.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: '22',
+    slug: '22-orthogonal-ml',
+    title: 'Orthogonal ML',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/22-Debiased-Orthogonal-Machine-Learning.html',
+    sections: [
+      { id: 'fwl', num: '01', label: 'Frisch-Waugh-Lovell' },
+      { id: 'residual-bench', num: '02', label: 'Cross-fitting' },
+      { id: 'cate-bench', num: '03', label: 'The R-learner' },
+      { id: 'nonlinear', num: '04', label: 'The limits' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/ch22.js"></script>
+</body>
+</html>
