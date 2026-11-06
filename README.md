@@ -8,12 +8,12 @@ and arguments you can defend.
 It is a local, static website: no backend, no build step, no tracking. Open `index.html`
 for the landing page, or serve the folder over HTTP.
 
-**Status: 10 of 30 pages live.** Chapters 01 (Introduction to causality), 02 (Randomised
+**Status: 11 of 30 pages live.** Chapters 01 (Introduction to causality), 02 (Randomised
 experiments), 03 (Stats review), 04 (Graphical causal models), 05 (Linear regression),
 06 (Grouped and dummy regression), 07 (Beyond confounders), 08 (Instrumental variables),
-09 (Non-compliance and LATE), and 10 (Matching) are complete. The other 20 pages are
-scaffolded in the course manifest and marked as planned; they are added one at a time, with
-numbers checked against the book's notebooks.
+09 (Non-compliance and LATE), 10 (Matching), and 11 (Propensity score) are complete. The
+other 19 pages are scaffolded in the course manifest and marked as planned; they are added
+one at a time, with numbers checked against the book's notebooks.
 
 ---
 
@@ -113,6 +113,13 @@ weights, the cell atlas, exact twins, k-NN with caliper and correction, the bias
 microscope, and the curse of dimensionality. This is the original demo, now at
 `chapters/10-matching.html`.
 
+### 11 — Propensity score
+
+A growth-mindset intervention with 10,391 students. The naive difference is 0.4723; IPTW
+gives 0.3885, PS regression 0.3930, and PS matching 0.389. The score distribution overlaps,
+the treated pseudo-population sums to 10,388.6, and the bootstrap interval is (0.3545,
+0.4199). The page is explicit that the score only balances measured covariates.
+
 ### What is in each chapter
 
 - A story with the decision, the failure of the naive comparison, and the identification
@@ -164,6 +171,8 @@ point here is to let you see estimator bias separately from confounding bias.
 
 ![Chapter 09, the compliance matrix](assets/img/screenshots/ch09-matrix.png)
 
+![Chapter 11, the score distribution](assets/img/screenshots/ch11-score.png)
+
 ![The Matching chapter](assets/img/screenshots/matching.png)
 
 ---
@@ -177,9 +186,9 @@ Open `index.html` in Chrome or Edge. It is the landing page. The live chapters a
 `chapters/03-stats-review.html`, `chapters/04-graphical-causal-models.html`,
 `chapters/05-linear-regression.html`, `chapters/06-grouped-regression.html`,
 `chapters/07-beyond-confounders.html`, `chapters/08-instrumental-variables.html`,
-`chapters/09-non-compliance.html`, and `chapters/10-matching.html`. Everything needed is
-local: CSS, JS, data, fonts, the poster, and the rendered opener at
-`assets/video/matching-opener.mp4`.
+`chapters/09-non-compliance.html`, `chapters/10-matching.html`, and
+`chapters/11-propensity-score.html`. Everything needed is local: CSS, JS, data, fonts, the
+poster, and the rendered opener at `assets/video/matching-opener.mp4`.
 
 ### Option 2: local server
 
@@ -285,9 +294,9 @@ Reference, chapter, and manifest tests (Node 24, no packages):
 The suite checks the Matching book numbers, the k-curve, severity-band checkpoints, the
 oracle, the k-d tree, the OLS toy regression, the Chapter 01 potential-outcomes arithmetic
 (ATE −50, ATT −75, naive +125, bias +200), the Chapter 02 group means and missing-data
-balance, the Chapter 03 standard errors, interval, z, and p-values, the Chapter 04 DAG path logic, the Chapter 05 OLS/control path, the Chapter 06 weighted/dummy regression, the Chapter 07 control models, the Chapter 08 IV constants, the Chapter 09 compliance matrix, and the site manifest
+balance, the Chapter 03 standard errors, interval, z, and p-values, the Chapter 04 DAG path logic, the Chapter 05 OLS/control path, the Chapter 06 weighted/dummy regression, the Chapter 07 control models, the Chapter 08 IV constants, the Chapter 09 compliance matrix, the Chapter 11 propensity score, and the site manifest
 (30 pages, unique slugs, every live page exists, the shared reading scale is loaded).
-58 tests in total.
+63 tests in total.
 
 Browser smoke tests use Chrome DevTools Protocol through Node's built-in WebSocket (no
 Playwright/Puppeteer). Matching-specific scripts default to
@@ -306,6 +315,7 @@ to test a different page.
 & "...\node.exe" tools/cdp-ch07.mjs   # Chapter 07: email and hospital controls
 & "...\node.exe" tools/cdp-ch08.mjs   # Chapter 08: IV ratio, weak instruments
 & "...\node.exe" tools/cdp-ch09.mjs   # Chapter 09: compliance matrix, LATE
+& "...\node.exe" tools/cdp-ch11.mjs   # Chapter 11: propensity score, estimators
 & "...\node.exe" tools/cdp-a11y.mjs
 & "...\node.exe" tools/cdp-reduced.mjs
 & "...\node.exe" tools/cdp-film.mjs
@@ -325,7 +335,8 @@ practice mode, and the course map. It prints the observed values and any console
 `cdp-ch06.mjs` checks the weighting toggle and the dummy cell contrast;
 `cdp-ch07.mjs` checks the email and hospital control models;
 `cdp-ch08.mjs` checks the IV ratio and the weak-instrument dial;
-`cdp-ch09.mjs` checks the compliance matrix and the three estimates.
+`cdp-ch09.mjs` checks the compliance matrix and the three estimates;
+`cdp-ch11.mjs` checks the score distribution and the four propensity estimates.
 `cdp-a11y.mjs` checks button names, input labels, duplicate IDs, and heading structure;
 `cdp-reduced.mjs` verifies that reduced motion lands on final states; `cdp-film.mjs`
 checks the rendered video’s metadata and dialog; `cdp-persist.mjs` reloads after scoring
@@ -348,6 +359,7 @@ chapters/
   08-instrumental-variables.html live chapter: quarter of birth and 2SLS
   09-non-compliance.html   live chapter: compliers and LATE
   10-matching.html         live chapter: the matching bench
+  11-propensity-score.html live chapter: the score, weighting, matching
 assets/css/
   tokens.css               paper/ink/pencil tokens, type scale
   base.css                 reset, type, focus, grain, toast
@@ -366,6 +378,7 @@ assets/css/
   ch07.css                 chapter 07 control taxonomy and coefficient rows
   ch08.css                 chapter 08 seasonal panel and IV charts
   ch09.css                 chapter 09 compliance matrix and estimator rows
+  ch11.css                 chapter 11 score histogram and estimator rows
   print.css                readable paper version
 assets/js/
   chapters.js              the manifest: 25 chapters + 5 notes, live/planned
@@ -377,8 +390,10 @@ assets/js/
   data-ch07.js             email + hospital payload (5,000 + 80 rows)
   data-ch08.js             AK91 seasonal groups + weak-IV simulation
   data-ch09.js             push compliance counts and means
+  data-ch11.js             learning-mindset PS and outcome payload
   iv.js                    the book's quarter-of-birth IV constants
   iv09.js                  the book's OLS/ITT/LATE constants
+  iv11.js                  the book's propensity-score constants
   dag.js                   chapter 04 graph definitions + path verdicts
   regression.js            OLS/WLS engine + classical SEs
   labs/ch01.js             the counterfactual lens
@@ -390,6 +405,7 @@ assets/js/
   labs/ch07.js             the email and hospital control labs
   labs/ch08.js             the seasonal, ratio, and weak-IV labs
   labs/ch09.js             the compliance matrix and estimator chart
+  labs/ch11.js             the score histogram, rate strip, and estimators
   data.js                  matching payload (20k patients)
   reference.js             generated book numbers
   stats.js                 mean/sd/OLS, k-d tree, k-NN matching, correction
@@ -447,9 +463,9 @@ The site is built to grow by one chapter at a time. To add one:
 5. Add a browser test (the `tools/cdp-ch01.mjs` pattern) and a Node arithmetic test.
 6. Update this README's live list and screenshots.
 
-Chapter 10, **Matching**, is already live. The next new build is **Chapter 11 — Propensity
-score**: a single balancing score instead of a distance in every covariate. After that, the
-plan is 12–16, then Part II 17–25, then the five technical notes.
+The next build is **Chapter 12 — Doubly robust estimation**: combine the outcome model and
+the propensity model so one can rescue the other. After that, the plan is 13–16, then Part
+II 17–25, then the five technical notes.
 
 ---
 
@@ -503,17 +519,18 @@ source is still valid and can be rendered later.
 ## Credits
 
 - **Book & data:** Matheus Facure Alves, *Causal Inference for the Brave and True*,
-  chapters 01, 02, 03, 04, 05, 06, 07, 08, 09, and 10, MIT-licensed repository. Chapter 01's
-  four-school table and its arithmetic are the book's example; Chapter 02's online-classroom
-  data comes from Alpert, Couch & Harmon (2016) via the book repository. Chapter 03's
-  sampling simulation uses the book's true mean 74 and standard deviation 2. Chapter 04's
-  graph structures and verdicts follow the book's DAG examples. Chapters 05 and 06 use the
-  book's `wage.csv`; Chapter 07 uses the book's collections-email and hospital-treatment
-  data; Chapter 08 uses the book's `ak91.csv` and its seed-12 IV simulation; Chapter 09 uses
-  the book's push-engagement data. The prose is adapted and shortened, and the
-  counterfactual lens, three-classroom dot strip, sample-size dial, interval ruler, DAG
-  workbench, control dial, weighting bench, dummy staircase, control labs, seasonal panel,
-  IV ratio, weak-instrument dial, compliance matrix, and estimator chart are new.
+  chapters 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, and 11, MIT-licensed repository. Chapter
+  01's four-school table and its arithmetic are the book's example; Chapter 02's
+  online-classroom data comes from Alpert, Couch & Harmon (2016) via the book repository.
+  Chapter 03's sampling simulation uses the book's true mean 74 and standard deviation 2.
+  Chapter 04's graph structures and verdicts follow the book's DAG examples. Chapters 05 and
+  06 use the book's `wage.csv`; Chapter 07 uses the book's collections-email and
+  hospital-treatment data; Chapter 08 uses the book's `ak91.csv` and its seed-12 IV
+  simulation; Chapter 09 uses the book's push-engagement data; Chapter 11 uses the book's
+  `learning_mindset.csv`. The prose is adapted and shortened, and the counterfactual lens,
+  three-classroom dot strip, sample-size dial, interval ruler, DAG workbench, control dial,
+  weighting bench, dummy staircase, control labs, seasonal panel, IV ratio, weak-instrument
+  dial, compliance matrix, estimator chart, score histogram, and rate strip are new.
 - **Visual language:** adapted from the **Data Storytelling** style in
   [Lemo-Opuscar](https://github.com/lemomo-ai/lemo-opuscar) by Lemomo (MIT). The charts,
   copy, and motion here are original; no demo assets or story are reused.

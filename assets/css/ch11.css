@@ -1,0 +1,250 @@
+/* ============================================================
+   Chapter 11 — propensity figure, score histogram, estimators.
+   ============================================================ */
+
+.ps-node {
+  font-family: var(--serif);
+  font-size: 18px;
+  fill: var(--ink);
+}
+
+.ps-node--small {
+  font-family: var(--mono);
+  font-size: 10px;
+  fill: var(--ink-2);
+}
+
+.ps-score {
+  font-family: var(--serif);
+  font-size: 22px;
+  fill: var(--blue);
+}
+
+.ps-score-sub {
+  font-family: var(--mono);
+  font-size: 8px;
+  fill: var(--blue);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ps-t {
+  font-family: var(--mono);
+  font-size: 8px;
+  fill: var(--red);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ---------------------------------------------------------- rate strip */
+.rate-strip {
+  margin: 16px 0;
+  border-top: 1px solid var(--rule-strong);
+  border-bottom: 1px solid var(--rule-strong);
+  padding: 10px 0;
+}
+
+.rate-row {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) 52px;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 0;
+}
+
+.rate-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink-3);
+}
+
+.rate-track {
+  height: 10px;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+}
+
+.rate-fill {
+  display: block;
+  height: 100%;
+  background: var(--blue);
+  opacity: 0.7;
+}
+
+.rate-value {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink-2);
+  text-align: right;
+}
+
+/* ---------------------------------------------------------- score histogram */
+.ch11-chart {
+  min-height: 280px;
+}
+
+.ch11-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ch11-tick {
+  font-family: var(--mono);
+  font-size: 11px;
+  fill: var(--ink-3);
+}
+
+.ch11-axis-title {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ps-bar-control {
+  fill: var(--blue);
+  opacity: 0.5;
+}
+
+.ps-bar-treated {
+  fill: var(--red);
+  opacity: 0.55;
+}
+
+.ps-legend {
+  font-family: var(--mono);
+  font-size: 10px;
+  fill: var(--ink-2);
+}
+
+.ch11-range {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+.ch11-ci-label {
+  margin-top: 8px;
+}
+
+.ch11-ci {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink-2);
+}
+
+.ch11-row-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  fill: var(--ink-3);
+}
+
+.ch11-row-value {
+  font-family: var(--mono);
+  font-size: 10px;
+  fill: var(--ink-2);
+}
+
+.ch11-row-line {
+  stroke: var(--blue);
+  stroke-width: 1.2;
+}
+
+.ch11-row-dot {
+  fill: var(--paper);
+  stroke: var(--blue);
+  stroke-width: 1.5;
+}
+
+.ch11-row.is-current .ch11-row-label,
+.ch11-row.is-current .ch11-row-value {
+  fill: var(--red);
+}
+
+.ch11-row.is-current .ch11-row-line {
+  stroke: var(--red);
+  stroke-width: 1.8;
+}
+
+.ch11-row.is-current .ch11-row-dot {
+  fill: var(--red);
+  stroke: var(--ink);
+}
+
+.ch11-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ch11-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.ch11-preset {
+  padding: 7px 11px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.ch11-preset:hover {
+  border-color: var(--ink-2);
+  color: var(--ink);
+}
+
+.ch11-preset.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.ch11-preset:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.lab--no-swipe .lab-head::after {
+  content: none;
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .rate-row {
+    grid-template-columns: 78px minmax(0, 1fr) 46px;
+    gap: 6px;
+  }
+
+  .ch11-chart {
+    overflow: visible;
+    min-height: 210px;
+  }
+
+  .ch11-chart svg {
+    width: 100%;
+    max-width: none;
+  }
+
+  .ch11-tick,
+  .ch11-axis-title,
+  .ps-legend,
+  .ch11-row-label,
+  .ch11-row-value {
+    font-size: 17px;
+  }
+
+  .ch11-preset {
+    flex: 1 1 100%;
+    text-align: left;
+  }
+}

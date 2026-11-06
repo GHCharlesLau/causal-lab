@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Propensity score &mdash; Causal Field Notes</title>
+  <meta name="description" content="Chapter 11: the propensity score, inverse-probability weighting, overlap, and PS matching — with a score distribution lab.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/ch11.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the chapter</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Chapter 11</p>
+      <h1 class="hero-title">A score for balance<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">many covariates, one probability &darr;</p>
+      <p class="hero-deck">The propensity score is the probability of treatment given everything you measured.</p>
+      <p class="hero-sub">A growth-mindset intervention is assigned to some schools, not at random. Rich and poor schools differ. The propensity score compresses those differences into one number, then weighting or matching compares like with like.</p>
+      <div class="hero-meta mono">
+        <span>10,391 students</span><span>29 covariates</span><span>2 labs</span><span>~20 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#score-bench">Open the score bench <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/11-Propensity-Score.html" target="_blank" rel="noreferrer">Read the source chapter</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="Many covariates X feed into a propensity score, which predicts treatment T and outcome Y.">
+        <g class="hero-paper">
+          <path d="M30 30h400v238H30z" fill="#fbf8f1" stroke="#ddd6c9"/>
+        </g>
+        <defs>
+          <marker id="ps-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0 0L10 5L0 10z" fill="#2b2723"/>
+          </marker>
+        </defs>
+        <g class="ps-figure">
+          <g class="ps-x">
+            <rect x="48" y="58" width="60" height="24" rx="2" fill="#f6f3ec" stroke="#bdb4a5"/>
+            <text x="78" y="74" text-anchor="middle" class="ps-node ps-node--small">X1</text>
+            <rect x="48" y="94" width="60" height="24" rx="2" fill="#f6f3ec" stroke="#bdb4a5"/>
+            <text x="78" y="110" text-anchor="middle" class="ps-node ps-node--small">X2</text>
+            <rect x="48" y="130" width="60" height="24" rx="2" fill="#f6f3ec" stroke="#bdb4a5"/>
+            <text x="78" y="146" text-anchor="middle" class="ps-node ps-node--small">...</text>
+            <rect x="48" y="166" width="60" height="24" rx="2" fill="#f6f3ec" stroke="#bdb4a5"/>
+            <text x="78" y="182" text-anchor="middle" class="ps-node ps-node--small">X29</text>
+          </g>
+          <circle cx="210" cy="126" r="48" fill="#e4ecf3" stroke="#2f5d8a"/>
+          <text x="210" y="120" text-anchor="middle" class="ps-score">e(X)</text>
+          <text x="210" y="140" text-anchor="middle" class="ps-score-sub">propensity</text>
+          <rect x="340" y="68" width="70" height="34" rx="2" fill="#f6f3ec" stroke="#2b2723"/>
+          <text x="375" y="90" text-anchor="middle" class="ps-node">T</text>
+          <rect x="340" y="176" width="70" height="34" rx="2" fill="#f6f3ec" stroke="#2b2723"/>
+          <text x="375" y="198" text-anchor="middle" class="ps-node">Y</text>
+          <path d="M110 78 C 150 84, 160 100, 174 108" fill="none" stroke="#2b2723" stroke-width="1.2" marker-end="url(#ps-arrow)"/>
+          <path d="M110 108 C 150 112, 160 116, 172 120" fill="none" stroke="#2b2723" stroke-width="1.2" marker-end="url(#ps-arrow)"/>
+          <path d="M258 116 C 300 100, 304 92, 336 86" fill="none" stroke="#2b2723" stroke-width="1.5" marker-end="url(#ps-arrow)"/>
+          <path d="M258 138 C 300 158, 304 172, 336 188" fill="none" stroke="#2b2723" stroke-width="1.5" marker-end="url(#ps-arrow)"/>
+          <path d="M110 178 C 210 230, 300 220, 340 196" fill="none" stroke="#2b2723" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#ps-arrow)"/>
+          <path d="M375 102 L375 172" stroke="#a8283a" stroke-width="1.5" marker-end="url(#ps-arrow)"/>
+          <text x="386" y="140" class="ps-t">treatment</text>
+        </g>
+        <g class="hand">
+          <text x="42" y="264" fill="#2f5d8a" font-size="19">one score, many covariates</text>
+          <path d="M262 272c14 4 26 3 38-2" fill="none" stroke="#2f5d8a" stroke-width="1"/>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">Covariates X feed a propensity score e(X), which predicts treatment T; treatment and covariates predict outcome Y.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Naive</span>
+        <span class="hero-stat-value">+0.47</span>
+        <span class="hero-stat-note">raw treated minus control</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">IPTW</span>
+        <span class="hero-stat-value">+0.39</span>
+        <span class="hero-stat-note">weighted ATE</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">PS matching</span>
+        <span class="hero-stat-value">+0.389</span>
+        <span class="hero-stat-note">nearest neighbor on the score</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 MINDSET -->
+  <section class="chapter-section sheet" id="mindset" data-section="mindset">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">the psychology</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">The psychology of growth</p>
+          <h2 class="section-title">The schools<br>are not the same.</h2>
+          <p class="section-deck">A growth-mindset program is assigned to some schools. The schools that adopt it differ in poverty, achievement, and expectations &mdash; so the raw comparison is not the effect.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">The naive difference is <strong>+0.4723</strong> achievement points, with a standard error of <strong>0.020</strong>. It is large, precise, and confounded. The students who receive the intervention are not a random sample of the 10,391 students in the data.</p>
+          <p>The treatment rate rises with <span class="math-var">success_expect</span>, from about 27% in the lowest category to 36% in the highest. That is evidence of selection on a covariate, not proof of the effect.</p>
+        </div>
+
+        <div class="rate-strip" id="ch11-rates" aria-label="Intervention rate by success expectation category">
+          <!-- bars are filled by ch11.js -->
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Propensity score definition">
+          <span class="formula-label mono">the score</span>
+          <span class="formula-body"><span class="math-var">e</span>(<span class="math-var">X</span>) = P(<span class="math-var">T</span> = 1 | <span class="math-var">X</span>)</span>
+        </div>
+
+        <div class="prose">
+          <p>The propensity score is not the causal effect. It is the probability of treatment given the covariates &mdash; a one-number summary of the assignment mechanism. If two units have the same score, their covariate distributions are balanced in expectation.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The balancing property</p>
+          <p>Conditioning on the propensity score balances every covariate that went into it. That is why weighting and matching on the score can mimic a randomized comparison &mdash; if the score is right and the overlap is there.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the check</p>
+          <p>Before weighting, look at the score distribution in both groups. If the treated and control scores barely overlap, no weight can fix the comparison.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the limit</p>
+          <p>The score only balances what you measured. Unmeasured confounding survives the best propensity model.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 SCORE LAB -->
+  <section class="chapter-section sheet" id="score-bench" data-section="score-bench">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">the score bench</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Estimation and overlap</p>
+          <h2 class="section-title">Do the groups<br>share a score?</h2>
+          <p class="section-deck">Fit a logistic model for treatment. Plot the scores for treated and control. Positivity is a property of the data, not of the estimator.</p>
+        </header>
+
+        <div class="prose">
+          <p>The book estimates the score with a logistic regression on school and student covariates. The estimated scores range from about <strong>0.13</strong> to <strong>0.53</strong>; both groups occupy the same region. That is the overlap that makes weighting possible.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-score" aria-labelledby="lab-score-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-score-title">The score distribution</h3>
+            </div>
+            <p class="lab-status mono" id="ch11-score-status">10,391 students &middot; overlap</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch11-chart" id="ch11-score-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono">Estimated score</p>
+              <p class="readout-value" id="ch11-score-mean">0.33</p>
+              <p class="readout-sub">mean propensity, treated</p>
+              <p class="side-label mono ch11-ci-label">Overlap</p>
+              <p class="ch11-range" id="ch11-score-range">0.13 &ndash; 0.53</p>
+              <dl class="mini-stats">
+                <div><dt>students</dt><dd>10,391</dd></div>
+                <div><dt>treated</dt><dd id="ch11-score-treated">3,384</dd></div>
+                <div><dt>control</dt><dd id="ch11-score-control">7,007</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch11-score-note">both groups sit in the same score range.</p>
+            </aside>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The score distributions overlap. Weighting only makes sense inside that shared region; outside it, there is no counterfactual.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the shape</p>
+          <p>The scores cluster tightly. That is common when treatment is assigned at the school level and covariates are standardized.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the tail</p>
+          <p>A few scores near zero would get enormous weights. Always check the distribution before trusting IPTW.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 WEIGHTING -->
+  <section class="chapter-section sheet" id="weighting" data-section="weighting">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">weighting</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Inverse probability weighting</p>
+          <h2 class="section-title">Give the rare<br>types more weight.</h2>
+          <p class="section-deck">IPTW builds a pseudo-population in which treatment is independent of the covariates. The treated mean is weighted by 1/e(X); the control mean by 1/(1&minus;e(X)).</p>
+        </header>
+
+        <div class="prose">
+          <p>The weighted treated mean is <strong>0.2596</strong>; the weighted control mean is <strong>&minus;0.1289</strong>. Their difference is the IPTW ATE, <strong>0.3885</strong>. The raw difference was 0.4723; weighting removes about 0.084 of the naive gap.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Inverse probability weighting for the average treatment effect">
+          <span class="formula-label mono">IPTW</span>
+          <span class="formula-body">w<sub>i</sub> = <span class="frac"><span class="num"><span class="math-var">T<sub>i</sub></span></span><span class="den"><span class="math-var">e</span>(<span class="math-var">X<sub>i</sub></span>)</span></span> &minus; <span class="frac"><span class="num">1 &minus; <span class="math-var">T<sub>i</sub></span></span><span class="den">1 &minus; <span class="math-var">e</span>(<span class="math-var">X<sub>i</sub></span>)</span></span></span>
+        </div>
+
+        <div class="prose">
+          <p>A 1,000-sample bootstrap gives an ATE of <strong>0.3877</strong> with a 95% interval of <strong>(0.3545, 0.4199)</strong>. The estimate is stable across resamples and comfortably above zero.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-estimators" aria-labelledby="lab-estimators-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 02</p>
+              <h3 class="lab-title" id="lab-estimators-title">Four estimates</h3>
+            </div>
+            <p class="lab-status mono" id="ch11-est-status">IPTW &middot; 0.3885</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch11-chart" id="ch11-est-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="ch11-est-label">IPTW</p>
+              <p class="readout-value" id="ch11-est-coef">0.3885</p>
+              <p class="readout-sub">achievement points</p>
+              <p class="side-label mono ch11-ci-label">95% CI</p>
+              <p class="ch11-ci" id="ch11-est-ci">(0.3545, 0.4199)</p>
+              <dl class="mini-stats">
+                <div><dt>naive</dt><dd>0.4723</dd></div>
+                <div><dt>PS matching</dt><dd>0.389</dd></div>
+                <div><dt>students</dt><dd>10,391</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch11-est-note">weighting balances the measured mix.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch11-controls">
+            <div class="ch11-presets" role="group" aria-label="Choose an estimator">
+              <button class="ch11-preset" type="button" data-model="naive" aria-pressed="false">Naive</button>
+              <button class="ch11-preset is-active" type="button" data-model="iptw" aria-pressed="true">IPTW</button>
+              <button class="ch11-preset" type="button" data-model="regression" aria-pressed="false">PS regression</button>
+              <button class="ch11-preset" type="button" data-model="matching" aria-pressed="false">PS matching</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> All three adjusted estimates land near 0.39; the naive estimate is about 0.08 higher. The agreement is reassuring, not proof: all three rely on the same measured covariates.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the weights</p>
+          <p>The treated pseudo-population sums to 10,388.6; the control pseudo-population to 10,391.4. Both are close to the original 10,391.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the caveat</p>
+          <p>IPTW is only as good as the score model. A misspecified logistic regression reweights the wrong population.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 MATCHING -->
+  <section class="chapter-section sheet" id="matching" data-section="matching">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">matching</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Matching on the score</p>
+          <h2 class="section-title">One score,<br>one neighbor.</h2>
+          <p class="section-deck">Instead of matching on 29 covariates, match on the probability. The book’s nearest-neighbor PS match gives ATE 0.389, ATT 0.405, ATC 0.382.</p>
+        </header>
+
+        <div class="prose">
+          <p>Matching and weighting answer slightly different questions. IPTW targets the ATE by reweighting the whole sample. Nearest-neighbor matching on the score compares each unit with its closest counterpart; the book reports ATE, ATT, and ATC separately.</p>
+          <p>The regression adjustment that includes the score linearly gives <strong>0.3930</strong>. The three adjusted estimates &mdash; 0.3885, 0.389, 0.3930 &mdash; are close. The naive 0.4723 is the outlier.</p>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">Common issues</p>
+          <p><strong>Positivity:</strong> if scores do not overlap, the counterfactual is missing. <strong>Model misspecification:</strong> the score is estimated, not known. <strong>Extreme weights:</strong> scores near 0 or 1 explode. <strong>Unmeasured confounding:</strong> the score balances only what is in it.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The honest sentence</p>
+          <p>&ldquo;After weighting on the estimated propensity score, the intervention is associated with a 0.39-point achievement gain &mdash; if the score model captured the relevant confounders and the groups overlap.&rdquo;</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the agreement</p>
+          <p>Weighting, regression, and matching all land near 0.39. That is a good sign for the specification, not a guarantee against unmeasured confounding.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the question</p>
+          <p>Which estimand do you need? ATE for the population, ATT for the treated, ATC for the controls. Matching can report all three; IPTW is usually targeted at the ATE.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>The score is a probability, not an effect.</strong> It summarizes the assignment mechanism; the causal estimate comes from weighting or matching with it.</li>
+          <li><strong>Balance is the point.</strong> Conditioning on the score balances the covariates that entered it. Check balance before interpreting the outcome.</li>
+          <li><strong>Positivity is non-negotiable.</strong> If treated and control scores do not overlap, there is no comparable counterfactual to weight toward.</li>
+          <li><strong>Unmeasured confounding survives.</strong> A propensity score can only balance what you measured; it cannot fix what you did not.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The kitchen sink, again</p>
+          <p>Adding more covariates can improve balance, but it can also create extreme scores and violate overlap. The score model is a design choice, not a data dump.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Plot the score distribution before you weight. Plot the balance after you weight. Then, and only then, read the outcome.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> What is a propensity score?</summary>
+            <p>The probability of receiving treatment given the observed covariates: e(X) = P(T=1|X). It is a balancing score, not a causal effect.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> How does IPTW use the score?</summary>
+            <p>It weights treated units by 1/e(X) and controls by 1/(1&minus;e(X)). In the weighted pseudo-population, treatment is independent of the covariates, so the weighted outcome difference estimates the ATE.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> Why is overlap important?</summary>
+            <p>If some treated units have scores where no controls exist, there is no comparable counterfactual. Weighting would rely on extrapolation and extreme weights.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> What can the propensity score not fix?</summary>
+            <p>Unmeasured confounding. The score balances only the covariates included in the model; an omitted confounder still biases the weighted or matched comparison.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next chapter</p>
+          <h3>Doubly robust estimation</h3>
+          <p>Combine the outcome model and the propensity model so that one can rescue the other. The next chapter shows why two chances are better than one.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Score, overlap, balance, outcome. Do the diagnostics in that order; the estimate is the last thing you read.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-ch11.js"></script>
+<script src="../assets/js/iv11.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: '11',
+    slug: '11-propensity-score',
+    title: 'Propensity score',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/11-Propensity-Score.html',
+    sections: [
+      { id: 'mindset', num: '01', label: 'The psychology' },
+      { id: 'score-bench', num: '02', label: 'The score bench' },
+      { id: 'weighting', num: '03', label: 'Weighting' },
+      { id: 'matching', num: '04', label: 'Matching' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/ch11.js"></script>
+</body>
+</html>
