@@ -1,0 +1,207 @@
+/* ============================================================
+   Chapter 18 — CATE hero, sensitivity bands, slope contrast.
+   ============================================================ */
+
+.cate-axis,
+.cate-label {
+  font-family: var(--mono);
+}
+
+.cate-axis {
+  font-size: 9px;
+  fill: var(--ink-3);
+}
+
+.cate-label {
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.cate-label--red {
+  fill: var(--red);
+}
+
+.cate-label--blue {
+  fill: var(--blue);
+}
+
+.cate-hand {
+  font-family: var(--hand);
+  font-size: 18px;
+  fill: var(--blue);
+}
+
+/* ---------------------------------------------------------- chart */
+.ch18-chart {
+  min-height: 290px;
+}
+
+.ch18-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ch18-tick {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-3);
+}
+
+.ch18-axis-title {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  fill: var(--ink-2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.cate-dot {
+  fill: var(--blue);
+  opacity: 0.18;
+}
+
+.cate-dot--low {
+  fill: var(--red);
+  opacity: 0.3;
+}
+
+.cate-dot--high {
+  fill: var(--blue);
+  opacity: 0.3;
+}
+
+.cate-fit {
+  stroke: var(--ink);
+  stroke-width: 2.2;
+}
+
+.cate-sens {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+.ch18-side-label {
+  margin-top: 8px;
+}
+
+/* ---------------------------------------------------------- slope contrast */
+.slope-contrast {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 18px 0;
+}
+
+.slope-card {
+  padding: 12px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+}
+
+.slope-card--sensitivity {
+  border-color: var(--red);
+}
+
+.slope-card--prediction {
+  border-color: var(--blue);
+}
+
+.slope-card .mono {
+  color: var(--ink-3);
+  font-size: 8px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.slope-card svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 6px 0;
+}
+
+.slope-card p:last-child {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+/* ---------------------------------------------------------- controls */
+.ch18-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ch18-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.ch18-preset {
+  padding: 7px 11px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.ch18-preset:hover {
+  border-color: var(--ink-2);
+  color: var(--ink);
+}
+
+.ch18-preset.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.ch18-preset:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.lab--no-swipe .lab-head::after {
+  content: none;
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .lab-body {
+    grid-template-columns: 1fr;
+  }
+
+  .ch18-chart {
+    overflow: visible;
+    min-height: 210px;
+  }
+
+  .ch18-chart svg {
+    width: 100%;
+    max-width: none;
+  }
+
+  .ch18-tick,
+  .ch18-axis-title {
+    font-size: 15px;
+  }
+
+  .slope-contrast {
+    grid-template-columns: 1fr;
+  }
+
+  .ch18-preset {
+    flex: 1 1 100%;
+    text-align: left;
+  }
+}

@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Heterogeneous effects &mdash; Causal Field Notes</title>
+  <meta name="description" content="Chapter 18: heterogeneous treatment effects — ATE vs CATE, price sensitivity for ice cream, interaction models, and sensitivity bands.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/ch18.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the chapter</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Chapter 18</p>
+      <h1 class="hero-title">Different slopes<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">the average hides the response &darr;</p>
+      <p class="hero-deck">The average effect is one number. The conditional effect is a function of the day.</p>
+      <p class="hero-sub">Ice cream sales fall when the price rises &mdash; on average, by 2.75 units per real. But some days are much more price-sensitive than others. Split the days by predicted sensitivity: the low band falls by 5.73 units per real; the high band barely moves.</p>
+      <div class="hero-meta mono">
+        <span>5,000 days</span><span>1,250 test days</span><span>2 bands</span><span>~18 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#sensitivity-bench">Open the CATE bench <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/18-Heterogeneous-Treatment-Effects-and-Personalization.html" target="_blank" rel="noreferrer">Read the source chapter</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="Two groups of days with different price-sales slopes; both start at the same price but respond differently.">
+        <g class="hero-paper">
+          <path d="M24 28h412v244H24z" fill="#fbf8f1" stroke="#ddd6c9"/>
+        </g>
+        <g class="cate-hero">
+          <line x1="54" y1="228" x2="416" y2="228" stroke="#bdb4a5"/>
+          <line x1="54" y1="54" x2="54" y2="228" stroke="#bdb4a5"/>
+          <text x="54" y="246" text-anchor="middle" class="cate-axis">low price</text>
+          <text x="416" y="246" text-anchor="middle" class="cate-axis">high price</text>
+          <text x="44" y="62" text-anchor="end" class="cate-axis">sales</text>
+          <path d="M54 92 L416 198" fill="none" stroke="#a8283a" stroke-width="2.2"/>
+          <path d="M54 150 L416 166" fill="none" stroke="#2f5d8a" stroke-width="2.2"/>
+          <circle cx="54" cy="92" r="4" fill="#a8283a"/>
+          <circle cx="54" cy="150" r="4" fill="#2f5d8a"/>
+          <text x="330" y="190" class="cate-label cate-label--red">sensitive</text>
+          <text x="330" y="154" class="cate-label cate-label--blue">insensitive</text>
+          <text x="70" y="278" class="hand cate-hand">different slopes, same treatment</text>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">Two groups of days respond differently to price: the sensitive group falls steeply, the insensitive group stays nearly flat.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">ATE</span>
+        <span class="hero-stat-value">&minus;2.75</span>
+        <span class="hero-stat-note">units per real</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Sensitive</span>
+        <span class="hero-stat-value">&minus;5.73</span>
+        <span class="hero-stat-note">low-sensitivity band</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Insensitive</span>
+        <span class="hero-stat-value">+0.88</span>
+        <span class="hero-stat-note">high-sensitivity band</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 ATE/CATE -->
+  <section class="chapter-section sheet" id="ate" data-section="ate">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">from ATE to CATE</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">From one number to a function</p>
+          <h2 class="section-title">Who responds<br>differently?</h2>
+          <p class="section-deck">The average treatment effect tells you whether to treat. The conditional average treatment effect tells you who to treat.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">A price increase is a treatment. Each day is a unit. The outcome is sales; the context is temperature, weekday, and cost. The ATE is one slope for everyone. The CATE allows that slope to change with the context.</p>
+          <p>This is personalization in causal terms: not predicting who buys the most, but predicting who responds most to the treatment. The two questions are different, and they can produce different policies.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="ATE and CATE">
+          <span class="formula-label mono">ATE &rarr; CATE</span>
+          <span class="formula-body">E[<span class="math-var">Y</span><sub>1</sub> &minus; <span class="math-var">Y</span><sub>0</sub>] &nbsp;&nbsp;&rarr;&nbsp;&nbsp; E[<span class="math-var">Y</span><sub>1</sub> &minus; <span class="math-var">Y</span><sub>0</sub> | <span class="math-var">X</span>]</span>
+        </div>
+
+        <div class="prose">
+          <p>We cannot see an individual sensitivity directly; it is a counterfactual slope. But with randomized treatment and a model that interacts the treatment with context, the fitted derivative becomes an estimate of the CATE.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The two decisions</p>
+          <p><strong>Program evaluation:</strong> should we treat at all? <strong>Personalization:</strong> who should receive which treatment? The first needs an ATE; the second needs heterogeneity.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the lever</p>
+          <p>Price is a treatment you can set. Temperature is context you cannot. The interaction is what makes the response differ by day.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the catch</p>
+          <p>Sensitivity is not observed. The model predicts it from a fitted outcome surface; the ranking is the useful part, not the exact level.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 SENSITIVITY BENCH -->
+  <section class="chapter-section sheet" id="sensitivity-bench" data-section="sensitivity-bench">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">the CATE bench</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Sensitivity bands</p>
+          <h2 class="section-title">One price,<br>two responses.</h2>
+          <p class="section-deck">Predict sensitivity with an interaction model, split the test days at the median, and fit a separate price-sales line in each band.</p>
+        </header>
+
+        <div class="prose">
+          <p>The first model has no interaction: it predicts the same price sensitivity, <strong>&minus;2.75</strong>, for every day. The second adds price &times; temperature; the third adds price interactions with every context feature. The third model gives a different sensitivity to each day.</p>
+          <p>Split the test set at the median predicted sensitivity. In the low-sensitivity band, the raw price slope is <strong>&minus;5.73</strong>; in the high-sensitivity band, it is <strong>+0.88</strong> &mdash; essentially flat. The average slope is <strong>&minus;2.34</strong>.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-cate" aria-labelledby="lab-cate-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-cate-title">The sensitivity bench</h3>
+            </div>
+            <p class="lab-status mono" id="ch18-status">all days &middot; ATE</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch18-chart" id="ch18-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="ch18-label">Price slope</p>
+              <p class="readout-value" id="ch18-slope">&minus;2.34</p>
+              <p class="readout-sub">sales per real</p>
+              <p class="side-label mono ch18-side-label">Mean sensitivity</p>
+              <p class="ch18-sens" id="ch18-sens">&minus;2.75</p>
+              <dl class="mini-stats">
+                <div><dt>days</dt><dd id="ch18-days">1,250</dd></div>
+                <div><dt>bands</dt><dd>2</dd></div>
+                <div><dt>test split</dt><dd>25%</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch18-note">the average slope hides the split.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch18-controls">
+            <div class="ch18-presets" role="group" aria-label="Choose a band">
+              <button class="ch18-preset is-active" type="button" data-band="all" aria-pressed="true">All days</button>
+              <button class="ch18-preset" type="button" data-band="low" aria-pressed="false">Low sensitivity</button>
+              <button class="ch18-preset" type="button" data-band="high" aria-pressed="false">High sensitivity</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The low-sensitivity band falls steeply; the high-sensitivity band is flat. Same price range, very different response.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the split</p>
+          <p>The median predicted sensitivity is almost exactly zero. The low band contains the days the model thinks will fall; the high band contains the days it thinks will barely move.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the caveat</p>
+          <p>The band slopes are raw test-set slopes, not causal estimates. They show the partition is informative, not that the model is calibrated.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 PREDICTION -->
+  <section class="chapter-section sheet" id="prediction" data-section="prediction">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">prediction vs sensitivity</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">A good prediction is not enough</p>
+          <h2 class="section-title">It predicts sales,<br>not slopes.</h2>
+          <p class="section-deck">A gradient-boosted model predicts sales very well &mdash; test R&sup2; 0.9124. But split the days by predicted sales, and the price slopes barely change.</p>
+        </header>
+
+        <div class="prose">
+          <p>The predictive model separates high-sales days from low-sales days. That is exactly what it was trained to do. It does not separate high-sensitivity days from low-sensitivity days, because sales level and price response are different objects.</p>
+          <p>The contrast is the lesson of the chapter: a model can be excellent at <span class="math-var">E</span>[<span class="math-var">Y</span>|<span class="math-var">X</span>] and still tell you nothing useful about <span class="math-var">E</span>[<span class="math-var">Y</span>&prime;(<span class="math-var">t</span>)|<span class="math-var">X</span>].</p>
+        </div>
+
+        <div class="slope-contrast">
+          <div class="slope-card slope-card--sensitivity">
+            <p class="mono">By sensitivity</p>
+            <svg viewBox="0 0 220 120" aria-hidden="true">
+              <line x1="20" y1="100" x2="200" y2="100" stroke="var(--rule-strong)"/>
+              <path d="M30 34 L200 92" fill="none" stroke="#a8283a" stroke-width="2"/>
+              <path d="M30 64 L200 70" fill="none" stroke="#2f5d8a" stroke-width="2"/>
+            </svg>
+            <p>Steep and flat lines: the partition separates responses.</p>
+          </div>
+          <div class="slope-card slope-card--prediction">
+            <p class="mono">By predicted sales</p>
+            <svg viewBox="0 0 220 120" aria-hidden="true">
+              <line x1="20" y1="100" x2="200" y2="100" stroke="var(--rule-strong)"/>
+              <path d="M30 38 L200 76" fill="none" stroke="#2f5d8a" stroke-width="2"/>
+              <path d="M30 62 L200 98" fill="none" stroke="#2f5d8a" stroke-width="2"/>
+            </svg>
+            <p>Parallel lines at different levels: the partition separates sales.</p>
+          </div>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The model's job</p>
+          <p>Predictive performance is measured on the outcome. If the decision depends on a derivative, a model that predicts the outcome well may still be the wrong tool.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the score</p>
+          <p>Test R&sup2; 0.9124 is high. The model knows which days are busy; it does not know which days are price-sensitive.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the lesson</p>
+          <p>Choose the target to match the decision. If you will set a price, predict the slope, not the level.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 LIMITS -->
+  <section class="chapter-section sheet" id="limits" data-section="limits">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">the limits</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">What the model cannot see</p>
+          <h2 class="section-title">A ranking,<br>not a measurement.</h2>
+          <p class="section-deck">Sensitivity is a counterfactual slope. The model predicts it, but the prediction is not directly observable.</p>
+        </header>
+
+        <div class="prose">
+          <p>Some predictions are positive: the model says sales would rise with price on those days. That is economically implausible and likely extrapolation. For partitioning, it is enough that the model ranks days by responsiveness; the exact level is not identified.</p>
+          <p>The next chapter asks the harder question: how do we know whether one CATE model is better than another? A good partition is one that changes the decision usefully, not one that predicts sensitivity most accurately.</p>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">Do not over-read the slope</p>
+          <p>The band slopes are descriptive. The causal claim rests on randomized prices and the model's functional form, not on the test-set regression alone.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The honest sentence</p>
+          <p>&ldquo;The model ranks days by predicted price sensitivity. Days in the low-sensitivity band show a steeper price-sales slope in the test set. That is a useful partition, not a calibrated individual effect.&rdquo;</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the use</p>
+          <p>Personalization needs an ordering. You do not need to know each day's exact elasticity to decide where to be cautious with price.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the warning</p>
+          <p>Positive predicted sensitivity is a red flag for extrapolation. Check the model's behavior at the edges before acting on it.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>CATE is a function, not a number.</strong> It allows the treatment effect to vary with context; that is what makes personalization possible.</li>
+          <li><strong>Interactions create heterogeneity.</strong> A model without treatment&times;feature interactions predicts the same sensitivity for everyone.</li>
+          <li><strong>Sensitivity is a derivative.</strong> You can approximate it by predicting the outcome at <span class="math-var">t</span> and <span class="math-var">t</span>+1 and taking the difference.</li>
+          <li><strong>Prediction is not sensitivity.</strong> A model can predict sales extremely well and still fail to separate responsive from unresponsive days.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The sentence to avoid</p>
+          <p>&ldquo;The model predicts a sensitivity of +0.88, so raising the price will increase sales.&rdquo; The model predicts a slope; the slope may be extrapolation, and the test-set evidence is a partition, not a guarantee.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Ask what decision the model changes. If the decision is price, the target should be the price slope.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> What is the difference between ATE and CATE?</summary>
+            <p>The ATE is one average effect for the population. The CATE is the average effect conditional on covariates; it allows different units to respond differently.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> Why do interactions matter for sensitivity?</summary>
+            <p>Without a treatment&times;feature interaction, the derivative with respect to treatment is a constant. The interaction lets the predicted slope change with the features.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> Why did the predictive model fail to separate sensitivities?</summary>
+            <p>It was trained to predict the sales level. Its bands split high- and low-sales days, but price slopes were similar across bands; predicting Y is not predicting dY/dT.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> What should you check before acting on a sensitivity prediction?</summary>
+            <p>Whether the model is extrapolating (for example, positive price sensitivity), whether the partition changes the decision usefully, and whether the causal assumptions hold.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next chapter</p>
+          <h3>Evaluating causal models</h3>
+          <p>If sensitivity is unobserved, how do we know which CATE model is better? The next chapter introduces evaluation for heterogeneous effects.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Plot the slopes, not just the levels. A partition that moves the slope is useful; one that only moves the intercept is a sales forecast.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-ch18.js"></script>
+<script src="../assets/js/iv18.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: '18',
+    slug: '18-heterogeneous-effects',
+    title: 'Heterogeneous effects',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/18-Heterogeneous-Treatment-Effects-and-Personalization.html',
+    sections: [
+      { id: 'ate', num: '01', label: 'ATE to CATE' },
+      { id: 'sensitivity-bench', num: '02', label: 'The CATE bench' },
+      { id: 'prediction', num: '03', label: 'Prediction vs sensitivity' },
+      { id: 'limits', num: '04', label: 'The limits' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/ch18.js"></script>
+</body>
+</html>
