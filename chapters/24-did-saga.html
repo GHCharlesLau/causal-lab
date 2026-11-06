@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The DiD saga &mdash; Causal Field Notes</title>
+  <meta name="description" content="Chapter 24: the difference-in-differences saga — staggered adoption, TWFE bias from time heterogeneity, event studies, and cohort-by-date interactions.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/ch24.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the chapter</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Chapter 24</p>
+      <h1 class="hero-title hero-title--long">The DiD <br>saga<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">birth, death, and a fix &darr;</p>
+      <p class="hero-deck">Two-way fixed effects recover the effect when it is constant. When the effect matures over time, the same model can get the sign wrong.</p>
+      <p class="hero-sub">A staggered rollout across three cohorts. With a constant effect, TWFE returns exactly 1.000. With an effect that takes ten days to mature, it returns 0.787 instead of 0.854. With a negative effect that fades, it returns +0.05 instead of −1.22.</p>
+      <div class="hero-meta mono">
+        <span>100 cities</span><span>92 days</span><span>3 cohorts</span><span>~24 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#twfe-bench">Open the TWFE bench <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/24-The-Diff-in-Diff-Saga.html" target="_blank" rel="noreferrer">Read the source chapter</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="Three panels: a constant effect recovers one; a maturing effect is underestimated; a fading negative effect is reversed to positive.">
+        <g class="hero-paper">
+          <path d="M24 28h412v244H24z" fill="#fbf8f1" stroke="#ddd6c9"/>
+        </g>
+        <g class="saga-figure">
+          <text x="92" y="56" text-anchor="middle" class="saga-title">birth</text>
+          <text x="230" y="56" text-anchor="middle" class="saga-title">death</text>
+          <text x="368" y="56" text-anchor="middle" class="saga-title">reversal</text>
+
+          <line x1="40" y1="164" x2="144" y2="164" stroke="#bdb4a5"/>
+          <path d="M44 140 L140 112" fill="none" stroke="#2f5d8a" stroke-width="1.8"/>
+          <path d="M44 156 L140 128" fill="none" stroke="#a8283a" stroke-width="1.8"/>
+          <text x="92" y="188" text-anchor="middle" class="saga-value">1.000</text>
+          <text x="92" y="204" text-anchor="middle" class="saga-sub">recovered</text>
+
+          <line x1="178" y1="164" x2="282" y2="164" stroke="#bdb4a5"/>
+          <path d="M182 148 L278 120" fill="none" stroke="#2f5d8a" stroke-width="1.8" stroke-dasharray="3 2"/>
+          <path d="M182 156 L278 134" fill="none" stroke="#a8283a" stroke-width="1.8"/>
+          <text x="230" y="188" text-anchor="middle" class="saga-value saga-value--red">0.787</text>
+          <text x="230" y="204" text-anchor="middle" class="saga-sub">true 0.854</text>
+
+          <line x1="316" y1="164" x2="420" y2="164" stroke="#bdb4a5"/>
+          <path d="M320 120 L416 160" fill="none" stroke="#a8283a" stroke-width="1.8"/>
+          <path d="M320 136 L416 176" fill="none" stroke="#2f5d8a" stroke-width="1.8" stroke-dasharray="3 2"/>
+          <text x="368" y="188" text-anchor="middle" class="saga-value saga-value--red">+0.05</text>
+          <text x="368" y="204" text-anchor="middle" class="saga-sub">true −1.22</text>
+
+          <text x="40" y="252" class="saga-label">constant effect</text>
+          <text x="178" y="252" class="saga-label">maturing effect</text>
+          <text x="316" y="252" class="saga-label">fading effect</text>
+          <text x="52" y="278" class="hand saga-hand">the estimator is a weighted average of 2×2 DiDs</text>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">Constant effects are recovered; maturing effects are underestimated; a fading negative effect is reversed to positive by TWFE.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Constant</span>
+        <span class="hero-stat-value">1.000</span>
+        <span class="hero-stat-note">TWFE = truth</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Mature</span>
+        <span class="hero-stat-value">0.787</span>
+        <span class="hero-stat-note">truth 0.854</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Fading</span>
+        <span class="hero-stat-value">+0.05</span>
+        <span class="hero-stat-note">truth −1.22</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 BIRTH -->
+  <section class="chapter-section sheet" id="birth" data-section="birth">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">birth</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">The promise of panel data</p>
+          <h2 class="section-title">Each city,<br>its own control.</h2>
+          <p class="section-deck">A staggered rollout: three cohorts, a before-and-after comparison, and a set of never-treated cities.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">A city’s baseline installs are captured by a unit effect; the common trend and seasonality by a time effect. The two-way fixed-effects model writes installs as a treatment indicator plus both effects.</p>
+          <p>With a constant treatment effect of 1, the TWFE estimate is exactly <strong>1.000</strong>. It recovers the effect because the model’s implicit counterfactual — the control trend projected to the treated level — is correct.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Two-way fixed effects">
+          <span class="formula-label mono">TWFE</span>
+          <span class="formula-body"><span class="math-var">Installs</span><sub>it</sub> = <span class="math-var">&tau;</span><span class="math-var">D</span><sub>it</sub> + <span class="math-var">&gamma;</span><sub>i</sub> + <span class="math-var">&theta;</span><sub>t</sub> + <span class="math-var">e</span><sub>it</sub></span>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-block">
+            <span class="mono">Units</span>
+            <strong>100</strong>
+            <p>cities tracked daily</p>
+          </div>
+          <div class="stat-block">
+            <span class="mono">Periods</span>
+            <strong>92</strong>
+            <p>May through July</p>
+          </div>
+          <div class="stat-block">
+            <span class="mono">Cohorts</span>
+            <strong>3</strong>
+            <p>June, July, and never</p>
+          </div>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">Why it works</p>
+          <p>Unit effects absorb fixed differences; time effects absorb the common trend. The treatment coefficient is the remaining before-and-after difference.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the decomposition</p>
+          <p>TWFE is a weighted average of all possible 2×2 DiDs: early vs never, late vs never, early vs late, and late vs early.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the hidden assumption</p>
+          <p>The weights must be positive and the effects must be constant over time. If not, the average can go wrong.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 DEATH -->
+  <section class="chapter-section sheet" id="death" data-section="death">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">death</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Time heterogeneity</p>
+          <h2 class="section-title">The effect<br>matures. TWFE doesn’t.</h2>
+          <p class="section-deck">Make the treatment effect ramp up over ten days. TWFE now averages comparisons that use already-treated units as controls.</p>
+        </header>
+
+        <div class="prose">
+          <p>The true ATT is <strong>0.8544</strong>. TWFE returns <strong>0.7868</strong>. The model is not failing because parallel trends are violated; it is failing because its functional form forces one constant effect, and its implicit weights use the early-treated cohort as a control for the late-treated cohort.</p>
+          <p>The early cohort is still climbing when the late cohort is treated. Its rising outcome looks like a steeper control trend, so the late cohort’s counterfactual is projected too high — and its effect is underestimated.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-twfe" aria-labelledby="lab-twfe-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-twfe-title">The TWFE bench</h3>
+            </div>
+            <p class="lab-status mono" id="ch24-status">mature &middot; TWFE 0.787</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch24-chart" id="ch24-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono">TWFE estimate</p>
+              <p class="readout-value" id="ch24-twfe">0.787</p>
+              <p class="readout-sub">estimated ATT</p>
+              <p class="side-label mono ch24-side-label">True ATT</p>
+              <p class="ch24-true" id="ch24-true">0.854</p>
+              <dl class="mini-stats">
+                <div><dt>bias</dt><dd id="ch24-bias">&minus;0.068</dd></div>
+                <div><dt>cohorts</dt><dd id="ch24-cohorts">3</dd></div>
+                <div><dt>days</dt><dd id="ch24-days">92</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch24-note">the early cohort is still climbing when the late cohort is treated.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch24-controls">
+            <div class="ch24-presets" role="group" aria-label="Choose a data-generating process">
+              <button class="ch24-preset" type="button" data-scenario="constant" aria-pressed="false">Constant</button>
+              <button class="ch24-preset is-active" type="button" data-scenario="mature" aria-pressed="true">Mature</button>
+              <button class="ch24-preset" type="button" data-scenario="minimal" aria-pressed="false">Reversal</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The cohort paths look reasonable in every case. The problem is not the plot; it is the comparison the estimator makes.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">Goodman-Bacon</p>
+          <p>TWFE can be decomposed into 2×2 DiDs. The “late vs early” comparison uses an already-treated group as the control, which contaminates the estimate.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the formula</p>
+          <p>Under heterogeneous timing, the probability limit is VWATT − ΔATT. The extra term is the change in the ATT over time; it biases the estimate.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 REVERSAL -->
+  <section class="chapter-section sheet" id="reversal" data-section="reversal">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">the reversal</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Two cohorts, wrong sign</p>
+          <h2 class="section-title">Negative effect,<br>positive estimate.</h2>
+          <p class="section-deck">A minimal example with no trend: the treatment reduces installs by 0.1 per day. TWFE says +0.05.</p>
+        </header>
+
+        <div class="prose">
+          <p>The early cohort’s effect is negative and decreasing. When the late cohort is treated, the early cohort is used as a control. Its falling outcome makes the late cohort’s counterfactual slope downward and shifts its level down, until the counterfactual sits below the treated outcome.</p>
+          <p>The true ATT is <strong>−1.219</strong>; the TWFE estimate is <strong>+0.050</strong>. This is not a small bias. It is a sign reversal.</p>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The plot is not the problem</p>
+          <p>The cohort paths clearly show a negative effect. The estimator fails because of the counterfactual it constructs from the early-treated control, not because the data are uninformative.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The lesson</p>
+          <p>“Negative weights” is not an abstraction. An already-treated unit can enter a comparison as a control and pull the estimate in the opposite direction.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the fix</p>
+          <p>Do not use already-treated units as controls. Estimate cohort-specific effects or use a estimator designed for staggered adoption.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the caution</p>
+          <p>A positive TWFE coefficient is not evidence of a positive effect when treatment timing is staggered and effects change over time.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 EVENT -->
+  <section class="chapter-section sheet" id="event" data-section="event">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">event study</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">A tempting non-fix</p>
+          <h2 class="section-title">More dummies<br>are not enough.</h2>
+          <p class="section-deck">Adding a dummy for every period relative to treatment makes the model flexible. It still uses already-treated units as controls.</p>
+        </header>
+
+        <div class="prose">
+          <p>The event-study model replaces one treatment indicator with a set of relative-time dummies. That captures time heterogeneity in the effect, but it does not change the set of comparisons. The early-treated cohort is still a control for the late-treated one.</p>
+          <p>The result is a set of event-study coefficients with strange spikes and a positive pre-treatment effect, even though there is no anticipation. Flexibility without fixing the comparison is not enough.</p>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The diagnosis</p>
+          <p>Event studies can be useful for diagnostics. They are not automatically a solution to staggered-adoption bias.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">What changes</p>
+          <p>The fix must change which units serve as controls, or estimate effects cohort by cohort so that already-treated units are not used as clean controls.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the tell</p>
+          <p>A pre-treatment “effect” that is not zero is a warning. It can come from anticipation, but also from contaminated comparisons.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the next try</p>
+          <p>Interact treatment with cohort and date. That allows the effect to vary by both, which is the flexible functional form the next section uses.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 FIX -->
+  <section class="chapter-section sheet" id="fix" data-section="fix">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">enlightenment</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">A flexible functional form</p>
+          <h2 class="section-title">Let the effect<br>vary by cohort and date.</h2>
+          <p class="section-deck">Interact treatment with cohort and date dummies. The model can now represent a different effect for every cohort-day.</p>
+        </header>
+
+        <div class="prose">
+          <p>Instead of one τ, estimate <span class="math-var">&tau;</span><sub>gt</sub> for each cohort <span class="math-var">g</span> and date <span class="math-var">t</span>. This is a large model — 467 parameters — but it recovers the true ATT of <strong>0.854411</strong> exactly.</p>
+          <p>Dropping pre-treatment dates and the never-treated cohort reduces the model to 271 parameters and still recovers <strong>0.854411</strong>. The counterfactual now sits where it should: near the control cohort, not on a spurious trend.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Cohort by date effects">
+          <span class="formula-label mono">flexible TWFE</span>
+          <span class="formula-body"><span class="math-var">Installs</span><sub>it</sub> = &Sigma;<sub>g</sub>&Sigma;<sub>t</sub> <span class="math-var">&tau;</span><sub>gt</sub><span class="math-var">D</span><sub>it</sub> + <span class="math-var">&gamma;</span><sub>i</sub> + <span class="math-var">&theta;</span><sub>t</sub> + <span class="math-var">e</span><sub>it</sub></span>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-block">
+            <span class="mono">Full model</span>
+            <strong>467 params</strong>
+            <p>recovers 0.854411</p>
+          </div>
+          <div class="stat-block">
+            <span class="mono">Reduced</span>
+            <strong>271 params</strong>
+            <p>post-treatment only</p>
+          </div>
+          <div class="stat-block">
+            <span class="mono">Truth</span>
+            <strong>0.854412</strong>
+            <p>the simulated ATT</p>
+          </div>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The catch</p>
+          <p>This fixes the functional form, not the independence assumption. Parallel trends is still required, and it is more restrictive than it looks.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the implementation</p>
+          <p>Create cohort dummies and cohort-specific date columns; interact each with treatment. Drop pre-treatment dates under no anticipation.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the warning</p>
+          <p>More parameters mean more variance. The point is to model the effect’s time path, not to fit every cell.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>TWFE is a weighted average of 2×2 DiDs.</strong> When already-treated units serve as controls, the weights can be negative and the average can be wrong.</li>
+          <li><strong>Time heterogeneity breaks the constant-effect model.</strong> An effect that matures can be underestimated; an effect that fades can be reversed.</li>
+          <li><strong>Event studies are not a cure.</strong> They add relative-time dummies but do not fix which units are used as controls.</li>
+          <li><strong>Cohort×date interactions restore flexibility.</strong> Estimate a separate effect by cohort and date, and drop clean pre-periods to reduce the parameter count.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The sentence to avoid</p>
+          <p>&ldquo;TWFE is biased, so DiD is dead.&rdquo; The functional-form problem has a fix; the parallel-trends assumption remains the harder question.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Plot the cohort paths, decompose the comparisons, and ask which units are serving as controls.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 07 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">07</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> Why does TWFE recover 1.000 in the constant-effect case?</summary>
+            <p>With a constant effect and parallel trends, every 2×2 DiD is unbiased and the weights are positive. The weighted average equals the true effect.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> Why is the maturing effect underestimated?</summary>
+            <p>The early-treated cohort is still climbing when the late cohort is treated. Using it as a control makes the late cohort’s counterfactual trend too steep, shrinking the estimated effect.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> Why can TWFE get the sign wrong?</summary>
+            <p>Already-treated units can receive negative weights in the decomposition. A fading negative effect in the early cohort can push the late cohort’s counterfactual below its treated outcome.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> Does the cohort×date model solve every DiD problem?</summary>
+            <p>No. It fixes the functional-form problem by allowing effects to vary by cohort and date, but parallel trends and no unobserved confounding are still required.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next chapter</p>
+          <h3>Synthetic difference-in-differences</h3>
+          <p>Combine synthetic control weights with DiD: balance the treated unit against a weighted donor pool, then difference.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>When treatment timing is staggered, “the control group” is not one group. Ask which cohorts are being compared.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-ch24.js"></script>
+<script src="../assets/js/iv24.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: '24',
+    slug: '24-did-saga',
+    title: 'The DiD saga',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/24-The-Diff-in-Diff-Saga.html',
+    sections: [
+      { id: 'birth', num: '01', label: 'Birth' },
+      { id: 'death', num: '02', label: 'Death' },
+      { id: 'reversal', num: '03', label: 'The reversal' },
+      { id: 'event', num: '04', label: 'Event study' },
+      { id: 'fix', num: '05', label: 'Enlightenment' },
+      { id: 'key', num: '06', label: 'Key ideas' },
+      { id: 'practice', num: '07', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/ch24.js"></script>
+</body>
+</html>

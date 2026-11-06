@@ -44,7 +44,7 @@
         { num: '21', slug: '21-meta-learners', title: 'Meta learners', short: 'Learn the effect', deck: 'S-, T-, X-, and R-learners: different ways to target the effect, not the outcome.', status: 'live' },
         { num: '22', slug: '22-orthogonal-ml', title: 'Debiased machine learning', short: 'Orthogonalize the nuisance', deck: 'Neyman orthogonality and cross-fitting, without the hand-waving.', status: 'live' },
         { num: '23', slug: '23-heterogeneity-nonlinearity', title: 'Heterogeneity and nonlinearity', short: 'When linearity lies', deck: 'The failure modes that survive a clever learner.', status: 'live' },
-        { num: '24', slug: '24-did-saga', title: 'The difference-in-differences saga', short: 'Many periods, many choices', deck: 'Staggered adoption, negative weights, and the estimators that fix them.', status: 'planned' },
+        { num: '24', slug: '24-did-saga', title: 'The difference-in-differences saga', short: 'Many periods, many choices', deck: 'Staggered adoption, negative weights, and the estimators that fix them.', status: 'live' },
         { num: '25', slug: '25-synthetic-did', title: 'Synthetic difference-in-differences', short: 'Weights that balance', deck: 'Combine synthetic control and DiD into one weighted design.', status: 'planned' }
       ]
     },

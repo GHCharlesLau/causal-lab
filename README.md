@@ -8,16 +8,16 @@ and arguments you can defend.
 It is a local, static website: no backend, no build step, no tracking. Open `index.html`
 for the landing page, or serve the folder over HTTP.
 
-**Status: 23 of 30 pages live.** Chapters 01 (Introduction to causality), 02 (Randomised
+**Status: 24 of 30 pages live.** Chapters 01 (Introduction to causality), 02 (Randomised
 experiments), 03 (Stats review), 04 (Graphical causal models), 05 (Linear regression),
 06 (Grouped and dummy regression), 07 (Beyond confounders), 08 (Instrumental variables),
 09 (Non-compliance and LATE), 10 (Matching), 11 (Propensity score), 12 (Doubly robust
 estimation), 13 (Difference-in-differences), 14 (Panel data and fixed effects),
 15 (Synthetic control), 16 (Regression discontinuity), 17 (Predictive models),
 18 (Heterogeneous effects), 19 (Evaluating causal models), 20 (Plug-and-play estimators),
-21 (Meta-learners), 22 (Orthogonal ML), and 23 (Heterogeneity and nonlinearity) are
-complete. The other 7 pages are scaffolded in the course manifest and marked as planned;
-they are added one at a time, with numbers checked against the book's notebooks.
+21 (Meta-learners), 22 (Orthogonal ML), 23 (Heterogeneity and nonlinearity), and 24 (The DiD
+saga) are complete. The other 6 pages are scaffolded in the course manifest and marked as
+planned; they are added one at a time, with numbers checked against the book's notebooks.
 
 ---
 
@@ -217,6 +217,15 @@ income’s cumulative-effect curve still looks heterogeneous. Low (12.1%) and hi
 base rates reverse the targeting rule. A pricing example shows how a truncated price range
 can reverse the segment ranking.
 
+### 24 — The DiD saga
+
+A staggered rollout across 100 cities and 92 days. TWFE recovers a constant effect of 1.000.
+When the effect takes ten days to mature, it returns 0.7868 instead of the true 0.8544. In a
+minimal two-cohort example with a negative, fading effect, it returns +0.05 instead of
+−1.219. The page walks through Goodman-Bacon’s 2×2 decomposition, shows why event-study
+dummies are not enough, and implements the cohort×date interaction fix that recovers
+0.854411 with 467 parameters (271 after dropping clean pre-periods).
+
 ### What is in each chapter
 
 - A story with the decision, the failure of the naive comparison, and the identification
@@ -294,6 +303,8 @@ point here is to let you see estimator bias separately from confounding bias.
 
 ![Chapter 23, the conversion bench](assets/img/screenshots/ch23-conversion.png)
 
+![Chapter 24, the TWFE bench](assets/img/screenshots/ch24-twfe.png)
+
 ![The Matching chapter](assets/img/screenshots/matching.png)
 
 ---
@@ -313,9 +324,10 @@ Open `index.html` in Chrome or Edge. It is the landing page. The live chapters a
 `chapters/15-synthetic-control.html`, `chapters/16-regression-discontinuity.html`,
 `chapters/17-predictive-models.html`, `chapters/18-heterogeneous-effects.html`,
 `chapters/19-evaluating-causal-models.html`, `chapters/20-plug-and-play.html`,
-`chapters/21-meta-learners.html`, `chapters/22-orthogonal-ml.html`, and
-`chapters/23-heterogeneity-nonlinearity.html`. Everything needed is local: CSS, JS, data,
-fonts, the poster, and the rendered opener at `assets/video/matching-opener.mp4`.
+`chapters/21-meta-learners.html`, `chapters/22-orthogonal-ml.html`,
+`chapters/23-heterogeneity-nonlinearity.html`, and `chapters/24-did-saga.html`.
+Everything needed is local: CSS, JS, data, fonts, the poster, and the rendered opener at
+`assets/video/matching-opener.mp4`.
 
 ### Option 2: local server
 
@@ -422,9 +434,9 @@ Reference, chapter, and manifest tests (Node 24, no packages):
 The suite checks the Matching book numbers, the k-curve, severity-band checkpoints, the
 oracle, the k-d tree, the OLS toy regression, the Chapter 01 potential-outcomes arithmetic
 (ATE −50, ATT −75, naive +125, bias +200), the Chapter 02 group means and missing-data
-balance, the Chapter 03 standard errors, interval, z, and p-values, the Chapter 04 DAG path logic, the Chapter 05 OLS/control path, the Chapter 06 weighted/dummy regression, the Chapter 07 control models, the Chapter 08 IV constants, the Chapter 09 compliance matrix, the Chapter 11 propensity score, the Chapter 12 doubly robust grid, the Chapter 13 difference-in-differences, the Chapter 15 synthetic control, the Chapter 16 RD constants, the Chapter 17 policy arithmetic, the Chapter 18 CATE bands, the Chapter 19 gain curves, the Chapter 20 target transforms, the Chapter 21 meta-learner curves, the Chapter 22 orthogonal slopes, the Chapter 23 conversion curves, and the site manifest
+balance, the Chapter 03 standard errors, interval, z, and p-values, the Chapter 04 DAG path logic, the Chapter 05 OLS/control path, the Chapter 06 weighted/dummy regression, the Chapter 07 control models, the Chapter 08 IV constants, the Chapter 09 compliance matrix, the Chapter 11 propensity score, the Chapter 12 doubly robust grid, the Chapter 13 difference-in-differences, the Chapter 15 synthetic control, the Chapter 16 RD constants, the Chapter 17 policy arithmetic, the Chapter 18 CATE bands, the Chapter 19 gain curves, the Chapter 20 target transforms, the Chapter 21 meta-learner curves, the Chapter 22 orthogonal slopes, the Chapter 23 conversion curves, the Chapter 24 TWFE paths, and the site manifest
 (30 pages, unique slugs, every live page exists, the shared reading scale is loaded).
-111 tests in total.
+115 tests in total.
 
 Browser smoke tests use Chrome DevTools Protocol through Node's built-in WebSocket (no
 Playwright/Puppeteer). Matching-specific scripts default to
@@ -456,6 +468,7 @@ to test a different page.
 & "...\node.exe" tools/cdp-ch21.mjs   # Chapter 21: meta-learner comparison
 & "...\node.exe" tools/cdp-ch22.mjs   # Chapter 22: raw/residual and R-learner
 & "...\node.exe" tools/cdp-ch23.mjs   # Chapter 23: conversion views and price range
+& "...\node.exe" tools/cdp-ch24.mjs   # Chapter 24: TWFE scenarios
 & "...\node.exe" tools/cdp-a11y.mjs
 & "...\node.exe" tools/cdp-reduced.mjs
 & "...\node.exe" tools/cdp-film.mjs
@@ -488,7 +501,8 @@ practice mode, and the course map. It prints the observed values and any console
 `cdp-ch20.mjs` checks both target-transformation benches;
 `cdp-ch21.mjs` checks the S-, T-, and X-learner curves;
 `cdp-ch22.mjs` checks the raw/residual scatter and both R-learner curves;
-`cdp-ch23.mjs` checks the four conversion views and the truncated price range.
+`cdp-ch23.mjs` checks the four conversion views and the truncated price range;
+`cdp-ch24.mjs` checks the constant, maturing, and reversing TWFE scenarios.
 `cdp-a11y.mjs` checks button names, input labels, duplicate IDs, and heading structure;
 `cdp-reduced.mjs` verifies that reduced motion lands on final states; `cdp-film.mjs`
 checks the rendered video’s metadata and dialog; `cdp-persist.mjs` reloads after scoring
@@ -524,6 +538,7 @@ chapters/
   21-meta-learners.html live chapter: S/T/X learner comparison
   22-orthogonal-ml.html live chapter: residual scatter and R-learner
   23-heterogeneity-nonlinearity.html live chapter: conversion and pricing curves
+  24-did-saga.html live chapter: TWFE paths and staggered adoption
 assets/css/
   tokens.css               paper/ink/pencil tokens, type scale
   base.css                 reset, type, focus, grain, toast
@@ -555,6 +570,7 @@ assets/css/
   ch21.css                 chapter 21 meta-learner diagrams and comparison chart
   ch22.css                 chapter 22 raw/residual scatter and gain curves
   ch23.css                 chapter 23 conversion and price-range labs
+  ch24.css                 chapter 24 cohort paths and TWFE bench
   print.css                readable paper version
 assets/js/
   chapters.js              the manifest: 25 chapters + 5 notes, live/planned
@@ -578,6 +594,7 @@ assets/js/
   data-ch21.js             S/T/X learner gain curves and CATE ranges
   data-ch22.js             residual scatter sample and R-learner curves
   data-ch23.js             simulated conversion curves and pricing data
+  data-ch24.js             cohort paths for constant/mature/reversal scenarios
   iv.js                    the book's quarter-of-birth IV constants
   iv09.js                  the book's OLS/ITT/LATE constants
   iv11.js                  the book's propensity-score constants
@@ -593,6 +610,7 @@ assets/js/
   iv21.js                  the book's meta-learner constants
   iv22.js                  the book's orthogonal ML constants
   iv23.js                  the book's binary-outcome constants
+  iv24.js                  the book's DiD-saga constants
   dag.js                   chapter 04 graph definitions + path verdicts
   regression.js            OLS/WLS engine + classical SEs
   labs/ch01.js             the counterfactual lens
@@ -617,6 +635,7 @@ assets/js/
   labs/ch21.js             the S/T/X learner gain comparison
   labs/ch22.js             the raw/residual scatter and R-learner curves
   labs/ch23.js             the conversion views and price-range chart
+  labs/ch24.js             the cohort paths and TWFE scenario switch
   data.js                  matching payload (20k patients)
   reference.js             generated book numbers
   stats.js                 mean/sd/OLS, k-d tree, k-NN matching, correction
@@ -674,9 +693,9 @@ The site is built to grow by one chapter at a time. To add one:
 5. Add a browser test (the `tools/cdp-ch01.mjs` pattern) and a Node arithmetic test.
 6. Update this README's live list and screenshots.
 
-The next build is **Chapter 24 — The difference-in-differences saga**: staggered adoption,
-negative weights, and the estimators that repair two-way fixed effects. After that, Chapter
-25 and the five technical notes.
+The next build is **Chapter 25 — Synthetic difference-in-differences**: combine synthetic
+control weights with DiD and balance the treated unit against a donor pool. After that, the
+five technical notes.
 
 ---
 
@@ -731,7 +750,7 @@ source is still valid and can be rendered later.
 ## Credits
 
 - **Book & data:** Matheus Facure Alves, *Causal Inference for the Brave and True*,
-  chapters 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, and 23, MIT-licensed repository.
+  chapters 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, and 24, MIT-licensed repository.
   Chapter 01's four-school table and its arithmetic are the book's example; Chapter 02's
   online-classroom data comes from Alpert, Couch & Harmon (2016) via the book repository.
   Chapter 03's sampling simulation uses the book's true mean 74 and standard deviation 2.
@@ -739,12 +758,12 @@ source is still valid and can be rendered later.
   06 use the book's `wage.csv`; Chapter 07 uses the book's collections-email and
   hospital-treatment data; Chapter 08 uses the book's `ak91.csv` and its seed-12 IV
   simulation; Chapter 09 uses the book's push-engagement data; Chapters 11 and 12 use the
-  book's `learning_mindset.csv`; Chapter 13 uses the book's `billboard_impact.csv`; Chapter 14 uses the wage panel distributed with linearmodels; Chapter 15 uses the book's `smoking.csv`; Chapter 16 uses the book's `drinking.csv` and `sheepskin.csv`; Chapter 17 uses the book's customer transaction and feature files; Chapter 18 uses the book's `ice_cream_sales_rnd.csv`; Chapter 19 uses both ice-cream sales files; Chapter 20 uses `invest_email_rnd.csv` and the randomized ice-cream file; Chapter 21 uses the biased and randomized email files; Chapter 22 uses the non-random and randomized ice-cream files; Chapter 23 uses a seeded simulation described on the page. The prose
+  book's `learning_mindset.csv`; Chapter 13 uses the book's `billboard_impact.csv`; Chapter 14 uses the wage panel distributed with linearmodels; Chapter 15 uses the book's `smoking.csv`; Chapter 16 uses the book's `drinking.csv` and `sheepskin.csv`; Chapter 17 uses the book's customer transaction and feature files; Chapter 18 uses the book's `ice_cream_sales_rnd.csv`; Chapter 19 uses both ice-cream sales files; Chapter 20 uses `invest_email_rnd.csv` and the randomized ice-cream file; Chapter 21 uses the biased and randomized email files; Chapter 22 uses the non-random and randomized ice-cream files; Chapter 23 uses a seeded simulation described on the page; Chapter 24 uses a seeded staggered-rollout simulation. The prose
   is adapted and shortened, and the counterfactual lens, three-classroom dot strip,
   sample-size dial, interval ruler, DAG workbench, control dial, weighting bench, dummy
   staircase, control labs, seasonal panel, IV ratio, weak-instrument dial, compliance
   matrix, estimator chart, score histogram, rate strip, robustness grid, interval chart,
-  comparison cards, trend bench, fixed-effect hero, toy panel, wage chart, synthetic path, placebo chart, RD fits, McCrary density, policy slider, policy bars, CATE bench, slope contrast, gain bench, band chart, transformation diagram, target-transform benches, meta-learner diagrams, learner bench, residual scatter, S-curve hero, conversion bench, and price-range lab are new.
+  comparison cards, trend bench, fixed-effect hero, toy panel, wage chart, synthetic path, placebo chart, RD fits, McCrary density, policy slider, policy bars, CATE bench, slope contrast, gain bench, band chart, transformation diagram, target-transform benches, meta-learner diagrams, learner bench, residual scatter, S-curve hero, conversion bench, price-range lab, and DiD cohort-path bench are new.
 - **Visual language:** adapted from the **Data Storytelling** style in
   [Lemo-Opuscar](https://github.com/lemomo-ai/lemo-opuscar) by Lemomo (MIT). The charts,
   copy, and motion here are original; no demo assets or story are reused.
