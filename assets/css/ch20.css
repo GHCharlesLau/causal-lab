@@ -1,0 +1,163 @@
+/* ============================================================
+   Chapter 20 — plug-and-play transformation and gain curves.
+   ============================================================ */
+
+.plug-node {
+  font-family: var(--mono);
+  font-size: 12px;
+  fill: var(--ink);
+}
+
+.plug-sub {
+  font-family: var(--mono);
+  font-size: 8px;
+  fill: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.plug-cate {
+  font-family: var(--serif);
+  font-size: 14px;
+  fill: var(--blue);
+}
+
+.plug-question {
+  font-family: var(--mono);
+  font-size: 8px;
+  fill: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.plug-hand {
+  font-family: var(--hand);
+  font-size: 18px;
+  fill: var(--blue);
+}
+
+/* ---------------------------------------------------------- charts */
+.ch20-chart {
+  min-height: 285px;
+}
+
+.ch20-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ch20-tick {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-3);
+}
+
+.ch20-axis-title {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  fill: var(--ink-2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ch20-curve {
+  fill: none;
+  stroke: var(--red);
+  stroke-width: 2.2;
+}
+
+.ch20-baseline {
+  stroke: var(--ink-3);
+  stroke-width: 1.2;
+  stroke-dasharray: 4 4;
+}
+
+.ch20-legend {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--ink-2);
+}
+
+.ch20-ate {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+.ch20-side-label {
+  margin-top: 8px;
+}
+
+/* ---------------------------------------------------------- controls */
+.ch20-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ch20-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.ch20-preset {
+  padding: 7px 11px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.ch20-preset:hover {
+  border-color: var(--ink-2);
+  color: var(--ink);
+}
+
+.ch20-preset.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.ch20-preset:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+.lab--no-swipe .lab-head::after {
+  content: none;
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .lab-body {
+    grid-template-columns: 1fr;
+  }
+
+  .ch20-chart {
+    overflow: visible;
+    min-height: 210px;
+  }
+
+  .ch20-chart svg {
+    width: 100%;
+    max-width: none;
+  }
+
+  .ch20-tick,
+  .ch20-axis-title,
+  .ch20-legend {
+    font-size: 15px;
+  }
+
+  .ch20-preset {
+    flex: 1 1 100%;
+    text-align: left;
+  }
+}

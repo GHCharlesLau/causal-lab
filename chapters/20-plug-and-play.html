@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Plug-and-play estimators &mdash; Causal Field Notes</title>
+  <meta name="description" content="Chapter 20: plug-and-play estimators — target transformation for binary and continuous treatments, flexible CATE models, and cumulative gain evaluation.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/ch20.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the chapter</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Chapter 20</p>
+      <h1 class="hero-title hero-title--long">Transform <br>the target<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">make the effect predictable &darr;</p>
+      <p class="hero-deck">Turn the treatment effect into a prediction problem, then use any flexible learner.</p>
+      <p class="hero-sub">The target transformation replaces the unobservable individual effect with a transformed outcome. A gradient-boosted model fits that target. The result is a CATE prediction &mdash; and a gain curve to judge whether it ranks the right units.</p>
+      <div class="hero-meta mono">
+        <span>15,000 emails</span><span>5,000 price days</span><span>2 labs</span><span>~20 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#binary-bench">Open the transformation bench <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/20-Plug-and-Play-Estimators.html" target="_blank" rel="noreferrer">Read the source chapter</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 470 300" role="img" aria-label="Outcome and treatment are combined into a transformed target, which a machine-learning model maps to a CATE prediction.">
+        <g class="hero-paper">
+          <path d="M24 28h422v244H24z" fill="#fbf8f1" stroke="#ddd6c9"/>
+        </g>
+        <defs>
+          <marker id="plug-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0 0L10 5L0 10z" fill="#2b2723"/>
+          </marker>
+        </defs>
+        <g class="plug-figure">
+          <rect x="38" y="76" width="72" height="42" fill="none" stroke="#bdb4a5"/>
+          <text x="74" y="102" text-anchor="middle" class="plug-node">Y</text>
+          <rect x="38" y="152" width="72" height="42" fill="none" stroke="#bdb4a5"/>
+          <text x="74" y="178" text-anchor="middle" class="plug-node">T</text>
+          <rect x="142" y="104" width="92" height="62" rx="2" fill="#f6f3ec" stroke="#2b2723"/>
+          <text x="188" y="128" text-anchor="middle" class="plug-node">transform</text>
+          <text x="188" y="148" text-anchor="middle" class="plug-sub">Y*</text>
+          <rect x="268" y="104" width="82" height="62" rx="2" fill="#f6f3ec" stroke="#2b2723"/>
+          <text x="309" y="130" text-anchor="middle" class="plug-node">ML</text>
+          <text x="309" y="150" text-anchor="middle" class="plug-sub">fit Y*</text>
+          <circle cx="410" cy="135" r="38" fill="#e4ecf3" stroke="#2f5d8a"/>
+          <text x="410" y="132" text-anchor="middle" class="plug-cate">CATE</text>
+          <text x="410" y="150" text-anchor="middle" class="plug-sub">tau(x)</text>
+          <path d="M110 97 C 124 100, 128 112, 138 120" fill="none" stroke="#2b2723" stroke-width="1.3" marker-end="url(#plug-arrow)"/>
+          <path d="M110 173 C 124 170, 128 158, 138 150" fill="none" stroke="#2b2723" stroke-width="1.3" marker-end="url(#plug-arrow)"/>
+          <path d="M234 135 L264 135" fill="none" stroke="#2b2723" stroke-width="1.3" marker-end="url(#plug-arrow)"/>
+          <path d="M350 135 L370 135" fill="none" stroke="#2b2723" stroke-width="1.3" marker-end="url(#plug-arrow)"/>
+          <text x="60" y="238" class="plug-question">outcome</text>
+          <text x="174" y="238" class="plug-question">the trick</text>
+          <text x="288" y="238" class="plug-question">any learner</text>
+          <text x="382" y="238" class="plug-question">the effect</text>
+          <path d="M64 270c14 4 26 3 38-2" fill="none" stroke="#2f5d8a" stroke-width="1"/>
+          <text x="42" y="288" class="hand plug-hand">the effect becomes a prediction target</text>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">Outcome Y and treatment T are transformed into a target Y*, which a machine-learning model fits to produce a CATE prediction.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Binary</span>
+        <span class="hero-stat-value">15k</span>
+        <span class="hero-stat-note">email customers</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Continuous</span>
+        <span class="hero-stat-value">5k</span>
+        <span class="hero-stat-note">randomized price days</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Top 10% gain</span>
+        <span class="hero-stat-value">3.1%</span>
+        <span class="hero-stat-note">email, train</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 TRANSFORM -->
+  <section class="chapter-section sheet" id="transform" data-section="transform">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">the transformation</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">The infeasible target</p>
+          <h2 class="section-title">Predict the<br>unobservable.</h2>
+          <p class="section-deck">The CATE is a function we cannot see. The target transformation turns it into a regression problem we can fit.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">For a binary treatment, define the transformed target <span class="math-var">Y</span>* = <span class="math-var">Y</span>(<span class="math-var">T</span> &minus; <span class="math-var">p</span>)/(<span class="math-var">p</span>(1&minus;<span class="math-var">p</span>)), where <span class="math-var">p</span> is the treatment probability. Regressing <span class="math-var">Y</span>* on <span class="math-var">X</span> recovers the CATE, because the expectation of the transformed target is the conditional effect.</p>
+          <p>For continuous treatment, the analogue is <span class="math-var">Y</span>* = (<span class="math-var">Y</span> &minus; <span class="math-var">Y&#772;</span>)(<span class="math-var">T</span> &minus; <span class="math-var">T&#772;</span>)/Var(<span class="math-var">T</span>). It is the per-unit covariance contribution; regressing it on <span class="math-var">X</span> recovers the local slope.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Target transformations">
+          <span class="formula-label mono">binary / continuous</span>
+          <span class="formula-body"><span class="math-var">Y</span>* = <span class="frac"><span class="num"><span class="math-var">Y</span>(<span class="math-var">T</span> &minus; <span class="math-var">p</span>)</span><span class="den"><span class="math-var">p</span>(1&minus;<span class="math-var">p</span>)</span></span> &nbsp;&nbsp;&nbsp; <span class="math-var">Y</span>* = <span class="frac"><span class="num">(<span class="math-var">Y</span> &minus; <span class="math-var">Y&#772;</span>)(<span class="math-var">T</span> &minus; <span class="math-var">T&#772;</span>)</span><span class="den">Var(<span class="math-var">T</span>)</span></span></span>
+        </div>
+
+        <div class="prose">
+          <p>Once the target is transformed, the model is just a regression. It can be a linear model, a boosted tree, or a neural network. The causal interpretation comes from the transformation, not from the learner.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The plug</p>
+          <p>Any supervised learner can fit <span class="math-var">Y</span>* on <span class="math-var">X</span>. That is the plug-and-play part: the causal machinery is in the target, and the ML machinery is replaceable.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">why it works</p>
+          <p>Under randomized treatment, the transformed target has conditional mean equal to the CATE. The regression learns that conditional mean.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the price</p>
+          <p>The transformed target is noisy. A flexible model can overfit; the train/test gain curves are the check.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 BINARY -->
+  <section class="chapter-section sheet" id="binary-bench" data-section="binary-bench">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">the binary bench</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Email conversion</p>
+          <h2 class="section-title">Who responds<br>to the email?</h2>
+          <p class="section-deck">15,000 customers, 9,000 training and 6,000 test. The treatment is the first email; the outcome is conversion.</p>
+        </header>
+
+        <div class="prose">
+          <p>The treatment probability is <strong>0.5046</strong>. The transformed target is fitted with a small gradient-boosted model. Test CATE predictions range from <strong>&minus;0.141</strong> to <strong>0.386</strong>; the mean is <strong>0.0735</strong>.</p>
+          <p>The gain curve sorts customers by predicted CATE. The top 10% would gain <strong>3.1%</strong> conversion on train and <strong>1.4%</strong> on test. The overall effect is <strong>7.1%</strong> train and <strong>6.5%</strong> test.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-binary" aria-labelledby="lab-binary-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-binary-title">The binary gain curve</h3>
+            </div>
+            <p class="lab-status mono" id="ch20-binary-status">test &middot; top 10%</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch20-chart" id="ch20-binary-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="ch20-binary-label">Test split</p>
+              <p class="readout-value" id="ch20-binary-gain">+1.4%</p>
+              <p class="readout-sub">gain at the top 10%</p>
+              <p class="side-label mono ch20-side-label">Overall effect</p>
+              <p class="ch20-ate" id="ch20-binary-ate">+6.5%</p>
+              <dl class="mini-stats">
+                <div><dt>customers</dt><dd>15,000</dd></div>
+                <div><dt>test</dt><dd>6,000</dd></div>
+                <div><dt>CATE range</dt><dd>&minus;14% / 39%</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch20-binary-note">the top decile is not a huge lift.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch20-controls">
+            <div class="ch20-presets" role="group" aria-label="Choose a split">
+              <button class="ch20-preset is-active" type="button" data-split="test" aria-pressed="true">Test</button>
+              <button class="ch20-preset" type="button" data-split="train" aria-pressed="false">Train</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The curves are close to the baseline; the CATE model adds only a modest lift over treating everyone.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the lift</p>
+          <p>Top-decile gain of 1.4% against a 6.5% overall effect is a small improvement. The email is broadly effective, not sharply targeted.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the overfit</p>
+          <p>Train top-decile gain is 3.1%, more than double test. That gap is the reason the test curve is the one to read.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 CONTINUOUS -->
+  <section class="chapter-section sheet" id="continuous-bench" data-section="continuous-bench">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">the continuous bench</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Price elasticity</p>
+          <h2 class="section-title">Who feels<br>the price?</h2>
+          <p class="section-deck">5,000 randomized price days. The treatment is continuous; the target becomes a covariance contribution.</p>
+        </header>
+
+        <div class="prose">
+          <p>Train on 3,500 days, test on 1,500. The CATE predictions range from <strong>&minus;61.7</strong> to <strong>+14.0</strong>; the scale is arbitrary because the transformed target is scaled. The ranking is what matters.</p>
+          <p>Sort by predicted sensitivity. The top 10% has a gain of <strong>0.219</strong> on train and <strong>0.273</strong> on test, while the overall price slope is <strong>&minus;2.59</strong> train and <strong>&minus;2.46</strong> test.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-continuous" aria-labelledby="lab-continuous-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 02</p>
+              <h3 class="lab-title" id="lab-continuous-title">The continuous gain curve</h3>
+            </div>
+            <p class="lab-status mono" id="ch20-continuous-status">test &middot; top 10%</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch20-chart" id="ch20-continuous-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="ch20-continuous-label">Test split</p>
+              <p class="readout-value" id="ch20-continuous-gain">+0.273</p>
+              <p class="readout-sub">gain at the top 10%</p>
+              <p class="side-label mono ch20-side-label">Overall price slope</p>
+              <p class="ch20-ate" id="ch20-continuous-ate">&minus;2.46</p>
+              <dl class="mini-stats">
+                <div><dt>days</dt><dd>5,000</dd></div>
+                <div><dt>test</dt><dd>1,500</dd></div>
+                <div><dt>CATE range</dt><dd>&minus;62 / 14</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch20-continuous-note">the top decile is less price-sensitive.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch20-controls">
+            <div class="ch20-presets" role="group" aria-label="Choose a split">
+              <button class="ch20-preset is-active" type="button" data-split="test" aria-pressed="true">Test</button>
+              <button class="ch20-preset" type="button" data-split="train" aria-pressed="false">Train</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The gain curve sits above the baseline for the top days, then converges to the overall slope.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the scale</p>
+          <p>The CATE values are negative because price raises reduce sales. The transformed target's scale depends on the treatment variance; only the ordering is used for the policy.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the nonlinearity</p>
+          <p>If the demand curve is nonlinear, the local slope changes with price. The book handles this by modeling log sales on log price for elasticity.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 NONLINEAR -->
+  <section class="chapter-section sheet" id="nonlinear" data-section="nonlinear">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">nonlinearity</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">When the slope is not constant</p>
+          <h2 class="section-title">Local effects<br>need a local target.</h2>
+          <p class="section-deck">A continuous treatment can have a nonlinear effect. The target transformation estimates a local linear effect, not a global one.</p>
+        </header>
+
+        <div class="prose">
+          <p>If demand is linear in price, the transformed target recovers a constant slope. If demand is log-linear, the slope depends on the price level. The book transforms the outcome and treatment to logs, turning the problem into an elasticity.</p>
+          <p>This is a flexibility of the plug-and-play approach: the target transformation can encode the functional form you want, while the learner handles the heterogeneity across days.</p>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The caveat</p>
+          <p>The transformation is not magic. If the model is misspecified or the treatment is confounded, the CATE prediction inherits the bias. Randomization or a credible identification strategy is still the foundation.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The honest sentence</p>
+          <p>&ldquo;The target transformation lets a flexible model rank units by predicted effect. The ranking is useful for policy; the individual CATE values are noisy and should not be read as precise measurements.&rdquo;</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the decision</p>
+          <p>Use the model to prioritize, not to promise. The top decile is a better bet, not a guaranteed effect.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the next step</p>
+          <p>Meta-learners combine outcome and treatment models differently. The next chapter compares them.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>Transform the target, not the learner.</strong> The transformed outcome turns CATE estimation into a standard regression problem.</li>
+          <li><strong>Binary and continuous treatments need different transforms.</strong> The binary version uses treatment probability; the continuous version uses treatment variance.</li>
+          <li><strong>Any ML model can be plugged in.</strong> The causal content is in the target transformation and the identification assumption, not the algorithm.</li>
+          <li><strong>Evaluate the ranking.</strong> Gain curves compare the top-decile gain with the overall effect and expose overfitting.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The sentence to avoid</p>
+          <p>&ldquo;The model predicts a CATE of +0.38, so this customer will convert with probability 0.38.&rdquo; The CATE is an effect, not a level; its value is relative to the baseline.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Plug the learner in, but keep the test set out. The target transformation is only as good as the identification behind it.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> What does the binary target transformation do?</summary>
+            <p>It replaces the unobservable individual effect with Y(T−p)/(p(1−p)), a transformed outcome whose conditional mean is the CATE.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> Why does the continuous case divide by Var(T)?</summary>
+            <p>It turns the covariance contribution into a slope. Regressing it on X recovers the local derivative of the outcome with respect to treatment.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> Why can any ML model be plug-and-play here?</summary>
+            <p>The causal adjustment is in the transformed target. The learner only has to approximate its conditional mean; the algorithm itself is replaceable.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> Why is the test gain curve lower than the train curve?</summary>
+            <p>The flexible model overfits the transformed target. The gap is the honest measure of how much the CATE ranking will generalize.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next chapter</p>
+          <h3>Meta-learners</h3>
+          <p>Compare S-, T-, X-, and R-learners: different ways to combine outcome and treatment models for heterogeneous effects.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Transform, fit, evaluate on held-out data. The ranking is the deliverable; the individual number is not.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-ch20.js"></script>
+<script src="../assets/js/iv20.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: '20',
+    slug: '20-plug-and-play',
+    title: 'Plug-and-play estimators',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/20-Plug-and-Play-Estimators.html',
+    sections: [
+      { id: 'transform', num: '01', label: 'The transformation' },
+      { id: 'binary-bench', num: '02', label: 'The binary bench' },
+      { id: 'continuous-bench', num: '03', label: 'The continuous bench' },
+      { id: 'nonlinear', num: '04', label: 'Nonlinearity' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/ch20.js"></script>
+</body>
+</html>
