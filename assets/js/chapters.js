@@ -20,7 +20,7 @@
         { num: '05', slug: '05-linear-regression', title: 'Linear regression', short: 'The unreasonable effectiveness', deck: 'Regression as a conditional expectation, a weighting device, and a bias machine.', status: 'live' },
         { num: '06', slug: '06-grouped-regression', title: 'Grouped and dummy regression', short: 'Compare within groups', deck: 'Dummy variables, fixed effects, and the difference between between and within.', status: 'live' },
         { num: '07', slug: '07-beyond-confounders', title: 'Beyond confounders', short: 'Bad controls', deck: 'Mediators and colliders: when adding a variable makes the estimate worse.', status: 'live' },
-        { num: '08', slug: '08-instrumental-variables', title: 'Instrumental variables', short: 'A nudge from outside', deck: 'When treatment is chosen, an external nudge can isolate the compliers.', status: 'planned' },
+        { num: '08', slug: '08-instrumental-variables', title: 'Instrumental variables', short: 'A nudge from outside', deck: 'When treatment is chosen, an external nudge can isolate the compliers.', status: 'live' },
         { num: '09', slug: '09-non-compliance', title: 'Non-compliance and LATE', short: 'Who actually takes it', deck: 'Encouragement, take-up, and the local average treatment effect.', status: 'planned' },
         { num: '10', slug: '10-matching', title: 'Matching', short: 'Find the twin', deck: 'Compare like with like, then measure the bias that survives the match.', status: 'live' },
         { num: '11', slug: '11-propensity-score', title: 'Propensity score', short: 'The probability of treatment', deck: 'Collapse many confounders into one balancing score.', status: 'planned' },

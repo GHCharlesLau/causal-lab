@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Instrumental variables &mdash; Causal Field Notes</title>
+  <meta name="description" content="Chapter 08: instruments, the first stage, the reduced form, 2SLS, and weak instruments — with quarter-of-birth and simulation labs.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/ch08.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the chapter</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Chapter 08</p>
+      <h1 class="hero-title hero-title--long">The instrument<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">one variable, two jobs &darr;</p>
+      <p class="hero-deck">An instrument moves the treatment, but reaches the outcome only through it.</p>
+      <p class="hero-sub">Ability is unmeasured, so education and wages cannot be compared directly. Quarter of birth shifts schooling for reasons unrelated to ability. Scale that shift into education units and the confounder loses its grip &mdash; if the exclusion restriction holds.</p>
+      <div class="hero-meta mono">
+        <span>329,509 workers</span><span>1 instrument</span><span>2 labs</span><span>~22 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#ratio-bench">Scale the reduced form <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/08-Instrumental-Variables.html" target="_blank" rel="noreferrer">Read the source chapter</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="An instrument Z causes treatment T, which causes outcome Y. Ability confounds T and Y but not Z.">
+        <g class="hero-paper">
+          <path d="M34 30h392v238H34z" fill="#fbf8f1" stroke="#ddd6c9"/>
+        </g>
+        <defs>
+          <marker id="iv-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0 0L10 5L0 10z" fill="#2b2723"/>
+          </marker>
+        </defs>
+        <g class="iv-figure">
+          <rect x="54" y="124" width="86" height="42" rx="2" fill="#f6f3ec" stroke="#2b2723"/>
+          <text x="97" y="151" text-anchor="middle" class="iv-node">Z</text>
+          <text x="97" y="184" text-anchor="middle" class="iv-sub">instrument</text>
+          <rect x="188" y="124" width="86" height="42" rx="2" fill="#f6f3ec" stroke="#2b2723"/>
+          <text x="231" y="151" text-anchor="middle" class="iv-node">T</text>
+          <text x="231" y="184" text-anchor="middle" class="iv-sub">education</text>
+          <rect x="322" y="124" width="86" height="42" rx="2" fill="#f6f3ec" stroke="#2b2723"/>
+          <text x="365" y="151" text-anchor="middle" class="iv-node">Y</text>
+          <text x="365" y="184" text-anchor="middle" class="iv-sub">wage</text>
+          <path d="M140 145 L184 145" stroke="#2b2723" stroke-width="1.5" marker-end="url(#iv-arrow)"/>
+          <path d="M274 145 L318 145" stroke="#2b2723" stroke-width="1.5" marker-end="url(#iv-arrow)"/>
+          <rect x="188" y="232" width="86" height="34" rx="2" fill="#fbf8f1" stroke="#a8283a" stroke-dasharray="4 3"/>
+          <text x="231" y="254" text-anchor="middle" class="iv-sub iv-sub--red">ability</text>
+          <path d="M222 232 C 200 205, 214 175, 228 168" fill="none" stroke="#a8283a" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#iv-arrow)"/>
+          <path d="M248 232 C 300 205, 335 180, 356 168" fill="none" stroke="#a8283a" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#iv-arrow)"/>
+          <path d="M140 145 C 190 78, 320 78, 322 124" fill="none" stroke="#2f5d8a" stroke-width="1" stroke-dasharray="3 4" opacity=".35"/>
+          <text x="144" y="86" class="iv-note">exclusion restriction: no direct Z &rarr; Y</text>
+        </g>
+        <g class="hand">
+          <text x="54" y="294" fill="#2f5d8a" font-size="19">IV = reduced form / first stage</text>
+          <path d="M300 300c14 4 26 3 38-2" fill="none" stroke="#2f5d8a" stroke-width="1"/>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">Instrument Z points to treatment T, which points to outcome Y. Ability is a dashed confounder of T and Y, with no path from Z.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">First stage</span>
+        <span class="hero-stat-value">+0.1009</span>
+        <span class="hero-stat-note">years of schooling per q4</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Reduced form</span>
+        <span class="hero-stat-value">+0.0086</span>
+        <span class="hero-stat-note">log wage per q4</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">IV ratio</span>
+        <span class="hero-stat-value">+0.0853</span>
+        <span class="hero-stat-note">about 8.5% per year</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 PROBLEM -->
+  <section class="chapter-section sheet" id="problem" data-section="problem">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">the problem</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Going around omitted variable bias</p>
+          <h2 class="section-title">A variable that<br>moves the treatment.</h2>
+          <p class="section-deck">If ability cannot be measured, find something that shifts education for reasons unrelated to ability &mdash; and only affects wages through education.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">The long model has ability. The short model does not, so education is correlated with the error. An instrument <span class="math-var">Z</span> gives a way around the missing variable, but only under two assumptions: it must move treatment, and it must not reach the outcome except through treatment.</p>
+          <p>The first assumption is the <strong>first stage</strong>; it is testable. The second is the <strong>exclusion restriction</strong>; it is not. The data can show that the instrument matters, but they cannot prove that it has no other path to the outcome.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Instrumental variables ratio of reduced form to first stage">
+          <span class="formula-label mono">the IV estimand</span>
+          <span class="formula-body"><span class="math-var">&kappa;</span> = <span class="frac"><span class="num">Cov(<span class="math-var">Y</span>, <span class="math-var">Z</span>) / V(<span class="math-var">Z</span>)</span><span class="den">Cov(<span class="math-var">T</span>, <span class="math-var">Z</span>) / V(<span class="math-var">Z</span>)</span></span> = <span class="frac"><span class="num">reduced form</span><span class="den">first stage</span></span></span>
+        </div>
+
+        <div class="prose">
+          <p>The numerator is the effect of the instrument on the outcome; the denominator is its effect on treatment. Their ratio converts the instrument&rsquo;s effect into treatment units. For a dummy instrument, the ratio becomes the Wald estimator: a difference in outcome means divided by a difference in treatment means.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The two jobs</p>
+          <p><strong>Relevance:</strong> Cov(Z, T) &ne; 0. <strong>Exclusion:</strong> Z affects Y only through T. The first can be tested; the second must be argued.</p>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">Heterogeneous effects</p>
+          <p>With a binary instrument and heterogeneous effects, the IV ratio is a local average treatment effect for compliers, not the full ATE. The page follows the book&rsquo;s ATE language, but the fine print matters.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the intuition</p>
+          <p>The instrument is easy to study because nothing confounds it. Its effect on Y is small; its effect on T is also small. The ratio is the effect of T on Y.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the hard part</p>
+          <p>A bad instrument is worse than no instrument. If Z reaches Y by another path, the ratio is contaminated and no standard error can fix it.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 FIRST STAGE -->
+  <section class="chapter-section sheet" id="first-stage" data-section="first-stage">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">the first stage</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Quarter of birth</p>
+          <h2 class="section-title">A seasonal<br>shift in schooling.</h2>
+          <p class="section-deck">Compulsory attendance laws make children born later in the year start school older &mdash; and stay longer. Quarter of birth becomes an instrument for education.</p>
+        </header>
+
+        <div class="prose">
+          <p>People born in the last quarter of the year average <strong>0.1009</strong> more years of schooling than the other quarters, controlling for year and state of birth. That is the first stage. In the reduced form, they earn <strong>0.0086</strong> more log wages. Divide one by the other and the IV estimate is <strong>0.0853</strong>, or about an 8.5% return per year of schooling.</p>
+          <p>The exclusion restriction is the leap: quarter of birth must not affect wages through anything other than schooling. The book argues that birth timing is as good as random with respect to ability. It is an argument, not a test.</p>
+        </div>
+
+        <figure class="season-figure" id="season-figure">
+          <div class="season-head">
+            <div>
+              <p class="lab-kicker mono">The seasonal pattern</p>
+              <h3 class="lab-title">Birth timing and schooling</h3>
+            </div>
+            <div class="season-tabs" role="group" aria-label="Choose an outcome">
+              <button class="season-tab is-active" type="button" data-mode="education" aria-pressed="true">Years of schooling</button>
+              <button class="season-tab" type="button" data-mode="wage" aria-pressed="false">Log wage</button>
+            </div>
+          </div>
+          <div class="season-chart" id="ch08-season-chart" aria-hidden="true"></div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The fourth-quarter line sits above the first-quarter line in both panels. The instrument moves treatment and outcome in the same direction; the ratio scales the second by the first.</figcaption>
+        </figure>
+
+        <figure class="lab lab--no-swipe" id="lab-ratio" aria-labelledby="lab-ratio-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-ratio-title">The ratio bench</h3>
+            </div>
+            <p class="lab-status mono" id="ch08-ratio-status">2SLS with q4 &middot; 329,509 workers</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch08-chart" id="ch08-ratio-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="ch08-ratio-label">2SLS with q4</p>
+              <p class="readout-value" id="ch08-ratio-coef">0.0853</p>
+              <p class="readout-sub">return per year of schooling</p>
+              <p class="side-label mono ch08-se-label">Standard error</p>
+              <p class="ch08-se" id="ch08-ratio-se">0.0255</p>
+              <p class="side-label mono ch08-se-label">95% CI</p>
+              <p class="ch08-ci" id="ch08-ratio-ci">(0.0352, 0.1354)</p>
+              <dl class="mini-stats">
+                <div><dt>first stage</dt><dd id="ch08-ratio-first">0.1009</dd></div>
+                <div><dt>reduced form</dt><dd id="ch08-ratio-reduced">0.0086</dd></div>
+                <div><dt>n</dt><dd>329,509</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch08-ratio-note">the exclusion restriction is an argument, not a test.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch08-controls">
+            <div class="ch08-presets" role="group" aria-label="Choose an estimator">
+              <button class="ch08-preset is-active" type="button" data-model="q4" aria-pressed="true">2SLS &middot; q4</button>
+              <button class="ch08-preset" type="button" data-model="many" aria-pressed="false">2SLS &middot; q1&ndash;q3</button>
+              <button class="ch08-preset" type="button" data-model="ols" aria-pressed="false">OLS comparison</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The IV estimate is larger than OLS and much less precise. The wide interval is the price of identification through an instrument.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the numbers</p>
+          <p>First stage 0.1009, reduced form 0.0086. The ratio is 0.0853. The 2SLS standard error is 0.0255; the OLS standard error is 0.0004.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the skepticism</p>
+          <p>Quarter of birth is a clever instrument, not a magical one. Its validity has been debated; the page presents the book&rsquo;s argument.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 WEAK -->
+  <section class="chapter-section sheet" id="weak" data-section="weak">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">weak instruments</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">When the first stage whispers</p>
+          <h2 class="section-title">The ratio<br>gets noisy.</h2>
+          <p class="section-deck">If the instrument barely moves treatment, the denominator is tiny and the IV estimate becomes unstable. The standard error grows with it.</p>
+        </header>
+
+        <div class="prose">
+          <p>The book simulates a treatment with a true effect of <strong>2.0</strong>, an unmeasured confounder, and fifty instruments ranging from a near-perfect first stage to a correlation of about 0.03. At the strong end the IV estimate is <strong>1.946</strong> with an SE of <strong>0.010</strong>. At the weak end the SE is <strong>0.303</strong>.</p>
+          <p>The strongest instrument is still biased: 1.946 is below the true 2.0. 2SLS is consistent, not unbiased. Weak instruments make both the bias and the variance worse.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-weak" aria-labelledby="lab-weak-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 02</p>
+              <h3 class="lab-title" id="lab-weak-title">The weak-instrument dial</h3>
+            </div>
+            <p class="lab-status mono" id="ch08-weak-status">corr 1.00 &middot; strongest</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart ch08-chart" id="ch08-weak-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono">Selected instrument</p>
+              <p class="readout-value" id="ch08-weak-ate">1.946</p>
+              <p class="readout-sub">IV estimate &middot; true 2.0</p>
+              <p class="side-label mono ch08-se-label">Standard error</p>
+              <p class="ch08-se" id="ch08-weak-se">0.010</p>
+              <p class="side-label mono ch08-se-label">Corr(Z, T)</p>
+              <p class="ch08-ci" id="ch08-weak-corr">0.9998</p>
+              <dl class="mini-stats">
+                <div><dt>95% CI</dt><dd id="ch08-weak-ci">(1.926, 1.966)</dd></div>
+                <div><dt>true ATE</dt><dd>2.000</dd></div>
+                <div><dt>instruments</dt><dd>50</dd></div>
+              </dl>
+              <p class="side-note hand" id="ch08-weak-note">even the strongest instrument is biased.</p>
+            </aside>
+          </div>
+          <div class="lab-controls ch08-controls">
+            <label class="ch08-slider" for="ch08-weak-slider">
+              <span class="mono">weaker</span>
+              <input type="range" id="ch08-weak-slider" min="0" max="49" step="1" value="49">
+              <span class="mono">stronger</span>
+            </label>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> At the weak end the estimate wanders and the interval widens. A small first stage is not a small problem.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the rule</p>
+          <p>A weak first stage is a weak experiment. Check the first-stage coefficient and F statistic before trusting the IV estimate.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the bias</p>
+          <p>2SLS is biased toward OLS. With many weak instruments, it can approach OLS and lose its advantage.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 RULES -->
+  <section class="chapter-section sheet" id="rules" data-section="rules">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">the fine print</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">What IV does not do</p>
+          <h2 class="section-title">A ratio,<br>not a miracle.</h2>
+          <p class="section-deck">IV trades bias for variance and assumptions. It does not make the confounder disappear from the argument.</p>
+        </header>
+
+        <div class="prose">
+          <p>2SLS runs the first stage, replaces education with its fitted values, and runs the second stage. The coefficient is the same as the ratio, but the standard errors must come from the proper 2SLS calculation, not from the second-stage regression of the fitted values.</p>
+          <p>All controls in the second stage belong in the first stage too. The first stage must be estimated by OLS: the orthogonality of its residuals is what makes the IV estimand work. A logistic first stage for a dummy treatment is not a harmless upgrade.</p>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">Four ways to break IV</p>
+          <p>A weak first stage. A direct path from the instrument to the outcome. A first stage estimated with something other than OLS. Standard errors taken from the second stage by hand. Each one can make a precise-looking number meaningless.</p>
+        </div>
+
+        <div class="prose">
+          <p>With multiple instruments, 2SLS uses their shared variation in treatment. The book&rsquo;s q1&ndash;q3 model gives <strong>0.1077</strong>, larger than the q4 estimate and with a smaller standard error. More instruments are not automatically better: they can improve precision, but they can also overfit the first stage and move 2SLS toward OLS.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the check</p>
+          <p>Report the first-stage coefficient, the instrument&rsquo;s correlation with treatment, and the sample size. An IV estimate without a first stage is a story without a denominator.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the honest sentence</p>
+          <p>&ldquo;Under the assumption that quarter of birth affects wages only through schooling, the IV estimate is 8.5%.&rdquo; The assumption is doing the work.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>Relevance is testable.</strong> The instrument must move treatment. Look at the first stage before the IV estimate.</li>
+          <li><strong>Exclusion is an argument.</strong> The instrument must affect the outcome only through treatment; no regression can prove it.</li>
+          <li><strong>IV is a ratio.</strong> The reduced form divided by the first stage scales the instrument&rsquo;s effect into treatment units.</li>
+          <li><strong>Weak instruments wreck precision.</strong> A tiny denominator produces a noisy ratio and a wide interval; 2SLS is consistent, not unbiased.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The temptation</p>
+          <p>A significant IV estimate with a weak first stage is still a weak result. Significance is not a substitute for a denominator.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Before reading the IV coefficient, read the first stage. Before believing the exclusion restriction, draw the graph.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> What are the two IV assumptions?</summary>
+            <p>Relevance: the instrument is correlated with treatment. Exclusion: the instrument affects the outcome only through treatment. The first is testable; the second is not.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> Why is the IV estimate a ratio?</summary>
+            <p>The reduced form measures the instrument&rsquo;s effect on the outcome. The first stage measures its effect on treatment. Dividing converts the instrument-scale effect into a treatment-scale effect.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> Why are weak instruments dangerous?</summary>
+            <p>A weak first stage makes the denominator small and noisy. The IV estimate becomes unstable and its standard error grows; 2SLS is also biased toward OLS.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> Why can&rsquo;t the exclusion restriction be tested?</summary>
+            <p>It is a statement about a counterfactual path: what the instrument would do to the outcome if treatment were held fixed. The data only show the observed joint distribution, not that counterfactual.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next chapter</p>
+          <h3>Non-compliance</h3>
+          <p>An instrument can also appear inside an experiment: random assignment changes take-up, not treatment itself. The next chapter makes that connection.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Report the first stage and the reduced form, not just the ratio. The ratio is only as credible as its denominator.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-ch08.js"></script>
+<script src="../assets/js/iv.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: '08',
+    slug: '08-instrumental-variables',
+    title: 'Instrumental variables',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/08-Instrumental-Variables.html',
+    sections: [
+      { id: 'problem', num: '01', label: 'The problem' },
+      { id: 'first-stage', num: '02', label: 'The first stage' },
+      { id: 'weak', num: '03', label: 'Weak instruments' },
+      { id: 'rules', num: '04', label: 'The fine print' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/ch08.js"></script>
+</body>
+</html>
