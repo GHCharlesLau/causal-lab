@@ -8,7 +8,7 @@ and arguments you can defend.
 It is a local, static website: no backend, no build step, no tracking. Open `index.html`
 for the landing page, or serve the folder over HTTP.
 
-**Status: 25 of 25 chapters live; 3 of 5 technical notes live.** All 25 chapters are
+**Status: 25 of 25 chapters live; 4 of 5 technical notes live.** All 25 chapters are
 complete: 01 Introduction, 02 Randomised experiments, 03 Stats review, 04 Graphical causal
 models, 05 Linear regression, 06 Grouped and dummy regression, 07 Beyond confounders,
 08 Instrumental variables, 09 Non-compliance and LATE, 10 Matching, 11 Propensity score,
@@ -16,8 +16,8 @@ models, 05 Linear regression, 06 Grouped and dummy regression, 07 Beyond confoun
 15 Synthetic control, 16 Regression discontinuity, 17 Predictive models, 18 Heterogeneous
 effects, 19 Evaluating causal models, 20 Plug-and-play estimators, 21 Meta-learners,
 22 Orthogonal ML, 23 Heterogeneity and nonlinearity, 24 The DiD saga, and 25 Synthetic DiD.
-Technical notes A1 (orthogonalization), A2 (propensity score), and A3 (when prediction
-fails) are also live; A4–A5 remain scaffolded and are added next.
+Technical notes A1 (orthogonalization), A2 (propensity score), A3 (when prediction fails),
+and A4 (prediction metrics) are also live; A5 remains and is added next.
 
 ---
 
@@ -259,6 +259,14 @@ variation the coupon effect needs. It includes a policy bar lab, the model’s c
 by band, and the exception — waiting-time effects, where outcome and elasticity move
 together.
 
+### A4 — Prediction metrics are dangerous
+
+A simulated lesson in metric choice. M1 uses 20 nuisance features and scores test R²
+0.916; M2 uses 10 effect features and scores 0.084. On cumulative elasticity, M2’s top
+quartile is 5.68 vs M1’s 2.92. After denoising, both R² values go negative: −281.8 and
+−24.0. The note includes the cumulative-elasticity curve lab and explains why a low R² can
+be the better causal model.
+
 ### What is in each chapter
 
 - A story with the decision, the failure of the naive comparison, and the identification
@@ -346,6 +354,8 @@ point here is to let you see estimator bias separately from confounding bias.
 
 ![A3, the coupon policy bench](assets/img/screenshots/a3-policy.png)
 
+![A4, the metric bench](assets/img/screenshots/a4-curve.png)
+
 ![The Matching chapter](assets/img/screenshots/matching.png)
 
 ---
@@ -367,10 +377,10 @@ Open `index.html` in Chrome or Edge. It is the landing page. The live chapters a
 `chapters/19-evaluating-causal-models.html`, `chapters/20-plug-and-play.html`,
 `chapters/21-meta-learners.html`, `chapters/22-orthogonal-ml.html`,
 `chapters/23-heterogeneity-nonlinearity.html`, `chapters/24-did-saga.html`,
-`chapters/25-synthetic-did.html`, `chapters/a1-debiasing-orthogonalization.html`, and
-`chapters/a2-debiasing-propensity-score.html`, and `chapters/a3-when-prediction-fails.html`.
-Everything needed is local: CSS, JS, data, fonts, the poster, and the rendered opener at
-`assets/video/matching-opener.mp4`.
+`chapters/25-synthetic-did.html`, `chapters/a1-debiasing-orthogonalization.html`,
+`chapters/a2-debiasing-propensity-score.html`, `chapters/a3-when-prediction-fails.html`,
+and `chapters/a4-prediction-metrics.html`. Everything needed is local: CSS, JS, data,
+fonts, the poster, and the rendered opener at `assets/video/matching-opener.mp4`.
 
 ### Option 2: local server
 
@@ -477,9 +487,9 @@ Reference, chapter, and manifest tests (Node 24, no packages):
 The suite checks the Matching book numbers, the k-curve, severity-band checkpoints, the
 oracle, the k-d tree, the OLS toy regression, the Chapter 01 potential-outcomes arithmetic
 (ATE −50, ATT −75, naive +125, bias +200), the Chapter 02 group means and missing-data
-balance, the Chapter 03 standard errors, interval, z, and p-values, the Chapter 04 DAG path logic, the Chapter 05 OLS/control path, the Chapter 06 weighted/dummy regression, the Chapter 07 control models, the Chapter 08 IV constants, the Chapter 09 compliance matrix, the Chapter 11 propensity score, the Chapter 12 doubly robust grid, the Chapter 13 difference-in-differences, the Chapter 15 synthetic control, the Chapter 16 RD constants, the Chapter 17 policy arithmetic, the Chapter 18 CATE bands, the Chapter 19 gain curves, the Chapter 20 target transforms, the Chapter 21 meta-learner curves, the Chapter 22 orthogonal slopes, the Chapter 23 conversion curves, the Chapter 24 TWFE paths, the Chapter 25 SDID estimates, the A1 residual slopes, the A2 balance weights, the A3 policy gains, and the site manifest
+balance, the Chapter 03 standard errors, interval, z, and p-values, the Chapter 04 DAG path logic, the Chapter 05 OLS/control path, the Chapter 06 weighted/dummy regression, the Chapter 07 control models, the Chapter 08 IV constants, the Chapter 09 compliance matrix, the Chapter 11 propensity score, the Chapter 12 doubly robust grid, the Chapter 13 difference-in-differences, the Chapter 15 synthetic control, the Chapter 16 RD constants, the Chapter 17 policy arithmetic, the Chapter 18 CATE bands, the Chapter 19 gain curves, the Chapter 20 target transforms, the Chapter 21 meta-learner curves, the Chapter 22 orthogonal slopes, the Chapter 23 conversion curves, the Chapter 24 TWFE paths, the Chapter 25 SDID estimates, the A1 residual slopes, the A2 balance weights, the A3 policy gains, the A4 cumulative curves, and the site manifest
 (30 pages, unique slugs, every live page exists, the shared reading scale is loaded).
-131 tests in total.
+135 tests in total.
 
 Browser smoke tests use Chrome DevTools Protocol through Node's built-in WebSocket (no
 Playwright/Puppeteer). Matching-specific scripts default to
@@ -516,6 +526,7 @@ to test a different page.
 & "...\node.exe" tools/cdp-a1.mjs     # A1: residual and gain views
 & "...\node.exe" tools/cdp-a2.mjs     # A2: balance and positivity
 & "...\node.exe" tools/cdp-a3.mjs     # A3: coupon policy comparison
+& "...\node.exe" tools/cdp-a4.mjs     # A4: cumulative elasticity models
 & "...\node.exe" tools/cdp-a11y.mjs
 & "...\node.exe" tools/cdp-reduced.mjs
 & "...\node.exe" tools/cdp-film.mjs
@@ -553,7 +564,8 @@ practice mode, and the course map. It prints the observed values and any console
 `cdp-ch25.mjs` checks the DiD, SC, and SDID counterfactuals and time weights;
 `cdp-a1.mjs` checks the raw/residual scatter and both gain curves;
 `cdp-a2.mjs` checks raw/weighted balance and email 1 vs 3 positivity;
-`cdp-a3.mjs` checks the simple/model policy toggle and band choices.
+`cdp-a3.mjs` checks the simple/model policy toggle and band choices;
+`cdp-a4.mjs` checks the M1/M2 cumulative-elasticity toggle.
 `cdp-a11y.mjs` checks button names, input labels, duplicate IDs, and heading structure;
 `cdp-reduced.mjs` verifies that reduced motion lands on final states; `cdp-film.mjs`
 checks the rendered video’s metadata and dialog; `cdp-persist.mjs` reloads after scoring
@@ -594,6 +606,7 @@ chapters/
   a1-debiasing-orthogonalization.html live note: residuals and gain
   a2-debiasing-propensity-score.html live note: balance and positivity
   a3-when-prediction-fails.html live note: coupon policy comparison
+  a4-prediction-metrics.html live note: cumulative elasticity metric
 assets/css/
   tokens.css               paper/ink/pencil tokens, type scale
   base.css                 reset, type, focus, grain, toast
@@ -630,6 +643,7 @@ assets/css/
   a1.css                   note A1 residual scatter and gain curves
   a2.css                   note A2 balance bars and positivity histogram
   a3.css                   note A3 policy bars and band choices
+  a4.css                   note A4 metric curves and score table
   print.css                readable paper version
 assets/js/
   chapters.js              the manifest: 25 chapters + 5 notes, live/planned
@@ -658,6 +672,7 @@ assets/js/
   data-a1.js               residual sample and gain curves
   data-a2.js               correlations and propensity histograms
   data-a3.js               coupon policy gains and band choices
+  data-a4.js               simulated R2 and cumulative curves
   iv.js                    the book's quarter-of-birth IV constants
   iv09.js                  the book's OLS/ITT/LATE constants
   iv11.js                  the book's propensity-score constants
@@ -678,6 +693,7 @@ assets/js/
   iv-a1.js                 the book's orthogonalization constants
   iv-a2.js                 the book's propensity score constants
   iv-a3.js                 the book's prediction-failure constants
+  iv-a4.js                 the book's prediction-metric constants
   dag.js                   chapter 04 graph definitions + path verdicts
   regression.js            OLS/WLS engine + classical SEs
   labs/ch01.js             the counterfactual lens
@@ -707,6 +723,7 @@ assets/js/
   labs/a1.js               the residual views and gain curves
   labs/a2.js               the balance and positivity charts
   labs/a3.js               the policy comparison and band chart
+  labs/a4.js               the cumulative-elasticity curve bench
   data.js                  matching payload (20k patients)
   reference.js             generated book numbers
   stats.js                 mean/sd/OLS, k-d tree, k-NN matching, correction
@@ -764,8 +781,8 @@ The site is built to grow by one chapter at a time. To add one:
 5. Add a browser test (the `tools/cdp-ch01.mjs` pattern) and a Node arithmetic test.
 6. Update this README's live list and screenshots.
 
-Notes A1, A2, and A3 are live. The next build is **A4 — Prediction metrics are dangerous**,
-followed by A5; after that the site is complete.
+Notes A1–A4 are live. The next build is **A5 — Conformal inference for synthetic
+control**, the final page; after that the site is complete.
 
 ---
 
@@ -820,7 +837,7 @@ source is still valid and can be rendered later.
 ## Credits
 
 - **Book & data:** Matheus Facure Alves, *Causal Inference for the Brave and True*,
-  chapters 01–25 plus technical notes A1–A3, MIT-licensed repository.
+  chapters 01–25 plus technical notes A1–A4, MIT-licensed repository.
   Chapter 01's four-school table and its arithmetic are the book's example; Chapter 02's
   online-classroom data comes from Alpert, Couch & Harmon (2016) via the book repository.
   Chapter 03's sampling simulation uses the book's true mean 74 and standard deviation 2.
@@ -828,12 +845,12 @@ source is still valid and can be rendered later.
   06 use the book's `wage.csv`; Chapter 07 uses the book's collections-email and
   hospital-treatment data; Chapter 08 uses the book's `ak91.csv` and its seed-12 IV
   simulation; Chapter 09 uses the book's push-engagement data; Chapters 11 and 12 use the
-  book's `learning_mindset.csv`; Chapter 13 uses the book's `billboard_impact.csv`; Chapter 14 uses the wage panel distributed with linearmodels; Chapter 15 uses the book's `smoking.csv`; Chapter 16 uses the book's `drinking.csv` and `sheepskin.csv`; Chapter 17 uses the book's customer transaction and feature files; Chapter 18 uses the book's `ice_cream_sales_rnd.csv`; Chapter 19 uses both ice-cream sales files; Chapter 20 uses `invest_email_rnd.csv` and the randomized ice-cream file; Chapter 21 uses the biased and randomized email files; Chapter 22 uses the non-random and randomized ice-cream files; Chapter 23 uses a seeded simulation described on the page; Chapter 24 uses a seeded staggered-rollout simulation; Chapter 25 uses the book's `smoking.csv` panel; note A1 uses the non-random ice-cream file; note A2 uses the book's `invest_email.csv`; note A3 uses the book's coupon simulation values. The prose
+  book's `learning_mindset.csv`; Chapter 13 uses the book's `billboard_impact.csv`; Chapter 14 uses the wage panel distributed with linearmodels; Chapter 15 uses the book's `smoking.csv`; Chapter 16 uses the book's `drinking.csv` and `sheepskin.csv`; Chapter 17 uses the book's customer transaction and feature files; Chapter 18 uses the book's `ice_cream_sales_rnd.csv`; Chapter 19 uses both ice-cream sales files; Chapter 20 uses `invest_email_rnd.csv` and the randomized ice-cream file; Chapter 21 uses the biased and randomized email files; Chapter 22 uses the non-random and randomized ice-cream files; Chapter 23 uses a seeded simulation described on the page; Chapter 24 uses a seeded staggered-rollout simulation; Chapter 25 uses the book's `smoking.csv` panel; note A1 uses the non-random ice-cream file; note A2 uses the book's `invest_email.csv`; note A3 uses the book's coupon simulation values; note A4 uses the book's seeded simulation. The prose
   is adapted and shortened, and the counterfactual lens, three-classroom dot strip,
   sample-size dial, interval ruler, DAG workbench, control dial, weighting bench, dummy
   staircase, control labs, seasonal panel, IV ratio, weak-instrument dial, compliance
   matrix, estimator chart, score histogram, rate strip, robustness grid, interval chart,
-  comparison cards, trend bench, fixed-effect hero, toy panel, wage chart, synthetic path, placebo chart, RD fits, McCrary density, policy slider, policy bars, CATE bench, slope contrast, gain bench, band chart, transformation diagram, target-transform benches, meta-learner diagrams, learner bench, residual scatter, S-curve hero, conversion bench, price-range lab, DiD cohort-path bench, SDID estimator bench, A1 residual bench, A2 balance/positivity charts, and A3 policy bench are new.
+  comparison cards, trend bench, fixed-effect hero, toy panel, wage chart, synthetic path, placebo chart, RD fits, McCrary density, policy slider, policy bars, CATE bench, slope contrast, gain bench, band chart, transformation diagram, target-transform benches, meta-learner diagrams, learner bench, residual scatter, S-curve hero, conversion bench, price-range lab, DiD cohort-path bench, SDID estimator bench, A1 residual bench, A2 balance/positivity charts, A3 policy bench, and A4 metric bench are new.
 - **Visual language:** adapted from the **Data Storytelling** style in
   [Lemo-Opuscar](https://github.com/lemomo-ai/lemo-opuscar) by Lemomo (MIT). The charts,
   copy, and motion here are original; no demo assets or story are reused.

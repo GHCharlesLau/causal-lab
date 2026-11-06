@@ -14,10 +14,10 @@ const chapters = sandbox.window.CAUSAL_CHAPTERS;
 test('manifest: 25 chapters + 5 technical notes', () => {
   assert.equal(parts.length, 3);
   assert.equal(chapters.length, 30);
-  assert.equal(chapters.filter((c) => c.status === 'live').length, 28);
+  assert.equal(chapters.filter((c) => c.status === 'live').length, 29);
   assert.equal(
     chapters.filter((c) => c.status === 'live').map((c) => c.slug).sort().join(','),
-    '01-introduction,02-randomised-experiments,03-stats-review,04-graphical-causal-models,05-linear-regression,06-grouped-regression,07-beyond-confounders,08-instrumental-variables,09-non-compliance,10-matching,11-propensity-score,12-doubly-robust,13-difference-in-differences,14-panel-fixed-effects,15-synthetic-control,16-regression-discontinuity,17-predictive-models,18-heterogeneous-effects,19-evaluating-causal-models,20-plug-and-play,21-meta-learners,22-orthogonal-ml,23-heterogeneity-nonlinearity,24-did-saga,25-synthetic-did,a1-debiasing-orthogonalization,a2-debiasing-propensity-score,a3-when-prediction-fails'
+    '01-introduction,02-randomised-experiments,03-stats-review,04-graphical-causal-models,05-linear-regression,06-grouped-regression,07-beyond-confounders,08-instrumental-variables,09-non-compliance,10-matching,11-propensity-score,12-doubly-robust,13-difference-in-differences,14-panel-fixed-effects,15-synthetic-control,16-regression-discontinuity,17-predictive-models,18-heterogeneous-effects,19-evaluating-causal-models,20-plug-and-play,21-meta-learners,22-orthogonal-ml,23-heterogeneity-nonlinearity,24-did-saga,25-synthetic-did,a1-debiasing-orthogonalization,a2-debiasing-propensity-score,a3-when-prediction-fails,a4-prediction-metrics'
   );
 });
 
@@ -52,6 +52,7 @@ test('landing and live pages load the shared reading scale', () => {
   assert.match(ch01, /\.\.\/assets\/js\/site\.js/);
   assert.match(ch01, /window\.CHAPTER/);
 });
+
 
 
 

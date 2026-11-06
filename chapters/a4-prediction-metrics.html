@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prediction metrics are dangerous &mdash; Causal Field Notes</title>
+  <meta name="description" content="Technical note A4: why prediction metrics are dangerous for causal models — R² rewards nuisance features, cumulative elasticity rewards heterogeneity, and residualized R² can be negative.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/a4.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the note</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Technical Note A4</p>
+      <h1 class="hero-title hero-title--long">The wrong <br>scoreboard<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">R&sup2; rewards the nuisance &darr;</p>
+      <p class="hero-deck">The model with the better R² is the worse causal model. The metric is measuring the wrong thing.</p>
+      <p class="hero-sub">One model uses 20 nuisance features and scores R² 0.916. The other uses 10 heterogeneity features and scores 0.084. On cumulative elasticity, the low-R² model is the one that ranks the responsive units correctly.</p>
+      <div class="hero-meta mono">
+        <span>100,000 simulated rows</span><span>20 nuisance features</span><span>10 effect features</span><span>~12 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#curve-bench">Open the metric bench <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/Prediction-Metrics-For-Causal-Models.html" target="_blank" rel="noreferrer">Read the source note</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="Two models: one scores high R-squared but has a flat elasticity curve; the other scores low R-squared but ranks elasticity well.">
+        <g class="hero-paper">
+          <path d="M24 28h412v244H24z" fill="#fbf8f1" stroke="#ddd6c9"/>
+        </g>
+        <g class="metric-figure">
+          <text x="110" y="54" text-anchor="middle" class="metric-title">M1 &middot; nuisance</text>
+          <line x1="52" y1="190" x2="168" y2="190" stroke="#bdb4a5"/>
+          <path d="M56 166 L164 156" fill="none" stroke="#a8283a" stroke-width="2.2"/>
+          <text x="110" y="218" text-anchor="middle" class="metric-value">R&sup2; 0.916</text>
+          <text x="110" y="234" text-anchor="middle" class="metric-sub">flat elasticity</text>
+
+          <text x="338" y="54" text-anchor="middle" class="metric-title">M2 &middot; effect</text>
+          <line x1="280" y1="190" x2="396" y2="190" stroke="#bdb4a5"/>
+          <path d="M284 166 C 306 140, 338 120, 392 98" fill="none" stroke="#2f5d8a" stroke-width="2.2"/>
+          <text x="338" y="218" text-anchor="middle" class="metric-value metric-value--blue">R&sup2; 0.084</text>
+          <text x="338" y="234" text-anchor="middle" class="metric-sub">steep elasticity</text>
+
+          <text x="70" y="278" class="hand metric-hand">the metric and the goal point apart</text>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">The high-R-squared model has a flat cumulative elasticity curve; the low-R-squared model ranks effect heterogeneity much better.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">M1 R&sup2;</span>
+        <span class="hero-stat-value">0.916</span>
+        <span class="hero-stat-note">20 nuisance features</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">M2 R&sup2;</span>
+        <span class="hero-stat-value">0.084</span>
+        <span class="hero-stat-note">10 effect features</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Top 25%</span>
+        <span class="hero-stat-value">2.92 / 5.68</span>
+        <span class="hero-stat-note">M1 / M2 elasticity</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 SIM -->
+  <section class="chapter-section sheet" id="sim" data-section="sim">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">the simulation</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Two kinds of features</p>
+          <h2 class="section-title">Nuisance<br>and effect.</h2>
+          <p class="section-deck">The outcome depends on 20 nuisance features that do not modify the treatment effect, and 10 features that do.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">Treatment is randomized. The outcome is <span class="math-var">T</span> + <span class="math-var">T</span>&middot;<span class="w">W</span>&gamma; + 20<span class="math-var">X</span>&middot;&nu; + noise. The <span class="math-var">X</span> features drive the level; the <span class="w">W</span> features drive the heterogeneity.</p>
+          <p>M1 regresses the outcome on the nuisance <span class="math-var">X</span> features and their interactions with treatment. M2 uses the effect <span class="w">W</span> features and their interactions. Both are correct linear models of their own subset; the difference is which variation they capture.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Data generating process">
+          <span class="formula-label mono">DGP</span>
+          <span class="formula-body"><span class="math-var">Y</span> = <span class="math-var">T</span> + <span class="math-var">T</span>&middot;<span class="w">W</span>&gamma; + 20<span class="math-var">X</span>&middot;&nu; + &epsilon;</span>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-block">
+            <span class="mono">Nuisance</span>
+            <strong>20</strong>
+            <p>features that shift Y</p>
+          </div>
+          <div class="stat-block">
+            <span class="mono">Heterogeneity</span>
+            <strong>10</strong>
+            <p>features that shift the effect</p>
+          </div>
+          <div class="stat-block">
+            <span class="mono">Treatment</span>
+            <strong>random</strong>
+            <p>no confounding</p>
+          </div>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The setup</p>
+          <p>Random treatment removes the identification problem. The only question left is whether the model is measuring the level or the slope.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the models</p>
+          <p>Both are linear regressions with treatment interactions. M1 sees the nuisance features; M2 sees the effect features.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the trap</p>
+          <p>If the metric is R², M1 looks excellent and M2 looks broken. If the goal is a policy, the ranking flips.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 METRICS -->
+  <section class="chapter-section sheet" id="metrics" data-section="metrics">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">the scoreboard</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">R&sup2; vs cumulative elasticity</p>
+          <h2 class="section-title">A great forecast,<br>a flat effect.</h2>
+          <p class="section-deck">M1 explains 91.6% of the test variance. M2 explains 8.4%. On the causal ranking, M2 wins.</p>
+          </header>
+
+        <div class="score-table">
+          <div class="score-row score-row--head">
+            <span>Model</span><span>Test R&sup2;</span><span>Top-25% elasticity</span>
+          </div>
+          <div class="score-row">
+            <span>M1 &middot; nuisance</span><strong>0.916</strong><strong>2.92</strong>
+          </div>
+          <div class="score-row score-row--best">
+            <span>M2 &middot; effect</span><strong>0.084</strong><strong>5.68</strong>
+          </div>
+        </div>
+
+        <div class="prose">
+          <p>M1’s cumulative elasticity is close to flat because its predictions are driven by the nuisance features. M2’s curve is steeper: it separates the customers whose treatment effect is large from those whose effect is small.</p>
+          <p>The two curves end at the same average elasticity. That is the point: R² measures the path to the endpoint, not the shape of the ranking.</p>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">Do not report R&sup2; as a causal metric</p>
+          <p>R² asks how well the model predicts the level. A causal model is judged by how well it ranks the slope. Those can point in opposite directions.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the test</p>
+          <p>50,000 held-out rows, random treatment. The models are fit on the full simulated data, as in the book.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the warning</p>
+          <p>A low R² is not evidence of a bad causal model, and a high R² is not evidence of a good one.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 CURVES -->
+  <section class="chapter-section sheet" id="curve-bench" data-section="curve-bench">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">the curve bench</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Cumulative elasticity</p>
+          <h2 class="section-title">Rank the slope,<br>not the level.</h2>
+          <p class="section-deck">Sort the test rows by each model’s CATE prediction, then estimate the treatment slope in the top share.</p>
+        </header>
+
+        <figure class="lab lab--no-swipe" id="lab-curve" aria-labelledby="lab-curve-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-curve-title">The metric bench</h3>
+            </div>
+            <p class="lab-status mono" id="a4-status">M2 &middot; top 25% 5.68</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart a4-chart" id="a4-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="a4-label">M2 &middot; effect features</p>
+              <p class="readout-value" id="a4-top">5.68</p>
+              <p class="readout-sub">elasticity at the top 25%</p>
+              <p class="side-label mono a4-side-label">Test R&sup2;</p>
+              <p class="a4-r2" id="a4-r2">0.084</p>
+              <dl class="mini-stats">
+                <div><dt>test rows</dt><dd>50,000</dd></div>
+                <div><dt>curve points</dt><dd>101</dd></div>
+                <div><dt>endpoint</dt><dd>1.24</dd></div>
+              </dl>
+              <p class="side-note hand" id="a4-note">the low-R&sup2; model ranks the effect better.</p>
+            </aside>
+          </div>
+          <div class="lab-controls a4-controls">
+            <div class="a4-presets" role="group" aria-label="Choose a model">
+              <button class="a4-preset" type="button" data-model="m1" aria-pressed="false">M1 &middot; nuisance</button>
+              <button class="a4-preset is-active" type="button" data-model="m2" aria-pressed="true">M2 &middot; effect</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> M2’s curve is above M1’s for the top customers, even though its R² is an order of magnitude lower.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the curve</p>
+          <p>Each point is the treatment slope among the top k customers, multiplied by k/N. The endpoint is the overall slope.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the lesson</p>
+          <p>The curve rewards the model that puts high-effect customers at the top. R² rewards the model that predicts the level.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 RESIDUAL -->
+  <section class="chapter-section sheet" id="residual" data-section="residual">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">residualized R&sup2;</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Remove the nuisance first</p>
+          <h2 class="section-title">Both scores<br>go negative.</h2>
+          <p class="section-deck">Fit a denoising model on the features, residualize the outcome, and score the causal models again.</p>
+        </header>
+
+        <div class="prose">
+          <p>After removing the nuisance variation, M1’s R² collapses to <strong>−281.8</strong> and M2’s to <strong>−24.0</strong>. Both are terrible as level predictions, because the level was already explained. But M2 is less terrible, and it is the one with the better elasticity curve.</p>
+          <p>The residualized score is a diagnostic, not a policy metric. It shows that the original R² was mostly measuring nuisance, not effect.</p>
+        </div>
+
+        <div class="residual-grid">
+          <div class="residual-card">
+            <p class="mono">M1 residual R&sup2;</p>
+            <strong>&minus;281.8</strong>
+            <p>the nuisance model has nothing left to explain</p>
+          </div>
+          <div class="residual-card residual-card--m2">
+            <p class="mono">M2 residual R&sup2;</p>
+            <strong>&minus;24.0</strong>
+            <p>still negative, but closer to the effect</p>
+          </div>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">Negative R&sup2; is allowed</p>
+          <p>On a residualized target, R² can be arbitrarily negative. It is not a probability and not a percentage of explained variance in the usual sense.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the denoiser</p>
+          <p>A linear model of Y on all 30 features, fit on the training half. The residual removes the part of Y that the features can predict.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the interpretation</p>
+          <p>Residualized R² compares models on the part of the outcome that is not nuisance. It is a sharper diagnostic, not a validation metric.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>R&sup2; measures the level.</strong> A model can explain 92% of the variance through nuisance features and know nothing about the effect.</li>
+          <li><strong>Cumulative elasticity measures the ranking.</strong> It rewards the model that puts high-effect units at the top, regardless of its R².</li>
+          <li><strong>Residualize to diagnose.</strong> Removing the nuisance variation exposes how much of the R² was effect versus level.</li>
+          <li><strong>Choose the metric to match the decision.</strong> If the decision is a treatment assignment, the metric must be about the treatment effect.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The sentence to avoid</p>
+          <p>&ldquo;M1 has a higher R², so it is the better causal model.&rdquo; M1’s R² comes from the nuisance features; its treatment-effect ranking is nearly flat.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Report the curve, not just the score. The scoreboard should look like the decision.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> Why does M1 have a high R²?</summary>
+            <p>It uses the 20 nuisance features that drive the level of the outcome. Their interactions with treatment absorb most of the variance, even though they do not drive the effect.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> Why does M2 rank the effect better?</summary>
+            <p>It uses the features that actually modify the treatment effect. Its CATE predictions sort the high-effect units near the top, so the cumulative elasticity curve rises faster.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> Why are the residualized R² values negative?</summary>
+            <p>The residual target has most of its variance removed. A level model can be worse than predicting the mean, which gives a negative R².</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> Which metric should drive a policy decision?</summary>
+            <p>The cumulative elasticity or gain curve, because it measures the ranking of treatment effects. R² measures the level and can favor the wrong model.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next note</p>
+          <h3>Conformal inference for synthetic control</h3>
+          <p>A distribution-free interval for a synthetic control estimate, and what it assumes.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>If the metric can be improved by a feature that does not affect the treatment, it is probably the wrong metric.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-a4.js"></script>
+<script src="../assets/js/iv-a4.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: 'A4',
+    slug: 'a4-prediction-metrics',
+    title: 'Prediction metrics are dangerous',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/Prediction-Metrics-For-Causal-Models.html',
+    sections: [
+      { id: 'sim', num: '01', label: 'The simulation' },
+      { id: 'metrics', num: '02', label: 'The scoreboard' },
+      { id: 'curve-bench', num: '03', label: 'The curve bench' },
+      { id: 'residual', num: '04', label: 'Residualized R²' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/a4.js"></script>
+</body>
+</html>
