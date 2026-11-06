@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Debiasing with orthogonalization &mdash; Causal Field Notes</title>
+  <meta name="description" content="Technical note A1: debiasing with orthogonalization — Frisch-Waugh-Lovell, treatment and outcome residuals, cross-fitting, and evaluating a causal model without random data.">
+  <meta name="theme-color" content="#f6f3ec">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/fonts/fonts.css">
+  <link rel="stylesheet" href="../assets/css/tokens.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/charts.css">
+  <link rel="stylesheet" href="../assets/css/type.css">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/a1.css">
+  <link rel="stylesheet" href="../assets/css/print.css" media="print">
+</head>
+<body class="chapter-page">
+<a class="skip-link" href="#main">Skip to the note</a>
+<div class="paper-grain" aria-hidden="true"></div>
+<div id="site-header"></div>
+<div id="site-rail"></div>
+
+<main id="main" tabindex="-1">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero sheet" id="top">
+    <div class="hero-copy">
+      <p class="kicker">Causal Field Notes &middot; Technical Note A1</p>
+      <h1 class="hero-title hero-title--long">The residual <br>trick<span class="hero-period">.</span></h1>
+      <p class="hero-note hand" aria-hidden="true">clean the treatment, then the outcome &darr;</p>
+      <p class="hero-deck">When the treatment is not randomized, orthogonalization can make the data behave as if it were.</p>
+      <p class="hero-sub">Price and sales are positively correlated in the raw data: +1.38 units per real. Residualize price on the confounders and the slope flips to −3.95. The sign change is the debiasing.</p>
+      <div class="hero-meta mono">
+        <span>10,000 days</span><span>5,000 test days</span><span>2 labs</span><span>~12 min</span>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn--primary" href="#residual-bench">Open the residual bench <span aria-hidden="true">&rarr;</span></a>
+        <a class="btn btn--ghost" href="https://matheusfacure.github.io/python-causality-handbook/Debiasing-with-Orthogonalization.html" target="_blank" rel="noreferrer">Read the source note</a>
+      </div>
+    </div>
+    <figure class="hero-figure" aria-labelledby="hero-figure-cap">
+      <svg viewBox="0 0 460 300" role="img" aria-label="Raw price and sales slope up; after residualizing price and sales on confounders, the relationship slopes down.">
+        <g class="hero-paper">
+          <path d="M24 28h412v244H24z" fill="#fbf8f1" stroke="#ddd6c9"/>
+        </g>
+        <g class="ortho-figure">
+          <text x="72" y="54" class="ortho-title">raw</text>
+          <line x1="54" y1="196" x2="206" y2="196" stroke="#bdb4a5"/>
+          <line x1="54" y1="80" x2="54" y2="196" stroke="#bdb4a5"/>
+          <path d="M58 168 L202 112" fill="none" stroke="#a8283a" stroke-width="2.2"/>
+          <text x="72" y="222" class="ortho-sub">positive slope</text>
+          <text x="72" y="240" class="ortho-value">+1.38</text>
+
+          <text x="280" y="54" class="ortho-title">orthogonal</text>
+          <line x1="264" y1="196" x2="416" y2="196" stroke="#bdb4a5"/>
+          <line x1="264" y1="80" x2="264" y2="196" stroke="#bdb4a5"/>
+          <path d="M268 108 L412 184" fill="none" stroke="#2f5d8a" stroke-width="2.2"/>
+          <text x="280" y="222" class="ortho-sub">negative slope</text>
+          <text x="280" y="240" class="ortho-value ortho-value--blue">&minus;3.95</text>
+
+          <path d="M218 144 L248 144" stroke="#2b2723" stroke-width="1.3"/>
+          <path d="M242 138 L250 144 L242 150" fill="none" stroke="#2b2723" stroke-width="1.3"/>
+          <text x="56" y="278" class="hand ortho-hand">same data, confounding removed</text>
+        </g>
+      </svg>
+      <figcaption id="hero-figure-cap" class="sr-only">Raw price and sales are positively related; after residualizing both on confounders, the relationship is negative.</figcaption>
+    </figure>
+    <div class="hero-numbers">
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Raw slope</span>
+        <span class="hero-stat-value">+1.38</span>
+        <span class="hero-stat-note">units per real</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Residual slope</span>
+        <span class="hero-stat-value">&minus;3.95</span>
+        <span class="hero-stat-note">after partialling out</span>
+      </div>
+      <div class="hero-arrow" aria-hidden="true">&middot;</div>
+      <div class="hero-stat">
+        <span class="hero-stat-label mono">Raw corr.</span>
+        <span class="hero-stat-value">+0.084</span>
+        <span class="hero-stat-note">price and sales</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 01 FWL -->
+  <section class="chapter-section sheet" id="fwl" data-section="fwl">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">01</span>
+        <span class="section-label mono">frisch-waugh-lovell</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Three regressions, one coefficient</p>
+          <h2 class="section-title">Partial out<br>the confounders.</h2>
+          <p class="section-deck">Regress the outcome on X. Regress the treatment on X. Regress the two residuals on each other.</p>
+        </header>
+
+        <div class="prose">
+          <p class="lede">FWL says the last regression gives the same treatment coefficient as the full regression. The first two models are nuisance; the last one is the causal parameter.</p>
+          <p>That is useful because the nuisance models can be wrong about the functional form, and we still get a clean treatment residual. The treatment residual is, by construction, unpredictable from the confounders.</p>
+        </div>
+
+        <div class="formula formula--wide" role="math" aria-label="Frisch-Waugh-Lovell">
+          <span class="formula-label mono">FWL</span>
+          <span class="formula-body">(<span class="math-var">y</span> &minus; <span class="math-var">M</span><sub>y</sub>(<span class="math-var">X</span>)) ~ (<span class="math-var">t</span> &minus; <span class="math-var">M</span><sub>t</sub>(<span class="math-var">X</span>))</span>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-block">
+            <span class="mono">Raw slope</span>
+            <strong>+1.376</strong>
+            <p>the confounded relationship</p>
+          </div>
+          <div class="stat-block">
+            <span class="mono">Treatment residual</span>
+            <strong>&minus;3.951</strong>
+            <p>sales on price residual</p>
+          </div>
+          <div class="stat-block">
+            <span class="mono">Both residuals</span>
+            <strong>&minus;3.951</strong>
+            <p>the FWL estimate</p>
+          </div>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">Why orthogonal</p>
+          <p>The residual is the part of the treatment that X cannot explain. It has no variation left for the confounders to drive.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the intuition</p>
+          <p>Partialling out is not a different estimator. It is the same least-squares fit, computed in two smaller problems.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the catch</p>
+          <p>FWL is exact only for linear models. With ML nuisance models, it is an approximation; cross-fitting is what keeps it honest.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 02 RESIDUAL BENCH -->
+  <section class="chapter-section sheet" id="residual-bench" data-section="residual-bench">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">02</span>
+        <span class="section-label mono">the residual bench</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Raw, treatment residual, both</p>
+          <h2 class="section-title">Watch the sign<br>flip.</h2>
+          <p class="section-deck">The raw scatter slopes up. The treatment residual flips it. The outcome residual makes the negative relationship easier to see.</p>
+        </header>
+
+        <figure class="lab lab--no-swipe" id="lab-residual" aria-labelledby="lab-residual-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 01</p>
+              <h3 class="lab-title" id="lab-residual-title">The residual bench</h3>
+            </div>
+            <p class="lab-status mono" id="a1-status">both residuals &middot; &minus;3.95</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart a1-chart" id="a1-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="a1-label">Both residuals</p>
+              <p class="readout-value" id="a1-slope">&minus;3.95</p>
+              <p class="readout-sub">units per real</p>
+              <p class="side-label mono a1-side-label">Raw correlation</p>
+              <p class="a1-corr" id="a1-corr">+0.084</p>
+              <dl class="mini-stats">
+                <div><dt>test days</dt><dd>5,000</dd></div>
+                <div><dt>sample shown</dt><dd>600</dd></div>
+                <div><dt>confounders</dt><dd>3</dd></div>
+              </dl>
+              <p class="side-note hand" id="a1-note">the residuals remove the weekend effect.</p>
+            </aside>
+          </div>
+          <div class="lab-controls a1-controls">
+            <div class="a1-presets" role="group" aria-label="Choose a residual view">
+              <button class="a1-preset" type="button" data-view="raw" aria-pressed="false">Raw</button>
+              <button class="a1-preset" type="button" data-view="price" aria-pressed="false">Price residual</button>
+              <button class="a1-preset is-active" type="button" data-view="both" aria-pressed="true">Both residuals</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The weekend cloud moves to the center once price is residualized. The negative slope is easier to see once the outcome is residualized too.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the treatment residual</p>
+          <p>After residualizing price, weekdays no longer line up on the right. The treatment looks randomized with respect to the confounders.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the scale</p>
+          <p>Residuals are not prices. A residual of −0.2 is a deviation from the predicted price, not a real discount.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 03 EVALUATION -->
+  <section class="chapter-section sheet" id="evaluation" data-section="evaluation">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">03</span>
+        <span class="section-label mono">evaluation</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Gain on clean data</p>
+          <h2 class="section-title">Sort on residuals,<br>not raw prices.</h2>
+          <p class="section-deck">A causal model was trained on the other half. Its elasticity predictions are evaluated by cumulative gain on the residualized test set.</p>
+        </header>
+
+        <div class="prose">
+          <p>On the debiased sample, the cumulative gain converges to <strong>−3.95</strong>. On the raw sample, it converges to <strong>+1.38</strong>: the model learns a positive price-sales relationship, which is economically backwards.</p>
+          <p>The debiased curve is the one to read. The raw curve shows what happens when model evaluation is run on confounded data.</p>
+        </div>
+
+        <figure class="lab lab--no-swipe" id="lab-gain" aria-labelledby="lab-gain-title">
+          <div class="lab-head">
+            <div>
+              <p class="lab-kicker mono">Experiment 02</p>
+              <h3 class="lab-title" id="lab-gain-title">Debiased vs raw gain</h3>
+              </div>
+            <p class="lab-status mono" id="a1-gain-status">debiased &middot; &minus;3.95</p>
+          </div>
+          <div class="lab-body">
+            <div class="lab-chart a1-chart" id="a1-gain-chart" aria-hidden="true"></div>
+            <aside class="lab-side">
+              <p class="side-label mono" id="a1-gain-label">Debiased sample</p>
+              <p class="readout-value" id="a1-gain-value">&minus;3.95</p>
+              <p class="readout-sub">full-sample elasticity</p>
+              <p class="side-label mono a1-side-label">At the top 25%</p>
+              <p class="a1-corr" id="a1-gain-top">&minus;3.95</p>
+              <dl class="mini-stats">
+                <div><dt>curve points</dt><dd>101</dd></div>
+                <div><dt>model</dt><dd>price &times; context</dd></div>
+                <div><dt>split</dt><dd>50 / 50</dd></div>
+              </dl>
+              <p class="side-note hand" id="a1-gain-note">the raw curve says raising prices raises sales.</p>
+            </aside>
+          </div>
+          <div class="lab-controls a1-controls">
+            <div class="a1-presets" role="group" aria-label="Choose a sample">
+              <button class="a1-preset is-active" type="button" data-sample="debiased" aria-pressed="true">Debiased</button>
+              <button class="a1-preset" type="button" data-sample="biased" aria-pressed="false">Raw</button>
+            </div>
+          </div>
+          <figcaption class="lab-caption"><span class="mono">What to notice</span> The endpoints have opposite signs. Debiasing changes the conclusion, not just the precision.</figcaption>
+        </figure>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the causal model</p>
+          <p>Price interacted with cost, weekday, and temperature, trained on the non-random half. Its predictions are elasticities, not sales.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the warning</p>
+          <p>The test set is the same days in both curves. Only the evaluation target changes: raw sales and prices, or their residuals.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 ML -->
+  <section class="chapter-section sheet" id="ml" data-section="ml">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">04</span>
+        <span class="section-label mono">with machine learning</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Cross-fit the nuisance</p>
+          <h2 class="section-title">Flexible models,<br>out-of-fold residuals.</h2>
+          <p class="section-deck">Random forests can model the nuisance relationships. The predictions must come from folds the model did not train on.</p>
+        </header>
+
+        <div class="prose">
+          <p>Replace the linear nuisance models with random forests. The treatment and outcome residuals are built from five-fold out-of-fold predictions. The scatter is similar to the linear version: the negative relationship remains.</p>
+          <p>The warning: do not swap the regressors for classifiers just because the treatment or outcome is binary. Orthogonalization theory is built on regression.</p>
+        </div>
+
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The overfit trap</p>
+          <p>If the nuisance model overfits, the residuals collapse toward zero and there is no treatment variation left. Cross-fitting is not optional.</p>
+        </div>
+
+        <div class="callout callout--key">
+          <p class="callout-kicker mono">The takeaway</p>
+          <p>Orthogonalization is a preprocessing step. Many modern causal estimators use it before estimating a treatment effect.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">the sample split</p>
+          <p>The note uses 5,000 days for the causal model and 5,000 for evaluation. The residuals are built only on the evaluation half.</p>
+        </div>
+        <div class="note note--red">
+          <p class="note-label mono">the limit</p>
+          <p>No debiasing method can fix an unmeasured confounder. Orthogonalization is not a substitute for randomization.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 05 KEY -->
+  <section class="chapter-section sheet" id="key" data-section="key">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">05</span>
+        <span class="section-label mono">key ideas</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Carry these forward</p>
+          <h2 class="section-title">Four things<br>to keep.</h2>
+        </header>
+        <ol class="key-list">
+          <li><strong>FWL splits the regression.</strong> The treatment coefficient can be recovered from the residuals of two nuisance models.</li>
+          <li><strong>Treatment residuals are orthogonal.</strong> They contain the part of the treatment that the confounders cannot explain.</li>
+          <li><strong>Outcome residuals reduce variance.</strong> They make the causal relationship easier to see, but do not change the target.</li>
+          <li><strong>Cross-fitting is mandatory with ML.</strong> Overfit residuals shrink the treatment variation and bias the estimate.</li>
+        </ol>
+        <div class="callout callout--trap">
+          <p class="callout-kicker mono">The sentence to avoid</p>
+          <p>&ldquo;The residualized slope is causal because the regression controls for X.&rdquo; It is causal only if X contains all confounders and the nuisance models are credible.</p>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">to remember</p>
+          <p>Residualize the treatment, residualize the outcome, and evaluate the model on the cleaned data. The sign flip is the check.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ 06 PRACTICE -->
+  <section class="chapter-section sheet" id="practice" data-section="practice">
+    <div class="section-grid">
+      <div class="section-margin">
+        <span class="section-number">06</span>
+        <span class="section-label mono">practice</span>
+      </div>
+      <div class="section-body">
+        <header class="section-head">
+          <p class="kicker">Check yourself</p>
+          <h2 class="section-title">Can you<br>defend it?</h2>
+          <p class="section-deck">Four short questions. Answer first, then open the field note.</p>
+        </header>
+
+        <div class="qa-list">
+          <details class="qa">
+            <summary><span class="qa-num mono">01</span> What does FWL let you do?</summary>
+            <p>Estimate the treatment coefficient from the residuals of two smaller regressions instead of one large regression, with the same result for linear models.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">02</span> Why does residualizing price flip the sign?</summary>
+            <p>The raw correlation is driven by weekends: both demand and prices are high. Removing the confounder variation leaves the negative price response.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">03</span> Why residualize the outcome too?</summary>
+            <p>It removes the part of sales explained by confounders, reducing variance and making the treatment relationship easier to see. It does not change the target.</p>
+          </details>
+          <details class="qa">
+            <summary><span class="qa-num mono">04</span> Why cross-fit ML nuisance models?</summary>
+            <p>In-sample predictions overfit, shrinking residuals. Out-of-fold predictions preserve treatment variation and keep the residual regression honest.</p>
+          </details>
+        </div>
+
+        <div class="chapter-next-card">
+          <p class="mono">Next note</p>
+          <h3>Debiasing with propensity score</h3>
+          <p>The other route to exchangeability: model the treatment probability and weight or match on the score.</p>
+          <a class="btn btn--primary" href="../index.html#course">See the course map <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </div>
+      <aside class="section-notes">
+        <div class="note note--blue note--tape">
+          <p class="note-label mono">field note</p>
+          <p>Raw, treatment-residual, and both-residual plots should tell one story. If they do not, the confounders are not doing their job.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+<div id="site-footer"></div>
+
+<script src="../assets/js/data-a1.js"></script>
+<script src="../assets/js/iv-a1.js"></script>
+<script src="../assets/js/chapters.js"></script>
+<script>
+  window.CHAPTER = {
+    num: 'A1',
+    slug: 'a1-debiasing-orthogonalization',
+    title: 'Debiasing with orthogonalization',
+    source: 'https://matheusfacure.github.io/python-causality-handbook/Debiasing-with-Orthogonalization.html',
+    sections: [
+      { id: 'fwl', num: '01', label: 'Frisch-Waugh-Lovell' },
+      { id: 'residual-bench', num: '02', label: 'The residual bench' },
+      { id: 'evaluation', num: '03', label: 'Evaluation' },
+      { id: 'ml', num: '04', label: 'With ML' },
+      { id: 'key', num: '05', label: 'Key ideas' },
+      { id: 'practice', num: '06', label: 'Practice' }
+    ]
+  };
+</script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/labs/a1.js"></script>
+</body>
+</html>

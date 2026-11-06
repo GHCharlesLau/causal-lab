@@ -166,9 +166,9 @@
       '<button class="dialog-close" type="button" data-close aria-label="Close">&times;</button>' +
       '<p class="kicker">The course map</p>' +
       '<h2 id="dlg-course-title">The whole book, in field notes.</h2>' +
-      '<p class="dialog-deck">Twenty-five chapters are live. The rest are being rebuilt one experiment at a time; planned pages are marked, not silently broken.</p>' +
+      '<p class="dialog-deck">Twenty-five chapters and the first technical note are live. The rest are being rebuilt one experiment at a time; planned pages are marked, not silently broken.</p>' +
       '<div class="course-map">' + mapMarkup() + '</div>' +
-      '<p class="dialog-note mono">Live: 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 and 25 &middot; 25 chapters + 5 technical notes &middot; source: Facure (MIT)</p>' +
+      '<p class="dialog-note mono">Live: 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 and A1 &middot; 25 chapters + 5 technical notes &middot; source: Facure (MIT)</p>' +
     '</div>';
   doc.body.appendChild(dlg);
 
