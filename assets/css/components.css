@@ -799,13 +799,26 @@ input[type="range"].range:focus-visible {
 }
 
 .question {
-  border-top: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  margin: 0;
+  min-inline-size: 0;
   padding: 14px 0 12px;
+}
+
+.question > .q-title {
+  padding: 0;
 }
 
 .question:first-of-type {
   border-top: 0;
   padding-top: 0;
+}
+
+.question:last-of-type {
+  border-bottom: 0;
 }
 
 .q-title {

@@ -97,7 +97,7 @@
         C.text(g, m.l - 12, y0 + rowH / 2, s === 0 ? 'sex 0' : 'sex 1', 'cell-axis', {
           'text-anchor': 'end'
         });
-        C.text(g, m.l - 12, y0 + rowH / 2 + 12, s === 0 ? 'n=' + sampleCount(s, null) : 'n=' + sampleCount(s, null),
+        C.text(g, m.l - 12, y0 + rowH / 2 + 24, s === 0 ? 'n=' + sampleCount(s, null) : 'n=' + sampleCount(s, null),
           'cell-count', { 'text-anchor': 'end' });
 
         for (var b = 0; b < bins; b++) {

@@ -45,8 +45,8 @@
     });
     C.line(g, m.l, H - m.b, W - m.r, H - m.b, 'axis-line');
     C.line(g, m.l, m.t, m.l, H - m.b, 'axis-line');
-    C.text(g, m.l - 38, m.t + 6, 'MEAN NN DISTANCE', 'axis-title', {
-      transform: 'rotate(-90 ' + (m.l - 38) + ' ' + (m.t + 6) + ')'
+    C.text(g, m.l - 38, m.t + 64, 'MEAN NN DISTANCE', 'axis-title', {
+      transform: 'rotate(-90 ' + (m.l - 38) + ' ' + (m.t + 64) + ')'
     });
     C.text(g, W - m.r, H - 9, 'COVARIATES (d)', 'axis-title', { 'text-anchor': 'end' });
 

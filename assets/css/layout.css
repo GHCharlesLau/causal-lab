@@ -584,6 +584,13 @@
 }
 
 /* ============================================================ responsive */
+@media (min-width: 961px) {
+  /* Keep the handwritten hero note clear of the vertical scroll cue. */
+  .hero-truth-note {
+    margin-right: 44px;
+  }
+}
+
 @media (min-width: 1240px) {
   .rail {
     display: block;

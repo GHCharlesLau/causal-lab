@@ -47,26 +47,26 @@
 
     cols.forEach(function (col) {
       C.rect(gCells, col.cx - 52, 62, 104, 178, 'cell-rect has-both', { rx: 1 });
-      C.text(gCells, col.cx, 80, col.label, 'scale-label', { 'text-anchor': 'middle' });
-      C.text(gCells, col.cx, 94, 'n = ' + col.n, 'cell-count', { 'text-anchor': 'middle' });
+      C.text(gCells, col.cx, 78, col.label, 'scale-label', { 'text-anchor': 'middle' });
+      C.text(gCells, col.cx, 96, 'n = ' + col.n, 'cell-count', { 'text-anchor': 'middle' });
 
       var treated = data.filter(function (d) { return d.sex === col.key && d.drug === 1; });
       var control = data.filter(function (d) { return d.sex === col.key && d.drug === 0; });
 
       treated.forEach(function (d, i) {
         var px = col.cx - 30 + (i % 3) * 30;
-        var py = 108 + Math.floor(i / 3) * 12 + (i % 2) * 3;
+        var py = 112 + Math.floor(i / 3) * 12 + (i % 2) * 3;
         C.circle(gCells, px, py, 5, 'data-dot data-dot--treated');
       });
       control.forEach(function (d, i) {
         var px = col.cx - 30 + (i % 3) * 30;
-        var py = 208 + Math.floor(i / 3) * 12;
+        var py = 212 + Math.floor(i / 3) * 12;
         C.circle(gCells, px, py, 5, 'data-dot data-dot--control');
       });
 
       // mean lines + within-cell effect bracket
-      var treatY = 120;
-      var controlY = 222;
+      var treatY = 124;
+      var controlY = 226;
       C.line(gCells, col.cx - 44, treatY, col.cx + 44, treatY, 'mean-line mean-line--treated');
       C.line(gCells, col.cx - 44, controlY, col.cx + 44, controlY, 'mean-line mean-line--control');
       C.line(gCells, col.cx - 34, treatY, col.cx - 34, controlY, 'annotation-leader');
@@ -77,8 +77,8 @@
     });
 
     C.text(gCells, 24, 264, 'within-cell effect:', 'annotation-text');
-    C.text(gCells, 135, 264, 'men \u22123.0', 'annotation-text annotation-text--red');
-    C.text(gCells, 215, 264, 'women \u22122.0', 'annotation-text annotation-text--red');
+    C.text(gCells, 152, 264, 'men \u22123.0', 'annotation-text annotation-text--red');
+    C.text(gCells, 236, 264, 'women \u22122.0', 'annotation-text annotation-text--red');
     C.text(gCells, 24, 284, 'cell size:', 'annotation-text');
     C.text(gCells, 88, 284, '6 men, 4 women', 'annotation-text');
 
@@ -105,7 +105,7 @@
     shareMenText = C.text(gScale, 406, 238, 'MEN 60%', 'scale-label', { 'text-anchor': 'middle' });
     shareWomenText = C.text(gScale, 566, 238, 'WOMEN 40%', 'scale-label', { 'text-anchor': 'middle' });
     scaleEstimate = C.text(gScale, 486, 276, '\u22122.60', 'plot-title', { 'text-anchor': 'middle' });
-    scaleSub = C.text(gScale, 486, 292, 'subclassification', 'cell-count', { 'text-anchor': 'middle' });
+    scaleSub = C.text(gScale, 486, 301, 'subclassification', 'cell-count', { 'text-anchor': 'middle' });
 
     // ------------------------------------------------------------ table
     function buildTable() {
