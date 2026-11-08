@@ -458,10 +458,57 @@
     });
   }
 
+  function fitHeroTitle() {
+    var title = doc.querySelector('.hero-title');
+    var figure = doc.querySelector('.hero-figure');
+    if (!title || !figure) return;
+
+    // Let the stylesheet choose the size, then shrink only if the rendered
+    // word would run into the figure. This also catches fallback-font metrics.
+    title.style.removeProperty('font-size');
+    if (global.innerWidth <= 960) return;
+
+    var range = doc.createRange();
+    range.selectNodeContents(title);
+    var textRect = range.getBoundingClientRect();
+    var figRect = figure.getBoundingClientRect();
+    if (!textRect.width || !figRect.width) return;
+
+    var room = figRect.left - textRect.left - 24;
+    if (room <= 0 || textRect.width <= room) return;
+
+    var current = parseFloat(global.getComputedStyle(title).fontSize);
+    if (!current) return;
+    var next = Math.max(56, Math.floor(current * room / textRect.width));
+    title.style.fontSize = next + 'px';
+
+    range = doc.createRange();
+    range.selectNodeContents(title);
+    textRect = range.getBoundingClientRect();
+    if (textRect.width > room && next > 56) {
+      title.style.fontSize = Math.max(56, next - 2) + 'px';
+    }
+  }
+
+  function initHeroFit() {
+    var timer = null;
+    function schedule() {
+      global.clearTimeout(timer);
+      timer = global.setTimeout(fitHeroTitle, 140);
+    }
+    fitHeroTitle();
+    global.addEventListener('resize', schedule);
+    global.addEventListener('load', fitHeroTitle);
+    if (doc.fonts && doc.fonts.ready && doc.fonts.ready.then) {
+      doc.fonts.ready.then(fitHeroTitle).catch(function () {});
+    }
+  }
+
   function boot() {
     C = global.MatchLabCharts;
     global.MatchLabProgress.load();
     initProgressArc();
+    initHeroFit();
     initDialogs();
     initCourseMap();
     initFilm();
