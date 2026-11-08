@@ -5,6 +5,8 @@ An interactive field guide to the whole of
 25 chapters and 5 technical notes, rebuilt as stories you can read, labs you can break,
 and arguments you can defend.
 
+**Live:** <https://ghcharleslau.github.io/causal-lab/>
+
 It is a local, static website: no backend, no build step, no tracking. Open `index.html`
 for the landing page, or serve the folder over HTTP.
 
@@ -416,6 +418,14 @@ The only server-side concern is the file name: keep `index.html` at the root. Th
 `chapters/` folder and `assets/` folder must travel with it. The film is optional; if
 `assets/video/matching-opener.mp4` is missing, the Matching page's film dialog shows a
 fallback and the rest of the page works.
+
+#### GitHub Pages
+
+This repository is deployed at <https://ghcharleslau.github.io/causal-lab/> from the
+`main` branch, repository root, with **Settings → Pages → Deploy from a branch**. No
+Actions workflow is needed. The `.nojekyll` marker keeps GitHub from running Jekyll over
+the static files. To publish a fork, enable Pages in the fork's settings and use
+`https://<account>.github.io/<repo>/`.
 
 On this machine the bundled runtimes are at:
 
